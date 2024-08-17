@@ -3,30 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MeshFilter),  typeof(MeshRenderer), typeof(MeshCollider))]
 public class HexGridMeshGenerator : MonoBehaviour
 {
-    [field:SerializeField] public LayerMask gridLayer { get; private set; }
-    [field:SerializeField] public HexGrid hexGrid { get; private set; }
+    [field:SerializeField] public LayerMask GridLayer { get; private set; }
+    [field:SerializeField] public HexGrid HexGrid { get; private set; }
     
     
     private void Awake()
     {
-        if (hexGrid == null)
-            hexGrid = GetComponentInParent<HexGrid>();
-        if (hexGrid == null)
+        if (HexGrid == null)
+            HexGrid = GetComponentInParent<HexGrid>();
+        if (HexGrid == null)
             Debug.LogError("No HexGrid component found");
     }
 
     public void CreateHexMesh()
     {
-        CreateHexMesh(hexGrid.Width,  hexGrid.Height, hexGrid.HexSize, hexGrid.Orientation, gridLayer);
+        CreateHexMesh(HexGrid.Width,  HexGrid.Height, HexGrid.HexSize, HexGrid.Orientation, GridLayer);
     }
 
     public void CreateHexMesh(HexGrid hexGrid, LayerMask layerMask)
     {
-        this.hexGrid = hexGrid;
-        this.gridLayer = layerMask;
-        CreateHexMesh(hexGrid.Width,  hexGrid.Height, hexGrid.HexSize, hexGrid.Orientation, gridLayer);
+        this.HexGrid = hexGrid;
+        this.GridLayer = layerMask;
+        CreateHexMesh(hexGrid.Width,  this.HexGrid.Height, this.HexGrid.HexSize,this.HexGrid.Orientation, GridLayer);
     }
 
     public void CreateHexMesh(int width, int height, float hexSize, HexOrientation orientation,LayerMask layerMask)
@@ -38,8 +39,39 @@ public class HexGridMeshGenerator : MonoBehaviour
             {
                 Vector3 centrePosition = HexMetrics.Center(hexSize, x, z, orientation);
                 vertices[(z * width + x) * 7] = centrePosition;
-                for (int s = 0; s < )
+                for (int s = 0; s < 6; s++)
+                {
+                    vertices[(z * width + x) * 7 + s + 1] = centrePosition + HexMetrics.Corners(hexSize, orientation)[s % 6];
+                }
             }
+
+        int[] triangles = new int[3 * 6 * width * height];
+        for (int z = 0; z <  height; z++)
+            for (int x = 0; x < width; x++)
+                for (int s = 0; s < 6; s++) 
+                {
+                    int cornerIndex = s + 2 > 6 ? s + 2 - 6 : s + 2;
+                    triangles[3 * 6 * (z * width + x) + s * 3 + 2] = (z * width + x) * 7;
+                    triangles[3 * 6 * (z * width + x) + s * 3 + 1] = (z * width + x) * 7 + s + 1;
+                    triangles[3 * 6 * (z * width + x) + s * 3 + 0] = (z * width + x) * 7 + cornerIndex;
+                }
+
+        Mesh mesh = new Mesh();
+        mesh.name = "Hex mesh";
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        mesh.RecalculateUVDistributionMetrics();
+
+        GetComponent<MeshFilter>().sharedMesh = mesh;
+        GetComponent<MeshCollider>().sharedMesh = mesh;
+        int gridLayerIndex = GetLayerIndex(layerMask);
+        
+        Debug.Log("Layer Index: " + gridLayerIndex);
+
+        gameObject.layer = gridLayerIndex;
     }
 
     public void ClearHexGridMesh()
@@ -47,5 +79,21 @@ public class HexGridMeshGenerator : MonoBehaviour
         if (GetComponent <MeshFilter>().sharedMesh == null) return;
         GetComponent <MeshFilter>().sharedMesh.Clear();
         GetComponent<MeshCollider>().sharedMesh.Clear();
+    }
+
+    private int GetLayerIndex(LayerMask layerMask)
+    {
+        int layerMaskValue = layerMask.value;
+        Debug.Log("Layer mask value : " + layerMaskValue);
+        for (int i = 0; i < 32; i++)
+        {
+            if ((( 1 << i ) & layerMaskValue) != 0)
+            {
+                Debug.Log("Layer Index Loop: " + i);
+                return i;
+            }
+        }
+        
+        return 0;
     }
 }

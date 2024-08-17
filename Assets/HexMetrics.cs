@@ -57,4 +57,44 @@ public static class HexMetrics
 
         return centrePosition;
     }
+    
+    public static Vector3 OffsetToCube(int col, int row, HexOrientation orientation)
+    {
+        if (orientation == HexOrientation.PointyTop)
+        {
+            return AxialToCube(OffsetToAxialPointy(col, row));
+        }
+        else
+        {
+            return AxialToCube(OffsetToAxialFlat(col, row));
+        }
+    }
+    
+    public static Vector3 AxialToCube(Vector2Int axial)
+    {
+        float x = axial.x;
+        float z = axial.y;
+        float y = -x - z;
+        
+        return new Vector3(x, z, y);
+
+    }
+
+    public static Vector2Int OffsetToAxialFlat(int col, int row)
+    {
+        int q = col;
+        int r = row - (col + (col & 1)) / 2;
+
+        return new Vector2Int(q, r);
+    }
+
+
+    public static Vector2Int OffsetToAxialPointy(int col, int row)
+    {
+        int q = col - (row + (row & 1)) / 2;
+        int r = row;
+
+        return new Vector2Int(q, r);
+    }
+
 }
