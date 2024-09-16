@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class HexGrid : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class HexGrid : MonoBehaviour
 
     [SerializeField] private List<HexCell> cells = new List<HexCell>();
     private HexCell activeCell;
+
+    [SerializeField] private Transform unknownPrefab;
     
     
     private MapGenerator mapGenerator;
@@ -189,7 +192,7 @@ public class HexGrid : MonoBehaviour
         for (int i = 0; i < cells.Count; i++)
         {
             // bug sur l'orientation
-            cells[i].CreateTerrain(orientation);
+            cells[i].CreateTerrain(orientation, unknownPrefab);
             // Yield every batchSize hex cells
             if (i % BatchSize == 0 && i != 0)
             {

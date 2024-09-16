@@ -15,6 +15,13 @@ public class HiddenState : BaseCellState
             return;
         }
         cell.Terrain.gameObject.SetActive(false);
+        
+        if (cell.UnknownPrefab == null)
+        {
+            Debug.LogWarning("Unknown terrain is null");
+            return;
+        }
+        cell.UnknownPrefab.gameObject.SetActive(true);
     }
 
     public override void Exit(HexCell cell)
@@ -25,6 +32,13 @@ public class HiddenState : BaseCellState
             return;
         }
         cell.Terrain.gameObject.SetActive(true);
+
+        if (cell.UnknownPrefab == null)
+        {
+            Debug.LogWarning("Unknown terrain is null");
+            return;
+        }
+        cell.UnknownPrefab.gameObject.SetActive(false);
     }
 
 }

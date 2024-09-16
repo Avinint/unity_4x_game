@@ -18,7 +18,7 @@ public class FocusedState : BaseCellState
     {
         // Debug.Log("cell "+ cell.AxialCoordinates + " is exiting Focused State");
         CameraController.Instance.onDeselectAction -= cell.OnDeselect;
-        CameraController.Instance.ChangeCamera(CameraMode.TopDown);
+        CameraController.Instance.ChangeCamera(CameraMode.Overhead);
         CameraController.Instance.IsLocked = false;
     }
     

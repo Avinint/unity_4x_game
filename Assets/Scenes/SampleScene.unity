@@ -227,7 +227,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 50
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
@@ -253,8 +253,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.08248053, y: 0, z: 0, w: 0.9965927}
-  m_LocalPosition: {x: 26, y: 5, z: -30}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 26, y: 300, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -784,6 +784,8 @@ MonoBehaviour:
   DefaultVisibleCells:
   - {x: 1, y: 1}
   DefaultVisibleRadius: 1
+  unknownPrefab: {fileID: 6944534303261143973, guid: d9daf753b065e30439ccc588df9fa389,
+    type: 3}
 --- !u!4 &1001322750
 Transform:
   m_ObjectHideFlags: 0
@@ -815,7 +817,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   <HexGrid>k__BackingField: {fileID: 1001322749}
-  explosionTest: {fileID: 0}
 --- !u!64 &1001322752
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -944,7 +945,7 @@ GameObject:
   - component: {fileID: 1443996263}
   - component: {fileID: 1443996265}
   m_Layer: 0
-  m_Name: CameraTarget
+  m_Name: SelectedTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1060,6 +1061,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: d55729b5-d9fb-4a6e-8396-4d0f1ae8efb5
     m_ActionName: World/Deselect[/Keyboard/backspace,/Keyboard/escape,/Mouse/rightButton]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1443996265}
+        m_TargetAssemblyTypeName: CameraController, Assembly-CSharp
+        m_MethodName: OnTriggerCommand
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: f2a43dcd-3466-426a-8add-a0f306d9e1a5
+    m_ActionName: World/Interact[/Mouse/rightButton]
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: Keyboard and Mouse
   m_DefaultActionMap: World
@@ -1094,7 +1111,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTarget: {fileID: 1443996262}
-  topDownCamera: {fileID: 1811976903}
+  OverheadCamera: {fileID: 1811976903}
   focusCamera: {fileID: 636859187}
   cameraSpeed: 10
   cameraZoomSpeed: 1
@@ -1114,7 +1131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1564683373}
   m_Layer: 0
-  m_Name: CameraSystem
+  m_Name: PlayerController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1284,7 +1301,7 @@ GameObject:
   - component: {fileID: 1811976902}
   - component: {fileID: 1811976903}
   m_Layer: 0
-  m_Name: TopDown Camera
+  m_Name: Overhead Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

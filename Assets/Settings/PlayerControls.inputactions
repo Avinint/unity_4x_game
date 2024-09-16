@@ -24,7 +24,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Focus",
+                    "name": "Select",
                     "type": "Button",
                     "id": "53d5fcba-6736-431b-badd-00a8de950a56",
                     "expectedControlType": "Button",
@@ -36,6 +36,15 @@
                     "name": "Deselect",
                     "type": "Button",
                     "id": "d55729b5-d9fb-4a6e-8396-4d0f1ae8efb5",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "f2a43dcd-3466-426a-8add-a0f306d9e1a5",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -188,34 +197,12 @@
                 },
                 {
                     "name": "",
-                    "id": "0587bcfb-497f-441e-b217-ab3dcc8b88cb",
-                    "path": "<Keyboard>/f",
-                    "interactions": "MultiTap(tapDelay=0.4)",
-                    "processors": "",
-                    "groups": "Keyboard and Mouse",
-                    "action": "Focus",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "26a28709-04b5-44a5-936d-1e6ec08946dd",
                     "path": "<Mouse>/leftButton",
-                    "interactions": "MultiTap",
-                    "processors": "",
-                    "groups": "Keyboard and Mouse",
-                    "action": "Focus",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "08044647-89b9-4ad1-b879-6e61673b3cef",
-                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Controller",
-                    "action": "Focus",
+                    "groups": "Keyboard and Mouse",
+                    "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -249,6 +236,17 @@
                     "processors": "",
                     "groups": "Keyboard and Mouse",
                     "action": "Deselect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "80b376c1-ca9d-4c5c-ab37-a0ec28361f34",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard and Mouse",
+                    "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

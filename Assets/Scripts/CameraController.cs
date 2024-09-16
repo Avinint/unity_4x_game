@@ -12,7 +12,7 @@ public class CameraController : Singleton<CameraController>
     [SerializeField]
     private GameObject cameraTarget;
     [SerializeField]
-    private CinemachineVirtualCamera topDownCamera;
+    private CinemachineVirtualCamera OverheadCamera;
     [SerializeField]
     private CinemachineVirtualCamera focusCamera;
    
@@ -23,7 +23,7 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private float cameraZoomMax = 100f;
     [SerializeField] private float cameraZoomDefault = 50f;
 
-    [SerializeField] private CameraMode defaultMode = CameraMode.TopDown;
+    [SerializeField] private CameraMode defaultMode = CameraMode.Overhead;
 
     [SerializeField] private CameraMode currentMode;
     
@@ -34,6 +34,7 @@ public class CameraController : Singleton<CameraController>
     public event Action<CinemachineVirtualCamera> onCameraChanged;
 
     public event Action onSelectAction;
+    public event Action onCommandAction;
     public event Action onDeselectAction;
     public event Action onFocusAction;
 
@@ -48,7 +49,7 @@ public class CameraController : Singleton<CameraController>
 
     void Start()
     {
-        topDownCamera.m_Lens.FieldOfView = cameraZoomDefault;
+        OverheadCamera.m_Lens.FieldOfView = cameraZoomDefault;
         ChangeCamera(defaultMode);
     }
 
@@ -86,6 +87,15 @@ public class CameraController : Singleton<CameraController>
         Debug.Log("PAN CHANGE");
     }
 
+
+    public void OnTriggerCommand(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            onCommandAction?.Invoke();
+        }
+    }
+
     public void OnFocusChanged(InputAction.CallbackContext context)
     {
         if (context.started)
@@ -93,18 +103,18 @@ public class CameraController : Singleton<CameraController>
             // Debug.Log("Focus button pressed...");
         } else if (context.performed)
         {
-            Debug.Log("Double tapped - Focus...");
-            onFocusAction?.Invoke();
+            onSelectAction?.Invoke();
+           // Debug.Log("Double tapped - Focus...");
+            //onFocusAction?.Invoke();
         } else if (context.canceled)
         {
-            Debug.Log("Double tapped - Select...");
-            onSelectAction?.Invoke();
+           // Debug.Log("Double tapped - Select...");
+            //onSelectAction?.Invoke();
         }
     }
     
     public void OnZoomChanged(InputAction.CallbackContext context)
     {
-    
         if (isLocked) return;
         if (context.performed)
         {
@@ -127,8 +137,8 @@ public class CameraController : Singleton<CameraController>
     {
         switch (mode)
         {
-            case CameraMode.TopDown:
-                return topDownCamera;
+            case CameraMode.Overhead:
+                return OverheadCamera;
                 break;
             case CameraMode.Focus:
                 return focusCamera;
@@ -165,8 +175,8 @@ public class CameraController : Singleton<CameraController>
         while (true)
         {
             //Change the FOV of the camera based on the input. If not keyboard, then adjust the value based on the scrollWheelZoomSpeed
-            float zoomAmount = topDownCamera.m_Lens.FieldOfView + zoomInput * cameraZoomSpeed * Time.deltaTime;
-            topDownCamera.m_Lens.FieldOfView = Mathf.Clamp(zoomAmount, cameraZoomMin, cameraZoomMax);
+            float zoomAmount = OverheadCamera.m_Lens.FieldOfView + zoomInput * cameraZoomSpeed * Time.deltaTime;
+            OverheadCamera.m_Lens.FieldOfView = Mathf.Clamp(zoomAmount, cameraZoomMin, cameraZoomMax);
 
             yield return null;
         }
@@ -185,7 +195,7 @@ public class CameraController : Singleton<CameraController>
 
 public enum CameraMode
 {
-    TopDown,
+    Overhead,
     Focus
 }
 

@@ -18,6 +18,8 @@ public class HexCell
     [field:NonSerialized] public List<HexCell> Neighbours { get; set; }
     
   
+    [field:NonSerialized] public Transform UnknownPrefab { get; set; }
+    
 
     [SerializeField] private CellState cellState;
     private ICellState state;
@@ -80,7 +82,16 @@ public class HexCell
     public void OnSelect()
     {
         ChangeState(State.OnSelect());
+        OnDeselect();
     }
+
+    public void OnMoveUnit()
+    {
+        CameraController.Instance.CameraTarget.transform.position = Terrain.transform.position;
+    }
+
+  
+    
     
     public void OnDeselect()
     {
@@ -92,13 +103,8 @@ public class HexCell
         ChangeState(State.OnFocus());
         
         Debug.Log(State);
-        
     }
 
-    
-    
-    
-    
     public void SetCoordinates(Vector2 coordinates, HexOrientation orientation)
     {
         orientation = orientation;
@@ -112,7 +118,7 @@ public class HexCell
         TerrainType = terrainType;
     }
 
-    public void CreateTerrain(HexOrientation orientation)
+    public void CreateTerrain(HexOrientation orientation, Transform unknownPrefab)
     {
         if(TerrainType == null)
         {
@@ -141,7 +147,12 @@ public class HexCell
             (int)OffsetCoordinates.y, orientation
         ) + Grid.transform.position;
 
-        
+        UnknownPrefab = UnityEngine.Object.Instantiate(
+            unknownPrefab,
+            centrePosition, 
+            orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
+            Grid.transform
+        );
         
         terrain = UnityEngine.Object.Instantiate(
             TerrainType.Prefab,
