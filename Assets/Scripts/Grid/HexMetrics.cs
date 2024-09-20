@@ -59,13 +59,13 @@ public static class HexMetrics
         return centrePosition;
     }
     
-    public static Vector3 OffsetToCube(Vector2 offsetCoord, HexOrientation orientation)
+    public static Vector3Int OffsetToCube(Vector2Int offsetCoord, HexOrientation orientation)
     {
         return OffsetToCube((int)offsetCoord.x, (int)offsetCoord.y, orientation);
     }
 
     
-    public static Vector3 OffsetToCube(int col, int row, HexOrientation orientation)
+    public static Vector3Int OffsetToCube(int col, int row, HexOrientation orientation)
     {
         if (orientation == HexOrientation.PointyTop)
         {
@@ -77,22 +77,22 @@ public static class HexMetrics
         }
     }
 
-    public static Vector3 AxialToCube(float q, float r)
+    public static Vector3Int AxialToCube(int q, int r)
     {
-        return new Vector3(q, r, -q - r);
+        return new Vector3Int(q, r, -q - r);
     }
     
-    public static Vector3 AxialToCube(Vector2 axialCoord)
+    public static Vector3Int AxialToCube(Vector2Int axialCoord)
     {
         return AxialToCube(axialCoord.x, axialCoord.y);
     }
     
-    public static Vector2 CubeToAxial(Vector3 cube)
+    public static Vector2Int CubeToAxial(Vector3 cube)
     {
-        return new Vector2(cube.x, cube.y);
+        return new Vector2Int((int)cube.x, (int)cube.y);
     }
     
-    public static Vector2 OffsetToAxial(int x, int z, HexOrientation orientation)
+    public static Vector2Int OffsetToAxial(int x, int z, HexOrientation orientation)
     {
         if (orientation == HexOrientation.PointyTop)
         {
@@ -121,7 +121,7 @@ public static class HexMetrics
         return new Vector2Int(q, r);
     }
     
-    public static Vector2 CubeToOffset(int x, int y, int z, HexOrientation orientation)
+    public static Vector2Int CubeToOffset(int x, int y, int z, HexOrientation orientation)
     {
         if (orientation == HexOrientation.PointyTop)
         {
@@ -133,21 +133,21 @@ public static class HexMetrics
         }
     }
     
-    public static Vector2 CubeToOffset(Vector3 offsetCoord, HexOrientation orientation)
+    public static Vector2Int CubeToOffset(Vector3 offsetCoord, HexOrientation orientation)
     {
         return CubeToOffset((int)offsetCoord.x, (int)offsetCoord.y, (int)offsetCoord.z, orientation);
     }
 
-    private static Vector2 CubeToOffsetPointy(int x, int y, int z)
+    private static Vector2Int CubeToOffsetPointy(int x, int y, int z)
     {
-        Vector2 offsetCoordinates = new Vector2(x + (y - (y & 1)) / 2, y);
+        Vector2Int offsetCoordinates = new Vector2Int(x + (y - (y & 1)) / 2, y);
         return offsetCoordinates;
     }
     
     
-    private static Vector2 CubeToOffsetFlat(int x, int y, int z)
+    private static Vector2Int CubeToOffsetFlat(int x, int y, int z)
     {
-        Vector2 offsetCoordinates = new Vector2(x, y + (x - (x & 1)) / 2);
+        Vector2Int offsetCoordinates = new Vector2Int(x, y + (x - (x & 1)) / 2);
         return offsetCoordinates;
     }
     
@@ -181,12 +181,12 @@ public static class HexMetrics
         return roundedCoordinates;
     }
 
-    public static Vector2 AxialRound(Vector2 coordinates)
+    public static Vector2Int AxialRound(Vector2Int coordinates)
     {
         return CubeToAxial(CubeRound(AxialToCube(coordinates.x, coordinates.y)));
     }
 
-    public static Vector2 CoordinateToAxial(float x, float z, float hexSize, HexOrientation orientation)
+    public static Vector2Int CoordinateToAxial(float x, float z, float hexSize, HexOrientation orientation)
     {
         if (orientation == HexOrientation.PointyTop)
             return CoordinateToPointyAxial(x, z, hexSize);
@@ -194,52 +194,52 @@ public static class HexMetrics
             return CoordinateToFlatAxial(x, z, hexSize);
     }
 
-    private static Vector2 CoordinateToPointyAxial(float x, float z, float hexSize)
+    private static Vector2Int CoordinateToPointyAxial(float x, float z, float hexSize)
     {
-        Vector2 pointyHexCoordinates = new Vector2();
-        pointyHexCoordinates.x = (Mathf.Sqrt(3) / 3 * x - 1f / 3 * z) / hexSize;
-        pointyHexCoordinates.y = (2f / 3 * z) / hexSize;
+        Vector2Int pointyHexCoordinates = new Vector2Int();
+        pointyHexCoordinates.x = (int)((Mathf.Sqrt(3) / 3 * x - 1f / 3 * z) / hexSize);
+        pointyHexCoordinates.y = (int)((2f / 3 * z) / hexSize);
 
         return AxialRound(pointyHexCoordinates);
     }
 
-    private static Vector2 CoordinateToFlatAxial(float x, float z, float hexSize)
+    private static Vector2Int CoordinateToFlatAxial(float x, float z, float hexSize)
     {
-        Vector2 flatHexCoordinates = new Vector2();
-        flatHexCoordinates.x = (2f / 3 * x) / hexSize;
-        flatHexCoordinates.y = (-1f / 3 * x + Mathf.Sqrt(3) / 3 * z) / hexSize;
+        Vector2Int flatHexCoordinates = new Vector2Int();
+        flatHexCoordinates.x =  (int)((2f / 3 * x) / hexSize);
+        flatHexCoordinates.y =  (int) ((-1f / 3 * x + Mathf.Sqrt(3) / 3 * z) / hexSize);
         return AxialRound(flatHexCoordinates);
     }
 
-    public static Vector2 CoordinateToOffset(float x, float z, float hexSize, HexOrientation orientation)
+    public static Vector2Int CoordinateToOffset(float x, float z, float hexSize, HexOrientation orientation)
     {
         return CubeToOffset(AxialToCube(CoordinateToAxial(x, z, hexSize, orientation)), orientation);
     }
 
-    public static List<Vector2> GetNeighbourCoordinatesList(Vector2 axialCoordinates)
+    public static List<Vector2Int> GetNeighbourCoordinatesList(Vector2Int axialCoordinates)
     {
      
-        List<Vector2> neighbours = new List<Vector2>();
-        neighbours.Add(new Vector2(axialCoordinates.x + 1, axialCoordinates.y));
-        neighbours.Add(new Vector2(axialCoordinates.x - 1, axialCoordinates.y));
+        List<Vector2Int> neighbours = new List<Vector2Int>();
+        neighbours.Add(new Vector2Int(axialCoordinates.x + 1, axialCoordinates.y));
+        neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y));
 
         if (((int)axialCoordinates.y & 1) == 1)
         {
-            neighbours.Add(new Vector2(axialCoordinates.x, axialCoordinates.y + 1));
-            neighbours.Add(new Vector2(axialCoordinates.x + 1, axialCoordinates.y + 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y + 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x + 1, axialCoordinates.y + 1));
         
         
-            neighbours.Add(new Vector2(axialCoordinates.x + 2, axialCoordinates.y - 1));
-            neighbours.Add(new Vector2(axialCoordinates.x + 1, axialCoordinates.y - 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x + 2, axialCoordinates.y - 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x + 1, axialCoordinates.y - 1));
         }
         else
         {
-        neighbours.Add(new Vector2(axialCoordinates.x - 2, axialCoordinates.y + 1));
-        neighbours.Add(new Vector2(axialCoordinates.x - 1, axialCoordinates.y + 1));
+        neighbours.Add(new Vector2Int(axialCoordinates.x - 2, axialCoordinates.y + 1));
+        neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y + 1));
         
         
-        neighbours.Add(new Vector2(axialCoordinates.x, axialCoordinates.y - 1));
-        neighbours.Add(new Vector2(axialCoordinates.x - 1, axialCoordinates.y - 1));
+        neighbours.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y - 1));
+        neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y - 1));
         }
 
         return neighbours;
@@ -286,7 +286,7 @@ public static class HexMetrics
         return (Mathf.Abs(vec.x) + Mathf.Abs(vec.y) + Mathf.Abs(vec.z)) / 2;
     }
 
-    public static float AxialDistance(Vector2 a, Vector2 b)
+    public static float AxialDistance(Vector2Int a, Vector2Int b)
     {
         var aCube = AxialToCube(a);
         var bCube = AxialToCube(b);
@@ -296,7 +296,7 @@ public static class HexMetrics
     
 
 
-    public static float OffsetDistance(Vector2 a, Vector2 b,  HexOrientation orientation)
+    public static float OffsetDistance(Vector2Int a, Vector2Int b,  HexOrientation orientation)
     {
         var ac = OffsetToAxial((int)a.x, (int)a.y, orientation);
         var bc =  OffsetToAxial((int)b.x, (int)b.y, orientation);

@@ -154,7 +154,7 @@ public class HexGrid : MonoBehaviour
                 int flippedX = Width - x - 1;
                 int flippedY = Height - y - 1;
 
-                HexCell cell = new HexCell(new Vector2(x, y), Orientation);
+                HexCell cell = new HexCell(new Vector2Int(x, y), Orientation);
                 cell.Grid = this;
                 cell.HexSize = HexSize;
                 cell.SetTerrainType(terrainMap[flippedX, flippedY]);
@@ -177,10 +177,10 @@ public class HexGrid : MonoBehaviour
             // Debug.Log("cell : " + cell.AxialCoordinates);
             List<HexCell> neighbours = new List<HexCell>();
             // Get the axial coordinates of the current cell
-            Vector2 currentAxialCoordinates = cell.AxialCoordinates;
+            Vector2Int currentAxialCoordinates = cell.AxialCoordinates;
 
             // Get the neighbor directions for the current cell
-            List<Vector2> neighborCoordinates = HexMetrics.GetNeighbourCoordinatesList(currentAxialCoordinates);
+            List<Vector2Int> neighborCoordinates = HexMetrics.GetNeighbourCoordinatesList(currentAxialCoordinates);
             int neighborsFound = 0;
  
             foreach (Vector2 neighbourCoordinate in neighborCoordinates)

@@ -12,10 +12,10 @@ public class HexCell :  IEquatable<HexCell>
     [field:SerializeField] public HexGrid Grid { get; set; }
     [field:SerializeField] public float HexSize { get; set; }
     [field:SerializeField] public TerrainType TerrainType { get; set; }
-    [field:SerializeField] public Vector2 OffsetCoordinates { get; }
-    [field:SerializeField] public Vector2 AxialCoordinates { get; set; }
+    [field:SerializeField] public Vector2Int OffsetCoordinates { get; }
+    [field:SerializeField] public Vector2Int AxialCoordinates { get; set; }
 
-    [field:SerializeField] public Vector3 CubeCoordinates { get; set; }
+    [field:SerializeField] public Vector3Int CubeCoordinates { get; set; }
     [field:NonSerialized] public List<HexCell> Neighbours { get; set; }
     
   
@@ -106,11 +106,11 @@ public class HexCell :  IEquatable<HexCell>
         Debug.Log(State);
     }
 
-    public HexCell(Vector2 coordinates, HexOrientation orientation)
+    public HexCell(Vector2Int coordinates, HexOrientation orientation)
     {
         orientation = orientation;
         OffsetCoordinates = coordinates;
-        CubeCoordinates = HexMetrics.OffsetToCube(OffsetCoordinates, orientation);
+        CubeCoordinates = (Vector3Int)  HexMetrics.OffsetToCube(OffsetCoordinates, orientation);
         AxialCoordinates = HexMetrics.CubeToAxial(CubeCoordinates);
     }
 
