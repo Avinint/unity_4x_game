@@ -3,15 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HexCell
+public class HexCell :  IEquatable<HexCell>
 {
+    
 
     [Header("Cell Properties")] [SerializeField]
     private HexOrientation orientation;
     [field:SerializeField] public HexGrid Grid { get; set; }
     [field:SerializeField] public float HexSize { get; set; }
     [field:SerializeField] public TerrainType TerrainType { get; set; }
-    [field:SerializeField] public Vector2 OffsetCoordinates { get; set; }
+    [field:SerializeField] public Vector2 OffsetCoordinates { get; }
     [field:SerializeField] public Vector2 AxialCoordinates { get; set; }
 
     [field:SerializeField] public Vector3 CubeCoordinates { get; set; }
@@ -105,14 +106,14 @@ public class HexCell
         Debug.Log(State);
     }
 
-    public void SetCoordinates(Vector2 coordinates, HexOrientation orientation)
+    public HexCell(Vector2 coordinates, HexOrientation orientation)
     {
         orientation = orientation;
         OffsetCoordinates = coordinates;
         CubeCoordinates = HexMetrics.OffsetToCube(OffsetCoordinates, orientation);
         AxialCoordinates = HexMetrics.CubeToAxial(CubeCoordinates);
     }
-    
+
     public void SetTerrainType(TerrainType terrainType)
     {
         TerrainType = terrainType;
@@ -203,4 +204,33 @@ public class HexCell
         }
     }
 
+    public bool IsNotLand()
+    {
+        return TerrainType.Name == "Ocean" || TerrainType.Name == "Coast" || TerrainType.Name == "Mountain";
+    }
+
+    public bool IsLand()
+    {
+        return !IsNotLand();
+    }
+
+    public bool Equals(HexCell other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return OffsetCoordinates.Equals(other.OffsetCoordinates);
+    }
+
+    // public override bool Equals(object obj)
+    // {
+    //     if (ReferenceEquals(null, obj)) return false;
+    //     if (ReferenceEquals(this, obj)) return true;
+    //     if (obj.GetType() != this.GetType()) return false;
+    //     return Equals((HexCell)obj);
+    // }
+
+    public override int GetHashCode()
+    {
+        return OffsetCoordinates.GetHashCode();
+    }
 }

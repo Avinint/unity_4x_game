@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -13,8 +14,11 @@ public class HexGrid : MonoBehaviour
     [field:SerializeField] public int Height { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }
     [field: SerializeField] public int BatchSize { get; private set; }
-    public List<Vector2> DefaultVisibleCells = new List<Vector2> { new Vector2(0, 0) };
-    public int DefaultVisibleRadius = 1;
+    public List<Vector2> DefaultVisibleCells { get; set; } = new List<Vector2> { new Vector2(0, 0) };
+    public int DefaultVisibleRadius { get; set; } = 1;
+
+
+    public List<HexCell> StartTiles { get; set; } = new List<HexCell>();
 
     [SerializeField] private List<HexCell> cells = new List<HexCell>();
     private HexCell activeCell;
@@ -32,23 +36,44 @@ public class HexGrid : MonoBehaviour
     public event System.Action OnMapInfoGenerated;
     public event System.Action<float> OnCellBatchGenerated;
     public event System.Action OnCellInstancesGenerated;
+    
+    public int PlayerCount { get; set; }
 
+    [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
+    
+    
+    
+    
+    // [field:SerializeField] public Player Player { get; set; }
+    
+    
+    // public List<GameObject> StartingUnits = new List<GameObject>();
+    
     private void Awake()
     {
         if (BatchSize == 0)
             BatchSize = 1;
         gridOrigin = transform.position;
         mapGenerator = FindObjectOfType<MapGenerator>();
+
+
+        if (PlayerSpawningMinDistance == 0)
+        {
+            int avg = (Width + Height) / 2;
+            PlayerSpawningMinDistance = (int) Mathf.Ceil(avg / (PlayerCount / 2));
+        }
     }
 
     private void OnEnable()
     {
+
         if(mapGenerator != null)
         {
             mapGenerator.OnTerrainMapGenerated += SetHexCellTerrainTypes;
+            mapGenerator.OnTerrainMapGenerated += SetHexCellTerrainTypes;
             mapGenerator.onTerrainMapCleared += RemoveHexCells;
         }
-        
+
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
 
         if (meshRenderer != null)
@@ -56,9 +81,8 @@ public class HexGrid : MonoBehaviour
             meshRenderer.enabled = false;
         }
 
-        OnCellInstancesGenerated += SetVisibleCells;
-
         MouseController.Instance.OnMouseMoving += OnMouseMove;
+        
     }
 
     private void OnDisable()
@@ -71,8 +95,7 @@ public class HexGrid : MonoBehaviour
         {
             hexGenerationTask.Dispose();
         }
-        OnCellInstancesGenerated -= SetVisibleCells;
-        
+
         MouseController.Instance.OnMouseMoving -= OnMouseMove;
     }
     
@@ -97,8 +120,8 @@ public class HexGrid : MonoBehaviour
     {
         ClearHexCells();
         hexGenerationTask = Task.Run(() => GenerateHexCellData(terrainMap));
-       
-        hexGenerationTask.ContinueWith ( task =>
+
+        hexGenerationTask.ContinueWith(task =>
         {
             Debug.Log(" Setting cells");
             cells = task.Result;
@@ -106,6 +129,7 @@ public class HexGrid : MonoBehaviour
             MainThreadDispatcher.Instance.Enqueue(() => StartCoroutine(InstantiateCells(cells, Orientation)));
         });
     }
+
 
     private void ClearHexCells() 
     {
@@ -130,8 +154,7 @@ public class HexGrid : MonoBehaviour
                 int flippedX = Width - x - 1;
                 int flippedY = Height - y - 1;
 
-                HexCell cell = new HexCell();
-                cell.SetCoordinates(new Vector2(x, y), Orientation);
+                HexCell cell = new HexCell(new Vector2(x, y), Orientation);
                 cell.Grid = this;
                 cell.HexSize = HexSize;
                 cell.SetTerrainType(terrainMap[flippedX, flippedY]);
@@ -211,52 +234,117 @@ public class HexGrid : MonoBehaviour
     {
         cells.Clear();
     }
-    
 
-    private void SetVisibleCells()
+    // private void InitializePlayer()
+    // {
+    //     SetStartingArea();
+    //     AddStartingUnits();
+    // }
+
+
+    public HexCell GetStartingTile(int playerIndex)
     {
-        Debug.Log("setting cell visibility");
-        // Create a queue to store the cells to be processed
+        Vector2 startCoordinates;
+        HexCell startCell;
+        
+        
+        do
+        {
+            startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
+            startCell = cells.Find(c => c.OffsetCoordinates == startCoordinates);
+ 
+        } while (   startCell.TerrainType.Name == "Ocean" || startCell.TerrainType.Name == "Coast" || startCell.TerrainType.Name == "Mountain");
+        
+        
+
+        CameraController.Instance.CameraTarget.transform.position = startCell.Terrain.transform.position;
+
+        return startCell;
+    }
+
+    private void PlaceFirstPlayer()
+    {
+        Vector2 startCoordinates;
+        HexCell cell;
+
+        do
+        {
+            startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
+            cell = cells.Find(c => c.OffsetCoordinates == startCoordinates);
+ 
+        } while (cell.IsNotLand());
+        
+        
+
+        CameraController.Instance.CameraTarget.transform.position = cell.Terrain.transform.position;
+
+        StartTiles.Add(cell);
+    }
+
+    private void PlaceSubsequentPlayer()
+    {
+        var coordinates = HexMetrics.GetCoordinatesAtDistance(StartTiles.Last().AxialCoordinates);
+        var gridSize = PlayerSpawningMinDistance / Mathf.Sqrt(2);
+        
+        
+    }
+    
+    
+    
+    public void DispatchPlayers()
+    {
+        var gridSize = PlayerSpawningMinDistance / Mathf.Sqrt(2);
+        
+        PlaceFirstPlayer();
+
+        
+
+        for (int i = 1; i < StartTiles.Count; i++)
+        {
+            PlaceSubsequentPlayer();
+        }
+    }
+
+    
+    
+    
+    public List<HexCell> GetStartingArea(HexCell startingTile)
+    {
+        List<HexCell> startingArea = new List<HexCell>();
         Queue<HexCell> cellQueue = new Queue<HexCell>();
 
-        // Set the visibility of the default visible cells
-        foreach (Vector2 coordinates in DefaultVisibleCells)
-        {
-            HexCell cell = cells.Find(c => c.OffsetCoordinates == coordinates);
-            Debug.Log("cells coordinates = "  + coordinates);
-            Debug.Log("cells axial coordinates = "  + cell.AxialCoordinates);
-            Debug.Log("cell not null : " + (cell != null));
-            if (cell != null)
-            {
-               cell.Discover();
-                cellQueue.Enqueue(cell);
-            }
-        }
+        cellQueue.Enqueue(startingTile);
 
-        // Iterate through the neighbors and their neighbors up to the specified depth
         int currentDepth = 0;
 
-        while (cellQueue.Count > 0 && currentDepth < DefaultVisibleRadius)
+        
+      
+        while (cellQueue.Count > 0 && currentDepth <= DefaultVisibleRadius)
         {
            
             int queueSize = cellQueue.Count;
+               
             for (int i = 0; i < queueSize; i++)
             {
+               
                 HexCell currentCell = cellQueue.Dequeue();
-        
+                startingArea.Add(currentCell);
+ 
                 // Iterate through the neighbors of the current cell
                 foreach (HexCell neighbor in currentCell.Neighbours)
                 {
                     if (neighbor.State != new VisibleState()) 
                     {
-                        neighbor.Discover();
                         cellQueue.Enqueue(neighbor);
                     }
                 }
             }
-     
+
             currentDepth++;
         }
+
+        return startingArea;
+
     }
 
 
