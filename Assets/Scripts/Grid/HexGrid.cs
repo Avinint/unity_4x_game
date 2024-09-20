@@ -9,9 +9,8 @@ using UnityEngine.Serialization;
 public class HexGrid : MonoBehaviour
 {
     [field:SerializeField] public HexOrientation Orientation { get; private set; }
-
-    [field:SerializeField] public int Width { get; private set; }
-    [field:SerializeField] public int Height { get; private set; }
+    [field:SerializeField, Range(10, 100)] public int Width { get; private set; }
+    [field:SerializeField, Range(10, 100)] public int Height { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }
     [field: SerializeField] public int BatchSize { get; private set; }
     public List<Vector2> DefaultVisibleCells { get; set; } = new List<Vector2> { new Vector2(0, 0) };
@@ -69,7 +68,6 @@ public class HexGrid : MonoBehaviour
 
         if(mapGenerator != null)
         {
-            mapGenerator.OnTerrainMapGenerated += SetHexCellTerrainTypes;
             mapGenerator.OnTerrainMapGenerated += SetHexCellTerrainTypes;
             mapGenerator.onTerrainMapCleared += RemoveHexCells;
         }
@@ -234,13 +232,6 @@ public class HexGrid : MonoBehaviour
     {
         cells.Clear();
     }
-
-    // private void InitializePlayer()
-    // {
-    //     SetStartingArea();
-    //     AddStartingUnits();
-    // }
-
 
     public HexCell GetStartingTile(int playerIndex)
     {
