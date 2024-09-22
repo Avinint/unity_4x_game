@@ -11,10 +11,13 @@ public class VisibleState : BaseCellState
         // Debug.Log("cell "+ cell.AxialCoordinates + " is entering Visible State");
 
 
-        if (cell.Terrain != null && !cell.Terrain.gameObject.activeSelf)
+        
+        if (cell.Terrain != null )
         {
-            Debug.Log("cell terrain object actif self : " + (cell.Terrain.gameObject));
-            cell.Terrain.gameObject.SetActive(true);
+           
+            // cell.Terrain.gameObject.SetActive(true);
+            
+           cell.Reveal();
         }
         
     }

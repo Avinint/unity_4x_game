@@ -234,13 +234,14 @@ public static class HexMetrics
         }
         else
         {
-        neighbours.Add(new Vector2Int(axialCoordinates.x - 2, axialCoordinates.y + 1));
-        neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y + 1));
-        
-        
-        neighbours.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y - 1));
-        neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y - 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x - 2, axialCoordinates.y + 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y + 1));
+            
+            
+            neighbours.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y - 1));
+            neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y - 1));
         }
+        
 
         return neighbours;
     }
@@ -293,8 +294,6 @@ public static class HexMetrics
         
         return CubeDistance(aCube, bCube);
     }
-    
-
 
     public static float OffsetDistance(Vector2Int a, Vector2Int b,  HexOrientation orientation)
     {

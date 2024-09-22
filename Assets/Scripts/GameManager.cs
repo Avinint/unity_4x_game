@@ -66,9 +66,9 @@ public class GameManager : Singleton<GameManager>
         }
     }
     
-    private void SetVisibleCells(List<HexCell> cells)
+    private void SetVisibleCells(Dictionary<Vector2Int, HexCell> cells)
     {
-        foreach (var cell in cells)
+        foreach (var ( coordinates, cell) in cells)
         {
             cell.Discover();
         }
@@ -123,15 +123,23 @@ public class GameManager : Singleton<GameManager>
         var otherUnits = units.Skip(1).ToList();
         if (otherUnits.Count == 0) return;
 
-        List<HexCell> startingArea = player.StartingArea;
+        Dictionary<Vector2Int, HexCell> startingArea = player.StartingArea;
 
         
         // We don't want to add two units on same tile
-        int index = startingArea.IndexOf(player.StartingTile);
+     
+        
+        
+        Debug.Log("APRES SET NEIGHBOURS");
+       
         Debug.Log("Count hexes : " + startingArea.Count);
-        Debug.Log("index : " + index);
-        startingArea.RemoveAt(index);
-
+  
+        startingArea.Remove(player.StartingTile.AxialCoordinates);
+        Debug.Log("Count hexes again : " + startingArea.Count);
+        foreach (var (axial , tile) in startingArea)
+        {
+            Debug.Log("coordonnée de startingArea : " + axial);
+        }
 
         foreach (var unit in otherUnits)
         {
@@ -140,10 +148,11 @@ public class GameManager : Singleton<GameManager>
             int randomIndex;
             do
             {
-                randomIndex = UnityEngine.Random.Range(0, startingArea.Count - 1);
-                tile = startingArea[randomIndex];
-            
-                Debug.Log(tile.TerrainType.Name);
+                randomIndex = UnityEngine.Random.Range(1, startingArea.Values.Count - 1);
+                Debug.Log("RAndom index : " + randomIndex);
+                Debug.Log("Count : " +  (startingArea.Values.Count - 1));
+                tile = startingArea.ElementAt(randomIndex).Value;
+               
 
                 tries++;
             } while (tile.IsNotLand() && tries < startingArea.Count);
@@ -151,7 +160,7 @@ public class GameManager : Singleton<GameManager>
             // TODO vérifier que le nombre de cases traversables soient au moins égales au nombre d'unités
             if (tile.IsLand())
             {
-                startingArea.RemoveAt(randomIndex);
+                startingArea.Remove(tile.AxialCoordinates);
                 coordinates = new Vector3(tile.OffsetCoordinates.x, 0, tile.OffsetCoordinates.y); 
             
                 centrePosition = HexMetrics.Center(

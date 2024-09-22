@@ -6,7 +6,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public HexCell StartingTile;
-    public List<HexCell> StartingArea = new List<HexCell>();
+    public Dictionary<Vector2Int, HexCell> StartingArea = new Dictionary<Vector2Int, HexCell>();
     public GameObject Leader;
     public GameObject Civilisation;
 

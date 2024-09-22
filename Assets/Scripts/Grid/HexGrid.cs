@@ -40,9 +40,6 @@ public class HexGrid : MonoBehaviour
 
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
     
-    
-    
-    
     // [field:SerializeField] public Player Player { get; set; }
     
     
@@ -123,7 +120,6 @@ public class HexGrid : MonoBehaviour
         {
             Debug.Log(" Setting cells");
             cells = task.Result;
-            Debug.Log("results");
             MainThreadDispatcher.Instance.Enqueue(() => StartCoroutine(InstantiateCells(cells, Orientation)));
         });
     }
@@ -179,19 +175,23 @@ public class HexGrid : MonoBehaviour
 
             // Get the neighbor directions for the current cell
             List<Vector2Int> neighborCoordinates = HexMetrics.GetNeighbourCoordinatesList(currentAxialCoordinates);
+
             int neighborsFound = 0;
  
-            foreach (Vector2 neighbourCoordinate in neighborCoordinates)
+            foreach (var neighbourCoordinate in neighborCoordinates)
             {
-                if (cell.OffsetCoordinates == Vector2.one)
-                {
-                    Debug.Log("Neighbor: " + neighbourCoordinate);
-                }
+                // foreach (var c in cells)
+                // {
+                //     if (c.AxialCoordinates == neighbourCoordinate) 
+                //         Debug.Log("FOREACH CELLS : " + c.AxialCoordinates + " " + neighbourCoordinate +" " +  (c.AxialCoordinates == neighbourCoordinate));
+                // }
                 // Find the neighbor cell based on the direction
                 HexCell neighbor = cells.Find(c => c.AxialCoordinates == neighbourCoordinate);
 
+               
+
                 // If the neighbor exists, add it to the Neighbours list
-                if (neighbor != null)
+                if (neighbor is not null)
                 {
                     neighbours.Add(neighbor);
                     neighborsFound++;
@@ -244,7 +244,7 @@ public class HexGrid : MonoBehaviour
             startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
             startCell = cells.Find(c => c.OffsetCoordinates == startCoordinates);
  
-        } while (   startCell.TerrainType.Name == "Ocean" || startCell.TerrainType.Name == "Coast" || startCell.TerrainType.Name == "Mountain");
+        } while ( startCell.TerrainType.Name == "Ocean" || startCell.TerrainType.Name == "Coast" || startCell.TerrainType.Name == "Mountain");
         
         
 
@@ -256,25 +256,27 @@ public class HexGrid : MonoBehaviour
     private void PlaceFirstPlayer()
     {
         Vector2 startCoordinates;
-        HexCell cell;
+        HexCell tile;
 
         do
         {
             startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
-            cell = cells.Find(c => c.OffsetCoordinates == startCoordinates);
+            tile = cells.Find(t => t.OffsetCoordinates == startCoordinates);
  
-        } while (cell.IsNotLand());
-        
-        
+        } while (tile.IsNotLand());
 
-        CameraController.Instance.CameraTarget.transform.position = cell.Terrain.transform.position;
+        CameraController.Instance.CameraTarget.transform.position = tile.Terrain.transform.position;
 
-        StartTiles.Add(cell);
+        StartTiles.Add(tile);
     }
 
     private void PlaceSubsequentPlayer()
     {
         var coordinates = HexMetrics.GetCoordinatesAtDistance(StartTiles.Last().AxialCoordinates);
+        foreach (var c in coordinates)
+        {
+            Debug.Log("Ring of coordinates : " + c);
+        }
         var gridSize = PlayerSpawningMinDistance / Mathf.Sqrt(2);
         
         
@@ -299,34 +301,47 @@ public class HexGrid : MonoBehaviour
     
     
     
-    public List<HexCell> GetStartingArea(HexCell startingTile)
+    public Dictionary<Vector2Int, HexCell> GetStartingArea(HexCell startingTile)
     {
-        List<HexCell> startingArea = new List<HexCell>();
-        Queue<HexCell> cellQueue = new Queue<HexCell>();
+        Dictionary<Vector2Int, HexCell> startingArea = new Dictionary<Vector2Int, HexCell>();
+        Queue<HexCell> tileQueue = new Queue<HexCell>();
 
-        cellQueue.Enqueue(startingTile);
+        tileQueue.Enqueue(startingTile);
 
         int currentDepth = 0;
 
         
       
-        while (cellQueue.Count > 0 && currentDepth <= DefaultVisibleRadius)
+        while (tileQueue.Count > 0 && currentDepth <= DefaultVisibleRadius)
         {
-           
-            int queueSize = cellQueue.Count;
+           Debug.Log(" In the while loop " + currentDepth);
+            int queueSize = tileQueue.Count;
                
             for (int i = 0; i < queueSize; i++)
             {
                
-                HexCell currentCell = cellQueue.Dequeue();
-                startingArea.Add(currentCell);
+                HexCell currentTile = tileQueue.Dequeue(); 
+                Debug.Log("NEIGHBOURS : " + currentTile.Neighbours.Count);
+                
+                // if (startingArea.ContainsKey(currentTile.AxialCoordinates))
+                // {
+                //  
+                //     startingArea.Remove(currentTile.AxialCoordinates);
+                // }
+
+                if (!startingArea.ContainsKey(currentTile.AxialCoordinates))
+                {
+                    startingArea.Add(currentTile.AxialCoordinates, currentTile);
+                }
+              
  
                 // Iterate through the neighbors of the current cell
-                foreach (HexCell neighbor in currentCell.Neighbours)
+                foreach (HexCell neighbor in currentTile.Neighbours)
                 {
+                    Debug.Log("Neighbor state : " + neighbor.State);
                     if (neighbor.State != new VisibleState()) 
                     {
-                        cellQueue.Enqueue(neighbor);
+                        tileQueue.Enqueue(neighbor);
                     }
                 }
             }
