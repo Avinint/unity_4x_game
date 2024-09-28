@@ -2,32 +2,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VisibleState : BaseCellState
+
+public class VisibleState : BaseTileState
 {
-    public override CellState State => CellState.Visible;
+    public override TileState State => TileState.Visible;
     
-    public override void Enter(HexCell cell)
+    public override void Enter(HexTile tile)
     {
         // Debug.Log("cell "+ cell.AxialCoordinates + " is entering Visible State");
 
 
         
-        if (cell.Terrain != null )
+        if (tile.Terrain != null )
         {
            
             // cell.Terrain.gameObject.SetActive(true);
             
-           cell.Reveal();
+           tile.Reveal();
         }
         
     }
 
-    public override void Exit(HexCell cell)
+    public override void Exit(HexTile tile)
     {
         // Debug.Log("cell "+ cell.AxialCoordinates + "is exiting Visible State");
     }
 
-    public override ICellState OnMouseEnter()
+    public override ITileState OnMouseEnter()
     {
         return new HighlightedState();
     }

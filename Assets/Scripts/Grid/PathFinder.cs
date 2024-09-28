@@ -14,16 +14,16 @@ public class PathFinder
         
     }
 
-    public static List<HexCell> FindPath(HexCell origin, HexCell destination)
+    public static List<HexTile> FindPath(HexTile origin, HexTile destination)
     {
-        Dictionary<HexCell, PathNode> nodesNotEvaluated = new Dictionary<HexCell, PathNode>();
-        Dictionary<HexCell, PathNode> nodesAlreadyEvaluated = new Dictionary<HexCell, PathNode>();
+        Dictionary<HexTile, PathNode> nodesNotEvaluated = new Dictionary<HexTile, PathNode>();
+        Dictionary<HexTile, PathNode> nodesAlreadyEvaluated = new Dictionary<HexTile, PathNode>();
 
         PathNode startNode = new PathNode(origin, origin, destination, 0);
         nodesNotEvaluated.Add(origin, startNode);
 
         bool gotPath = EvaluateNextNode(nodesNotEvaluated, nodesAlreadyEvaluated, origin, destination,
-            out List<HexCell> path);
+            out List<HexTile> path);
 
         while (!gotPath)
         {
@@ -33,21 +33,21 @@ public class PathFinder
         return path;
     }
 
-    private static bool EvaluateNextNode(Dictionary<HexCell, PathNode> nodesNotEvaluated,
-        Dictionary<HexCell, PathNode> nodesEvaluated, HexCell origin, HexCell destination, out List<HexCell> path)
+    private static bool EvaluateNextNode(Dictionary<HexTile, PathNode> nodesNotEvaluated,
+        Dictionary<HexTile, PathNode> nodesEvaluated, HexTile origin, HexTile destination, out List<HexTile> path)
     {
         PathNode currentNode = GetCheapestNode(nodesNotEvaluated.Values.ToArray());
 
         if (currentNode == null)
         {
-            path = new List<HexCell>();
+            path = new List<HexTile>();
             return false;
         }
 
         nodesNotEvaluated.Remove(currentNode.target);
         nodesEvaluated.Add(currentNode.target, currentNode);
 
-        path = new List<HexCell>();
+        path = new List<HexTile>();
 
         if (currentNode.target == destination)
         {
@@ -63,7 +63,7 @@ public class PathFinder
 
         List<PathNode> neighbours = new List<PathNode>();
 
-        foreach (HexCell tile in currentNode.target.Neighbours)
+        foreach (HexTile tile in currentNode.target.Neighbours)
         {
             PathNode node = new PathNode(tile, origin, destination, currentNode.GetCost());
 
@@ -97,7 +97,7 @@ public class PathFinder
     // {
     //     if (path != null)
     //     {
-    //         foreach (HexCell tile in path)
+    //         foreach (HexTile tile in path)
     //         {
     //             Gizmos.DrawCube(tile);
     //         }

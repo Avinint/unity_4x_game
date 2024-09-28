@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
+public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
 {
     
-    [Header("Cell Properties")] [SerializeField]
+    [Header("Tile Properties")] [SerializeField]
     private HexOrientation Orientation;
     [field:SerializeField] public HexGrid Grid { get; set; }
     [field:SerializeField] public float HexSize { get; set; }
@@ -15,21 +15,21 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     [field:SerializeField] public Vector2Int AxialCoordinates { get; set; }
 
     [field:SerializeField] public Vector3Int CubeCoordinates { get; set; }
-    [field:NonSerialized] public List<HexCell> Neighbours { get; set; }
+    [field:NonSerialized] public List<HexTile> Neighbours { get; set; }
 
     private Vector3 CentrePosition { get; set; }
     
 
-    [SerializeField] private CellState cellState;
-    private ICellState state;
+    [SerializeField] private TileState tileState;
+    private ITileState state;
 
-    public ICellState State
+    public ITileState State
     {
         get { return state; }
         private set
         {
             state = value;
-            cellState = state.State;
+            tileState = state.State;
         }
     }
 
@@ -41,7 +41,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
         return AxialCoordinates.ToString();
     }
 
-    public void InitializeState(ICellState initialState = null)
+    public void InitializeState(ITileState initialState = null)
     {
         if (initialState == null)
             ChangeState(new VisibleState());
@@ -50,7 +50,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     
     }
     
-    private void ChangeState(ICellState newState)
+    private void ChangeState(ITileState newState)
     {
         if(newState == null)
         {
@@ -84,8 +84,6 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
         );
         
         terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
-
-        //TODO: Adjust the size of the prefab to the size of the grid cell
 
         if(Orientation == HexOrientation.FlatTop)
         {
@@ -129,7 +127,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
         Debug.Log("STATE "  + State);
     }
 
-    public HexCell(Vector2Int coordinates, HexOrientation orientation)
+    public HexTile(Vector2Int coordinates, HexOrientation orientation)
     {
         Orientation = orientation;
         OffsetCoordinates = coordinates;
@@ -188,7 +186,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
 
         terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
 
-        //TODO: Adjust the size of the prefab to the size of the grid cell
+        //TODO: Adjust the size of the prefab to the size of the grid tile
         
         if(Orientation == HexOrientation.FlatTop)
         {
@@ -212,7 +210,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
       
     }
 
-    public void SetNeighbours(List<HexCell> neighbours)
+    public void SetNeighbours(List<HexTile> neighbours)
     {
         Neighbours = neighbours;
     }
@@ -253,7 +251,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
                OffsetCoordinates.y <= radius || OffsetCoordinates.y >= gridHeight - radius;
     }
 
-    public bool Equals(HexCell other)
+    public bool Equals(HexTile other)
     {
 
         if (ReferenceEquals(null, other)) return false;
@@ -266,11 +264,11 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     //     if (ReferenceEquals(null, obj)) return false;
     //     if (ReferenceEquals(this, obj)) return true;
     //     if (obj.GetType() != this.GetType()) return false;
-    //     return Equals((HexCell)obj);
+    //     return Equals((HexTile)obj);
     // }
 
     
-    public int CompareTo(HexCell other)
+    public int CompareTo(HexTile other)
     {
         if (other == null) return 1;
     
@@ -296,7 +294,7 @@ public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
 
     // public void OnDrawGizmosSelected()
     // {
-    //     foreach (HexCell neighbour in Neighbours)
+    //     foreach (HexTile neighbour in Neighbours)
     //     {
     //         Gizmos.color = Color.blue;
     //         Gizmos.DrawSphere(transform.position, 0.1f);

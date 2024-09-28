@@ -14,28 +14,28 @@ public class HexGrid : MonoBehaviour
     [field:SerializeField, Range(10, 100)] public int Height { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }
     [field: SerializeField] public int BatchSize { get; private set; }
-    public List<Vector2> DefaultVisibleCells { get; set; } = new List<Vector2> { new Vector2(0, 0) };
+    public List<Vector2> DefaultVisibleTiles { get; set; } = new List<Vector2> { new Vector2(0, 0) };
     public int DefaultVisibleRadius { get; set; } = 1;
 
 
-    public List<HexCell> StartTiles { get; set; } = new List<HexCell>();
+    public List<HexTile> StartTiles { get; set; } = new List<HexTile>();
 
-    [SerializeField] private Dictionary<Vector2Int, HexCell> Tiles = new Dictionary<Vector2Int, HexCell>();
-    private HexCell activeCell;
+    [SerializeField] private Dictionary<Vector2Int, HexTile> Tiles = new Dictionary<Vector2Int, HexTile>();
+    private HexTile _activeTile;
 
     [SerializeField] private Transform unknownPrefab;
     [SerializeField] private Transform debugPrefab;
     
     private MapGenerator mapGenerator;
 
-    private Task<Dictionary<Vector2Int, HexCell>> hexGenerationTask;
+    private Task<Dictionary<Vector2Int, HexTile>> hexGenerationTask;
     // TODO: Methods to get, add, change, and remove hexes
 
     private Vector3 gridOrigin;
 
     public event System.Action OnMapInfoGenerated;
-    public event System.Action<float> OnCellBatchGenerated;
-    public event System.Action OnCellInstancesGenerated;
+    public event System.Action<float> OnTileBatchGenerated;
+    public event System.Action OnTileInstancesGenerated;
     
     public int PlayerCount { get; set; }
 
@@ -66,8 +66,8 @@ public class HexGrid : MonoBehaviour
 
         if(mapGenerator != null)
         {
-            mapGenerator.OnTerrainMapGenerated += SetHexCellTerrainTypes;
-            mapGenerator.onTerrainMapCleared += RemoveHexCells;
+            mapGenerator.OnTerrainMapGenerated += SetHexTileTerrainTypes;
+            mapGenerator.onTerrainMapCleared += RemoveHexTiles;
         }
 
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
@@ -86,8 +86,8 @@ public class HexGrid : MonoBehaviour
     {
         if (mapGenerator != null)
         {
-            mapGenerator.OnTerrainMapGenerated -= SetHexCellTerrainTypes;
-            mapGenerator.onTerrainMapCleared -= RemoveHexCells;
+            mapGenerator.OnTerrainMapGenerated -= SetHexTileTerrainTypes;
+            mapGenerator.onTerrainMapCleared -= RemoveHexTiles;
         }
         if (hexGenerationTask != null && hexGenerationTask.Status == TaskStatus.Running)
         {
@@ -100,7 +100,7 @@ public class HexGrid : MonoBehaviour
     private void OnMouseMove(RaycastHit hit)
     {
         if (CameraController.Instance.IsLocked) return;
-        if (activeCell != null) activeCell.OnMouseExit();
+        if (_activeTile != null) _activeTile.OnMouseExit();
 
      
         //Transform objectHit = hit.transform;
@@ -111,38 +111,38 @@ public class HexGrid : MonoBehaviour
         float localZ = hit.point.z - position.z;
         Vector2Int axial = HexMetrics.CoordinateToAxial(localX, localZ, HexSize, Orientation);
 
-        // if (objectHit.TryGetComponent<HexCell>(out HexCell target))
+        // if (objectHit.TryGetComponent<HexTell>(out HexTell target))
         // {
-        //     activeCell = target;
-        //     activeCell.OnMouseEnter();
-        //     Debug.Log("Entering tile : " + activeCell.TerrainType.Name);
+        //     activeTile = target;
+        //     activeTile.OnMouseEnter();
+        //     Debug.Log("Entering tile : " + activeTile.TerrainType.Name);
         // }
 
-        HexCell cell = Tiles[axial];
+        HexTile tile = Tiles[axial];
         
-        // HexCell cell = Tiles.Find(c => c.OffsetCoordinates == location);
-        if (cell != null)
+        // HexTile tile = Tiles.Find(c => c.OffsetCoordinates == location);
+        if (tile != null)
         {
-           activeCell = cell;
-           activeCell.OnMouseEnter();
+           _activeTile = tile;
+           _activeTile.OnMouseEnter();
         }
     }
 
-    private void SetHexCellTerrainTypes(TerrainType[,] terrainMap)
+    private void SetHexTileTerrainTypes(TerrainType[,] terrainMap)
     {
-        ClearHexCells();
-        hexGenerationTask = Task.Run(() => GenerateHexCellData(terrainMap));
+        ClearHexTiles();
+        hexGenerationTask = Task.Run(() => GenerateHexTileData(terrainMap));
 
         hexGenerationTask.ContinueWith(task =>
         {
-            Debug.Log(" Setting cells");
+            Debug.Log(" Setting tiles");
             Tiles = task.Result;
-            MainThreadDispatcher.Instance.Enqueue(() => StartCoroutine(InstantiateCells(Tiles, Orientation)));
+            MainThreadDispatcher.Instance.Enqueue(() => StartCoroutine(InstantiateTiles(Tiles, Orientation)));
         });
     }
 
 
-    private void ClearHexCells() 
+    private void ClearHexTiles() 
     {
         // TODO remove
         // for (int i = 0; i < Tiles.Keys.Count; i++)
@@ -160,9 +160,9 @@ public class HexGrid : MonoBehaviour
     
     //This will become map generation
     //No Unity API allowed - including lloking up transform data, Instantiation, etc.
-    private Dictionary<Vector2Int, HexCell> GenerateHexCellData(TerrainType[,] terrainMap)
+    private Dictionary<Vector2Int, HexTile> GenerateHexTileData(TerrainType[,] terrainMap)
     {
-        Dictionary<Vector2Int, HexCell> hexCells = new Dictionary<Vector2Int, HexCell>();
+        Dictionary<Vector2Int, HexTile> hexTiles = new Dictionary<Vector2Int, HexTile>();
 
         for (int y = 0; y < Height; y++)
         {
@@ -171,76 +171,76 @@ public class HexGrid : MonoBehaviour
                 int flippedX = Width - x - 1;
                 int flippedY = Height - y - 1;
 
-                HexCell cell = new HexCell(new Vector2Int(x, y), Orientation);
-                cell.Grid = this;
-                cell.HexSize = HexSize;
-                cell.SetTerrainType(terrainMap[flippedX, flippedY]);
-                cell.InitializeState(new HiddenState());
-                hexCells.Add(cell.AxialCoordinates, cell);
+                HexTile tile = new HexTile(new Vector2Int(x, y), Orientation);
+                tile.Grid = this;
+                tile.HexSize = HexSize;
+                tile.SetTerrainType(terrainMap[flippedX, flippedY]);
+                tile.InitializeState(new HiddenState());
+                hexTiles.Add(tile.AxialCoordinates, tile);
             }
         }
 
-        SetNeighbours(hexCells);
+        SetNeighbours(hexTiles);
 
-        Debug.Log("GenerateHexCellData");
+        Debug.Log("GenerateHexTileData");
         
-        return hexCells;
+        return hexTiles;
     }
 
-    public void SetNeighbours(Dictionary<Vector2Int, HexCell> cells)
+    public void SetNeighbours(Dictionary<Vector2Int, HexTile> tiles)
     {
-        foreach (var (axial, tile)  in cells)
+        foreach (var (axial, tile)  in tiles)
         {
-            // Debug.Log("cell : " + cell.AxialCoordinates);
-            List<HexCell> neighbours = new List<HexCell>();
-            // Get the axial coordinates of the current cell
+            // Debug.Log("tile : " + tile.AxialCoordinates);
+            List<HexTile> neighbours = new List<HexTile>();
+            // Get the axial coordinates of the current tile
             Vector2Int currentAxialCoordinates = axial;
 
-            // Get the neighbor directions for the current cell
+            // Get the neighbor directions for the current tile
             
             List<Vector2Int> neighborCoordinates = HexMetrics.GetNeighbourCoordinatesList(currentAxialCoordinates);
             int neighborsFound = 0;
 
             foreach (var neighbourCoordinate in neighborCoordinates)
             {
-                // foreach (var c in cells)
+                // foreach (var c in tiles)
                 // {
                 //     if (c.AxialCoordinates == neighbourCoordinate) 
-                //         Debug.Log("FOREACH CELLS : " + c.AxialCoordinates + " " + neighbourCoordinate +" " +  (c.AxialCoordinates == neighbourCoordinate));
+                //         Debug.Log("FOREACH TILES : " + c.AxialCoordinates + " " + neighbourCoordinate +" " +  (c.AxialCoordinates == neighbourCoordinate));
                 // }
-                // Find the neighbor cell based on the direction
-                HexCell neighbor;
-                if (cells.ContainsKey(neighbourCoordinate))
+                // Find the neighbor tile based on the direction
+                HexTile neighbor;
+                if (tiles.ContainsKey(neighbourCoordinate))
                 {
-                    neighbor = cells[neighbourCoordinate];
+                    neighbor = tiles[neighbourCoordinate];
                     neighbours.Add(neighbor);
                     neighborsFound++;
                 }
             }
 
             tile.SetNeighbours(neighbours);
-            // Debug.Log($"Cell {cell.AxialCoordinates} has {neighborsFound} neighbours found");
+            // Debug.Log($"Tile {tile.AxialCoordinates} has {neighborsFound} neighbours found");
         }
     }
 
     //Handled by coroutine and currently the most expensive operation
-    private IEnumerator InstantiateCells(Dictionary<Vector2Int, HexCell> hexCells, HexOrientation orientation)
+    private IEnumerator InstantiateTiles(Dictionary<Vector2Int, HexTile> hexTiles, HexOrientation orientation)
     {
-        Debug.Log("Instantiating Hex Cells");
+        Debug.Log("Instantiating Hex Tiles");
         int batchCount = 0;
-        int totalBatches = Mathf.CeilToInt((float)hexCells.Count / BatchSize);
+        int totalBatches = Mathf.CeilToInt((float)hexTiles.Count / BatchSize);
 
 
         int i = 0;
-        foreach (var (axial, tile) in hexCells)
+        foreach (var (axial, tile) in hexTiles)
         {
             tile.CreateTerrain(orientation, unknownPrefab);
             
-            // Yield every batchSize hex cells
+            // Yield every batchSize hex tiles
             if (i % BatchSize == 0 && i != 0)
             {
                 batchCount++;
-                OnCellBatchGenerated?.Invoke((float)batchCount / totalBatches);
+                OnTileBatchGenerated?.Invoke((float)batchCount / totalBatches);
                 yield return null;
             }
 
@@ -252,29 +252,29 @@ public class HexGrid : MonoBehaviour
         // {
         //     
         //     Tiles[i].CreateTerrain(orientation, unknownPrefab);
-        //     // Yield every batchSize hex cells
+        //     // Yield every batchSize hex tiles
         //     if (i % BatchSize == 0 && i != 0)
         //     {
         //         batchCount++;
-        //         OnCellBatchGenerated?.Invoke((float)batchCount / totalBatches);
+        //         OnTileBatchGenerated?.Invoke((float)batchCount / totalBatches);
         //         yield return null;
         //     }
         // }
         
         Debug.Log("Grid generated");
 
-        OnCellInstancesGenerated?.Invoke();
+        OnTileInstancesGenerated?.Invoke();
     }
 
-    private void RemoveHexCells()
+    private void RemoveHexTiles()
     {
         Tiles.Clear();
     }
 
-    public HexCell GetStartingTile(int playerIndex)
+    public HexTile GetStartingTile(int playerIndex)
     {
         Vector2Int axialCoordinates;
-        HexCell startCell;
+        HexTile startTile;
         
         
         do
@@ -284,15 +284,15 @@ public class HexGrid : MonoBehaviour
                 UnityEngine.Random.Range(0, Height), 
                 Orientation);
            // startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
-            startCell = Tiles[axialCoordinates];
+            startTile = Tiles[axialCoordinates];
  
-        } while ( startCell.IsNotLand());
+        } while ( startTile.IsNotLand());
         
         
 
-        CameraController.Instance.CameraTarget.transform.position = startCell.Terrain.transform.position;
+        CameraController.Instance.CameraTarget.transform.position = startTile.Terrain.transform.position;
 
-        return startCell;
+        return startTile;
     }
  
     public void DispatchPlayers()
@@ -310,7 +310,7 @@ public class HexGrid : MonoBehaviour
     private void PlaceFirstPlayer()
     {
         Vector2Int axialCoordinates;
-        HexCell tile;
+        HexTile tile;
 
         do
         {
@@ -331,7 +331,7 @@ public class HexGrid : MonoBehaviour
     private void PlaceSubsequentPlayer()
     {
         Vector2Int axialCoordinates;
-        HexCell tile;
+        HexTile tile;
         
         switch(StartTiles.Count)
         {
@@ -433,14 +433,14 @@ public class HexGrid : MonoBehaviour
         // }
         
        
-        // foreach (var newCell in ring)
+        // foreach (var newTile in ring)
         // {
-        //     if (Tiles.ContainsKey(newCell.AxialCoordinates) && newCell.IsNotCloseToGridEdge(DefaultVisibleRadius, Width, Height))
+        //     if (Tiles.ContainsKey( newTile.AxialCoordinates) &&  newTile.IsNotCloseToGridEdge(DefaultVisibleRadius, Width, Height))
         //     {
         //        
-        //         candidateCells.Add(newCell.AxialCoordinates, newCell);
-        //         newCell.Discover();
-        //         Debug.Log(newCell.AxialCoordinates);
+        //         candidateTiles.Add( newTile.AxialCoordinates,  newTile);
+        //          newTile.Discover();
+        //         Debug.Log( newTile.AxialCoordinates);
         //     }
         //
         //
@@ -451,20 +451,20 @@ public class HexGrid : MonoBehaviour
     //     
     }
 
-    private bool TileNotViable(HexCell tile, bool isCloseToStartingPoint)
+    private bool TileNotViable(HexTile tile, bool isCloseToStartingPoint)
     {
         return isCloseToStartingPoint || tile.IsNotLand() ||  tile.IsCloseToGridEdge(DefaultVisibleRadius, Width, Height);
     }
 
-    private HexCell PickCellRandomly(List<HexCell> area, ref bool isCloseToStartingPoint)
+    private HexTile PickTileRandomly(List<HexTile> area, ref bool isCloseToStartingPoint)
     {
-        HexCell newCell;
+        HexTile newTile;
         var randomIndex = UnityEngine.Random.Range(0, area.Count);
-        newCell = area[randomIndex];
-        newCell.Discover();
+        newTile = area[randomIndex];
+        newTile.Discover();
         foreach (var tile in StartTiles)
         {
-            if (HexMetrics.AxialDistance(newCell.AxialCoordinates, tile.AxialCoordinates) <
+            if (HexMetrics.AxialDistance(newTile.AxialCoordinates, tile.AxialCoordinates) <
                 PlayerSpawningMinDistance)
             {
                 isCloseToStartingPoint = true;
@@ -472,29 +472,29 @@ public class HexGrid : MonoBehaviour
             }
         }
 
-        return newCell;
+        return newTile;
     }
 
 
-    private List<HexCell> CreateDistanceRing(HexCell startCell, int distance = 0)
+    private List<HexTile> CreateDistanceRing(HexTile startTile, int distance = 0)
     {
-        Dictionary<Vector2Int, HexCell> ringCenter = new Dictionary<Vector2Int, HexCell>();
-        ringCenter.Add(startCell.AxialCoordinates, startCell);
+        Dictionary<Vector2Int, HexTile> ringCenter = new Dictionary<Vector2Int, HexTile>();
+        ringCenter.Add(startTile.AxialCoordinates, startTile);
         int ringNumber = 0;
-        List<HexCell> outerRing = new List<HexCell>(startCell.Neighbours);
+        List<HexTile> outerRing = new List<HexTile>(startTile.Neighbours);
 
         while (ringNumber++ < distance)
         {
-            List<HexCell> prevOuterRing = new List<HexCell>(outerRing);
+            List<HexTile> prevOuterRing = new List<HexTile>(outerRing);
             outerRing.Clear();
-            foreach (var cell in prevOuterRing)
+            foreach (var tile in prevOuterRing)
             {
-                List<HexCell> neighbours = cell.Neighbours;
-                foreach (HexCell neighbour in neighbours)
+                List<HexTile> neighbours = tile.Neighbours;
+                foreach (HexTile neighbour in neighbours)
                 {
                     if (!ringCenter.ContainsKey(neighbour.AxialCoordinates))
                     {
-                        ringCenter.Add(neighbour.AxialCoordinates, cell);
+                        ringCenter.Add(neighbour.AxialCoordinates, tile);
                         outerRing.Add(neighbour);
                     }
                 }
@@ -510,10 +510,10 @@ public class HexGrid : MonoBehaviour
         return outerRing;
     }
 
-    public Dictionary<Vector2Int, HexCell> GetStartingArea(HexCell startingTile)
+    public Dictionary<Vector2Int, HexTile> GetStartingArea(HexTile startingTile)
     {
-        Dictionary<Vector2Int, HexCell> startingArea = new Dictionary<Vector2Int, HexCell>();
-        Queue<HexCell> tileQueue = new Queue<HexCell>();
+        Dictionary<Vector2Int, HexTile> startingArea = new Dictionary<Vector2Int, HexTile>();
+        Queue<HexTile> tileQueue = new Queue<HexTile>();
 
         tileQueue.Enqueue(startingTile);
 
@@ -525,15 +525,15 @@ public class HexGrid : MonoBehaviour
                
             for (int i = 0; i < queueSize; i++)
             {
-                HexCell currentTile = tileQueue.Dequeue();
+                HexTile currentTile = tileQueue.Dequeue();
 
                 if (!startingArea.ContainsKey(currentTile.AxialCoordinates))
                 {
                     startingArea.Add(currentTile.AxialCoordinates, currentTile);
                 }
 
-                // Iterate through the neighbors of the current cell
-                foreach (HexCell neighbor in currentTile.Neighbours)
+                // Iterate through the neighbors of the current tile
+                foreach (HexTile neighbor in currentTile.Neighbours)
                 {
                     if (neighbor.State != new VisibleState()) 
                     {

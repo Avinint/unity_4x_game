@@ -1,4 +1,4 @@
-public enum CellState
+public enum TileState
 {
     Hidden,
     Visible,

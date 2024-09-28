@@ -5,9 +5,9 @@ using UnityEngine;
 public class PathNode : MonoBehaviour
 {
    public PathNode parent;
-   public HexCell target;
-   public HexCell destination;
-   public HexCell origin;
+   public HexTile target;
+   public HexTile destination;
+   public HexTile origin;
 
    public int baseCost;
    public int costFromOrigin;
@@ -15,7 +15,7 @@ public class PathNode : MonoBehaviour
    public int pathCost;
    
    
-   public PathNode(HexCell current, HexCell origin, HexCell destination, int pathCost)
+   public PathNode(HexTile current, HexTile origin, HexTile destination, int pathCost)
    {
       parent = null;
       target = current;

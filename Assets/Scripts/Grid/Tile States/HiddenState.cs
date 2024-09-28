@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HiddenState : BaseCellState
+public class HiddenState : BaseTileState
 {
-    public override CellState State => CellState.Hidden;
+    public override TileState State => TileState.Hidden;
 
-    public override void Enter(HexCell cell)
+    public override void Enter(HexTile tile)
     {
         //Debug.Log("Entering Hidden State");
         // if (cell.Terrain == null)
@@ -24,9 +24,9 @@ public class HiddenState : BaseCellState
         // cell.UnknownPrefab.gameObject.SetActive(true);
     }
 
-    public override void Exit(HexCell cell)
+    public override void Exit(HexTile tile)
     {
-        if (cell.Terrain == null)
+        if (tile.Terrain == null)
         {
             Debug.LogWarning("Terrain is null");
             return;

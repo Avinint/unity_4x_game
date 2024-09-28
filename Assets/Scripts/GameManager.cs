@@ -10,15 +10,14 @@ public class GameManager : Singleton<GameManager>
     public List<Player> Players = new List<Player>();
     [field:SerializeField] public HexGrid HexGrid { get; private set; }
     
-    public List<Vector2> DefaultVisibleCells = new List<Vector2> { new Vector2(-1, -1) };
+    public List<Vector2> DefaultVisibleTiles = new List<Vector2> { new Vector2(-1, -1) };
 
     [Range(1,6)]
     public int DefaultVisibleRadius = 2;
     public List<GameObject> StartingUnits = new List<GameObject>();
 
     public int MaxTurns = 500;
-    
-    
+
     public event System.Action GameStart;
     public event System.Action TurnChange;
 
@@ -33,47 +32,64 @@ public class GameManager : Singleton<GameManager>
 
     private void OnEnable()
     {
-        HexGrid.DefaultVisibleCells = DefaultVisibleCells;
+        HexGrid.DefaultVisibleTiles = DefaultVisibleTiles;
         HexGrid.DefaultVisibleRadius = DefaultVisibleRadius;
-
-
-        HexGrid.OnCellInstancesGenerated += InitPlayers;
-
-       
+        HexGrid.OnTileInstancesGenerated += InitPlayers;
     }
+    
+    private void OnDisable()
+    {
+     
+        HexGrid.OnTileInstancesGenerated -= InitPlayers;
+    }
+
 
 
     private void InitPlayers()
     {
         HexGrid.PlayerCount = Players.Count;
-        int i = 0;
 
         HexGrid.DispatchPlayers();
         
+
+        // foreach (var player in Players)
+        // {
+        //     player.StartingTile = HexGrid.GetStartingTile(i++);
+        //     HexGrid.StartTiles.Add(player.StartingTile );
+        // }
+
+        // int i = 0;
+        Debug.Log("Starting tiles count" + HexGrid.StartTiles.Count);
+        // foreach (HexTile tile in HexGrid.StartTiles)
+        // {
+        //     Players[i++].StartingTile = tile;
+        // }
+        //
+
+        if (Players.Count > HexGrid.StartTiles.Count)
+        {
+            throw new Exception("Insufficient start locations for the number of players");
+        }
         
         foreach (var player in Players)
         {
-            player.StartingTile = HexGrid.GetStartingTile(i++);
-            HexGrid.StartTiles.Add(player.StartingTile );
-           
-        }
-
-        foreach (var player in Players)
-        {
+            int index = UnityEngine.Random.Range(0, HexGrid.StartTiles.Count);
+            HexTile tile = HexGrid.StartTiles[index];
+            player.StartingTile = tile;
+            HexGrid.StartTiles.RemoveAt(index);
             player.StartingArea = HexGrid.GetStartingArea( player.StartingTile);
-            SetVisibleCells(player.StartingArea);
+            SetVisibleTiles(player.StartingArea);
             AddStartingUnits(player);
         }
     }
     
-    private void SetVisibleCells(Dictionary<Vector2Int, HexCell> cells)
+    private void SetVisibleTiles(Dictionary<Vector2Int, HexTile> tiles)
     {
-        foreach (var ( coordinates, cell) in cells)
+        foreach (var ( coordinates, tile) in tiles)
         {
-            cell.Discover();
+            tile.Discover();
         }
     }
-    
 
     public void ChangeTurn(InputAction.CallbackContext context)
     {
@@ -83,28 +99,13 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-
     private void Start()
     {
         GameStart?.Invoke();
     }
-    
-    
 
-    // Start is called before the first frame update
-  
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    
-  
     public void AddStartingUnits(Player player)
     {
-       
-        
         var units = StartingUnits;
         var coordinates = new Vector3(player.StartingTile.OffsetCoordinates.x, 0, player.StartingTile.OffsetCoordinates.y); 
 
@@ -121,43 +122,30 @@ public class GameManager : Singleton<GameManager>
             HexGrid.transform);
 
         var otherUnits = units.Skip(1).ToList();
+
         if (otherUnits.Count == 0) return;
 
-        Dictionary<Vector2Int, HexCell> startingArea = player.StartingArea;
+        Dictionary<Vector2Int, HexTile> startingArea = player.StartingArea;
 
-        
         // We don't want to add two units on same tile
-     
-        
-        
-        Debug.Log("APRES SET NEIGHBOURS");
-       
-        Debug.Log("Count hexes : " + startingArea.Count);
-  
+
         startingArea.Remove(player.StartingTile.AxialCoordinates);
-        Debug.Log("Count hexes again : " + startingArea.Count);
-        foreach (var (axial , tile) in startingArea)
-        {
-            Debug.Log("coordonnée de startingArea : " + axial);
-        }
 
         foreach (var unit in otherUnits)
         {
             int tries = 0;
-            HexCell tile;
+            HexTile tile;
             int randomIndex;
             do
             {
                 randomIndex = UnityEngine.Random.Range(1, startingArea.Values.Count - 1);
-                Debug.Log("RAndom index : " + randomIndex);
-                Debug.Log("Count : " +  (startingArea.Values.Count - 1));
                 tile = startingArea.ElementAt(randomIndex).Value;
-               
 
                 tries++;
             } while (tile.IsNotLand() && tries < startingArea.Count);
 
             // TODO vérifier que le nombre de cases traversables soient au moins égales au nombre d'unités
+ 
             if (tile.IsLand())
             {
                 startingArea.Remove(tile.AxialCoordinates);

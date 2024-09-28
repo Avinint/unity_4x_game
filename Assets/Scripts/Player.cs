@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public HexCell StartingTile;
-    public Dictionary<Vector2Int, HexCell> StartingArea = new Dictionary<Vector2Int, HexCell>();
+    public HexTile StartingTile;
+    public Dictionary<Vector2Int, HexTile> StartingArea = new Dictionary<Vector2Int, HexTile>();
     public GameObject Leader;
     public GameObject Civilisation;
 
