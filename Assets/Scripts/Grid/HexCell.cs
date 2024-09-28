@@ -3,11 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
+public class HexCell : MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
 {
     
-   
-
     [Header("Cell Properties")] [SerializeField]
     private HexOrientation Orientation;
     [field:SerializeField] public HexGrid Grid { get; set; }
@@ -38,14 +36,11 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     private Transform terrain;
     public Transform Terrain {get { return terrain; } }
 
-    
     public override string ToString()
     {
         return AxialCoordinates.ToString();
     }
-    
-    
-    
+
     public void InitializeState(ICellState initialState = null)
     {
         if (initialState == null)
@@ -77,10 +72,27 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     {
         ChangeState(new VisibleState());
     }
-
-
-
     
+    public void Reveal()
+    {
+        UnityEngine.Object.Destroy(terrain.gameObject);
+        terrain = UnityEngine.Object.Instantiate(
+            TerrainType.Prefab,
+            CentrePosition, 
+            Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
+            Grid.transform
+        );
+        
+        terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
+
+        //TODO: Adjust the size of the prefab to the size of the grid cell
+
+        if(Orientation == HexOrientation.FlatTop)
+        {
+            terrain.Rotate(new Vector3(0, 30, 0));
+        }
+    }
+
     public void OnMouseEnter()
     {
         ChangeState(State.OnMouseEnter());
@@ -121,8 +133,9 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     {
         Orientation = orientation;
         OffsetCoordinates = coordinates;
-        CubeCoordinates = (Vector3Int)  HexMetrics.OffsetToCube(OffsetCoordinates, orientation);
-        AxialCoordinates = HexMetrics.CubeToAxial(CubeCoordinates);
+        AxialCoordinates = HexMetrics.OffsetToAxial(coordinates.x, coordinates.y, orientation);
+        CubeCoordinates =  HexMetrics.AxialToCube(AxialCoordinates.x, AxialCoordinates.y);
+        
     }
 
     public void SetTerrainType(TerrainType terrainType)
@@ -165,7 +178,7 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
             orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
             Grid.transform
         );
-        
+
         // terrain = UnityEngine.Object.Instantiate(
         //     TerrainType.Prefab,
         //     centrePosition, 
@@ -181,7 +194,7 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
         {
             terrain.Rotate(new Vector3(0, 30, 0));
         }
-        
+
         //Temporary random rotation to make the terrain look more natural
         //int randomRotation = UnityEngine.Random.Range(0, 6);
         //terrain.Rotate(new Vector3(0, randomRotation*60, 0));
@@ -198,27 +211,7 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
         // Debug.Log( terrain.gameObject);
       
     }
-    
-    public void Reveal()
-    {
-        Destroy(terrain.gameObject);
-        terrain = UnityEngine.Object.Instantiate(
-            TerrainType.Prefab,
-            CentrePosition, 
-            Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
-            Grid.transform
-        );
-        
-        terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
 
-        //TODO: Adjust the size of the prefab to the size of the grid cell
-
-        if(Orientation == HexOrientation.FlatTop)
-        {
-            terrain.Rotate(new Vector3(0, 30, 0));
-        }
-    }
-    
     public void SetNeighbours(List<HexCell> neighbours)
     {
         Neighbours = neighbours;
@@ -243,6 +236,21 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     public bool IsLand()
     {
         return !IsNotLand();
+    }
+
+    /*
+     * Hex is not too close to edge of grid
+     */
+    public bool IsNotCloseToGridEdge(int radius, int gridWidth, int gridHeight)
+    {
+        return OffsetCoordinates.x > radius && OffsetCoordinates.x < gridWidth - radius &&
+               OffsetCoordinates.y > radius && OffsetCoordinates.y < gridHeight - radius;
+    }
+
+    public bool IsCloseToGridEdge(int radius, int gridWidth, int gridHeight)
+    {
+        return OffsetCoordinates.x <= radius || OffsetCoordinates.x >= gridWidth - radius ||
+               OffsetCoordinates.y <= radius || OffsetCoordinates.y >= gridHeight - radius;
     }
 
     public bool Equals(HexCell other)
@@ -285,4 +293,15 @@ public class HexCell :  MonoBehaviour, IEquatable<HexCell>, IComparable<HexCell>
     {
         return OffsetCoordinates.GetHashCode();
     }
+
+    // public void OnDrawGizmosSelected()
+    // {
+    //     foreach (HexCell neighbour in Neighbours)
+    //     {
+    //         Gizmos.color = Color.blue;
+    //         Gizmos.DrawSphere(transform.position, 0.1f);
+    //         Gizmos.color = Color.white;
+    //         Gizmos.DrawLine(transform.position, neighbour.transform.position);
+    //     }
+    // } sert à rien TODO remove
 }

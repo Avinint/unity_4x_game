@@ -35,13 +35,14 @@ public class MapGenerator : MonoBehaviour
     [Tooltip("Whether or not to use the hex grid size information to generate the noise map")]
     public bool UseHexGrid = true;
 
+
     public bool GenerateMapOnStart = true;
     
     public bool UseThreadedGeneration = true;
 
     public List<TerrainHeight> Biomes = new List<TerrainHeight>();
     
-    public float [,] NoiseMap { get; private set; }
+    public float [,] ReliefMap { get; private set; }
     
     public TerrainType[,] TerrainMap { get; private set; }
     
@@ -101,7 +102,7 @@ public class MapGenerator : MonoBehaviour
     private IEnumerator GenerateMapCoroutine()
     {
         // Clear the current maps
-        NoiseMap = null;
+        ReliefMap = null;
         TerrainMap = null;
         ColorMap = null;
 
@@ -110,8 +111,8 @@ public class MapGenerator : MonoBehaviour
         {
             Task task =  Task.Run(() =>
             {
-                NoiseMap = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
-                TerrainMap = AssignTerrainTypes(NoiseMap);
+                ReliefMap = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
+                TerrainMap = AssignTerrainTypes(ReliefMap);
                 ColorMap = GenerateColorsFromTerrain(TerrainMap);
 
             }).ContinueWith(task =>
@@ -134,12 +135,12 @@ public class MapGenerator : MonoBehaviour
         // In testing I found that threading is much slower in the editor than in a build or play mode
         else
         {
-            NoiseMap = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
-            TerrainMap = AssignTerrainTypes(NoiseMap);
+            ReliefMap = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
+            TerrainMap = AssignTerrainTypes(ReliefMap);
             ColorMap = GenerateColorsFromTerrain(TerrainMap);
         }
         //We invoke separate events for each map generated so that the parts of code that interested only in one map can subscribe to that event
-        OnNoiseMapGenerated?.Invoke(NoiseMap);
+        OnNoiseMapGenerated?.Invoke(ReliefMap);
         OnColorMapGenerated?.Invoke(ColorMap, Width, Height);
         OnTerrainMapGenerated?.Invoke(TerrainMap);
 
@@ -148,7 +149,7 @@ public class MapGenerator : MonoBehaviour
     }
     
     // Assigns a terrain type to each point on the noise map based on the height of the point as compared to the height of the biomes
-    private TerrainType[,] AssignTerrainTypes(float[,] noiseMap)
+    private TerrainType[,] AssignTerrainTypes(float[,] reliefMap)
     {
         TerrainType[,] terrainMap = new TerrainType[Width, Height];
 
@@ -156,7 +157,7 @@ public class MapGenerator : MonoBehaviour
         {
             for (int x = 0; x < Width; x++)
             {
-                float currentHeight = noiseMap[x, y];
+                float currentHeight = reliefMap[x, y];
                 for (int i = 0; i < Biomes.Count; i++)
                 {
                     if (currentHeight <= Biomes[i].Height)
@@ -180,11 +181,6 @@ public class MapGenerator : MonoBehaviour
         {
             for (int x = 0; x < Width; x++)
             {
-                // Debug.Log("first");
-                // Debug.Log( terrainMap[x,y].ToString());
-                // Debug.Log( "Terrain Type " + ( terrainMap[x,y].Name));
-                // Debug.Log( "Color " + ( terrainMap[x,y].Colour));
-                // Debug.Log("last");
                 colorMap[y * Width + x] = terrainMap[x,y].Colour;
             }
         }
