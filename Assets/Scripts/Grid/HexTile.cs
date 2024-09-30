@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
+public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 {
     
     [Header("Tile Properties")] [SerializeField]
@@ -17,7 +18,9 @@ public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
     [field:SerializeField] public Vector3Int CubeCoordinates { get; set; }
     [field:NonSerialized] public List<HexTile> Neighbours { get; set; }
 
-    private Vector3 CentrePosition { get; set; }
+    private HexTileGizmo gizmo;
+
+    public Vector3 CentrePosition { get; set; }
     
 
     [SerializeField] private TileState tileState;
@@ -89,6 +92,8 @@ public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
         {
             terrain.Rotate(new Vector3(0, 30, 0));
         }
+
+        AddGizmo();
     }
 
     public void OnMouseEnter()
@@ -141,6 +146,13 @@ public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
         TerrainType = terrainType;
     }
 
+    private void AddGizmo()
+    {
+        gizmo = terrain.AddComponent<HexTileGizmo>();
+        gizmo.Neighbours = Neighbours;
+        gizmo.transform.position = CentrePosition;
+    }
+
     public void CreateTerrain(HexOrientation orientation, Transform unknownPrefab)
     {
         if(TerrainType == null)
@@ -177,7 +189,8 @@ public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
             Grid.transform
         );
 
-        // terrain = UnityEngine.Object.Instantiate(
+       AddGizmo();
+       // terrain = UnityEngine.Object.Instantiate(
         //     TerrainType.Prefab,
         //     centrePosition, 
         //     orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
@@ -291,15 +304,4 @@ public class HexTile : MonoBehaviour, IEquatable<HexTile>, IComparable<HexTile>
     {
         return OffsetCoordinates.GetHashCode();
     }
-
-    // public void OnDrawGizmosSelected()
-    // {
-    //     foreach (HexTile neighbour in Neighbours)
-    //     {
-    //         Gizmos.color = Color.blue;
-    //         Gizmos.DrawSphere(transform.position, 0.1f);
-    //         Gizmos.color = Color.white;
-    //         Gizmos.DrawLine(transform.position, neighbour.transform.position);
-    //     }
-    // } sert à rien TODO remove
 }

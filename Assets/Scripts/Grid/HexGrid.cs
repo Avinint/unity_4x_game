@@ -40,6 +40,8 @@ public class HexGrid : MonoBehaviour
     public int PlayerCount { get; set; }
 
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
+
+    private bool displayGizmo = true;
     
     // [field:SerializeField] public Player Player { get; set; }
     
@@ -79,7 +81,13 @@ public class HexGrid : MonoBehaviour
         }
 
         MouseController.Instance.OnMouseMoving += OnMouseMove;
-        
+        OnTileInstancesGenerated += ToggleGizmo;
+
+    }
+
+    private void ToggleGizmo()
+    {
+        displayGizmo = !displayGizmo;
     }
 
     private void OnDisable()
@@ -554,12 +562,13 @@ public class HexGrid : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (!displayGizmo) return;
+
         for (int z = 0; z < Height; z++)
         for (int x = 0; x < Width; x++)
         {
             Vector3 centrePosition = HexMetrics.Center(HexSize, x, z, Orientation) + transform.position;
             Vector3[] corners = HexMetrics.Corners(HexSize, Orientation);
-
             Gizmos.color = Color.white;
             for (int s = 0; s < 6; s++)
             {
@@ -569,7 +578,6 @@ public class HexGrid : MonoBehaviour
                 );
                 Gizmos.color = colors[s % 6];
                 Gizmos.DrawSphere(centrePosition + HexMetrics.Corners(HexSize, Orientation)[s % 6], HexSize * 0.1f);
-
             }
         }
     }

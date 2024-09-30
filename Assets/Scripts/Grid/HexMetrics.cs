@@ -107,7 +107,7 @@ public static class HexMetrics
     public static Vector2Int OffsetToAxialFlat(int col, int row)
     {
         int q = col;
-        int r = row - (col + (col & 1)) / 2;
+        int r = row - (col - (col & 1)) / 2;
 
         return new Vector2Int(q, r);
     }
@@ -115,7 +115,7 @@ public static class HexMetrics
 
     public static Vector2Int OffsetToAxialPointy(int col, int row)
     {
-        int q = col - (row + (row & 1)) / 2;
+        int q = col - (row - (row & 1)) / 2;
         int r = row;
 
         return new Vector2Int(q, r);
@@ -138,16 +138,16 @@ public static class HexMetrics
         return CubeToOffset((int)offsetCoord.x, (int)offsetCoord.y, (int)offsetCoord.z, orientation);
     }
 
-    private static Vector2Int CubeToOffsetPointy(int x, int y, int z)
+    private static Vector2Int CubeToOffsetPointy(int q, int r, int s)
     {
-        Vector2Int offsetCoordinates = new Vector2Int(x + (y - (y & 1)) / 2, y);
+        Vector2Int offsetCoordinates = new Vector2Int(q + (r + (r & 1)) / 2, r);
         return offsetCoordinates;
     }
     
     
-    private static Vector2Int CubeToOffsetFlat(int x, int y, int z)
+    private static Vector2Int CubeToOffsetFlat(int q, int r, int s)
     {
-        Vector2Int offsetCoordinates = new Vector2Int(x, y + (x - (x & 1)) / 2);
+        Vector2Int offsetCoordinates = new Vector2Int(q, r + (q + (q & 1)) / 2);
         return offsetCoordinates;
     }
     
@@ -220,73 +220,48 @@ public static class HexMetrics
     {
      
         List<Vector2Int> neighbours = new List<Vector2Int>();
-        neighbours.Add(new Vector2Int(axialCoordinates.x + 1, axialCoordinates.y));
-        neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y));
+        
+        
+        Vector2Int[] neighbourCoords = new Vector2Int[]
+        {
+            new Vector2Int(1, -1),
+            new Vector2Int(1, 0),
+            new Vector2Int(0, 1),
+            new Vector2Int(-1, 1),
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, -1),
+        };
 
-        if (((int)axialCoordinates.y & 1) == 1)
+        foreach (var coord in neighbourCoords)
         {
-            neighbours.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y + 1));
-            neighbours.Add(new Vector2Int(axialCoordinates.x + 1, axialCoordinates.y + 1));
-        
-        
-            neighbours.Add(new Vector2Int(axialCoordinates.x + 2, axialCoordinates.y - 1));
-            neighbours.Add(new Vector2Int(axialCoordinates.x + 1, axialCoordinates.y - 1));
-        }
-        else
-        {
-            neighbours.Add(new Vector2Int(axialCoordinates.x - 2, axialCoordinates.y + 1));
-            neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y + 1));
-            
-            
-            neighbours.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y - 1));
-            neighbours.Add(new Vector2Int(axialCoordinates.x - 1, axialCoordinates.y - 1));
+            neighbours.Add(axialCoordinates + coord);
         }
 
         return neighbours;
     }
     
-    // public static List<Vector2Int> GetCoordinatesAtDistance(Vector2Int axialCoordinates, int distance = 1)
-    // {
-    //     Queue<Vector2Int> frontierTiles = new Queue<Vector2Int>();
-    //     frontierTiles.Enqueue(axialCoordinates);
-    //     HashSet<Vector2Int> reachedTiles = new HashSet<Vector2Int>();
-    //     reachedTiles.Add(axialCoordinates);
-    //     
-    //     
-    //     List<Vector2Int> list = new List<Vector2Int>();
-    //     list.Add(axialCoordinates);
-    //    
-    //     for (int i = 0; i < distance; i++)
-    //     {
-    //         GetNeighbourCoordinatesList(axialCoordinates);
-    //     }
-    //
-    //   
-    //     list.Add(new Vector2Int(axialCoordinates.x + distance, axialCoordinates.y));
-    //     list.Add(new Vector2Int(axialCoordinates.x - distance, axialCoordinates.y));
-    //     
-    //     
-    //     if (axialCoordinates.y % 2 == 1)
-    //     {
-    //         list.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y + distance));
-    //         list.Add(new Vector2Int(axialCoordinates.x + distance, axialCoordinates.y + distance));
-    //     
-    //     
-    //         list.Add(new Vector2Int(axialCoordinates.x + distance  + 1, axialCoordinates.y - distance));
-    //         list.Add(new Vector2Int(axialCoordinates.x + distance, axialCoordinates.y - distance));
-    //     }
-    //     else
-    //     {
-    //         list.Add(new Vector2Int(axialCoordinates.x - distance - 1, axialCoordinates.y + distance));
-    //         list.Add(new Vector2Int(axialCoordinates.x - distance, axialCoordinates.y + distance));
-    //     
-    //     
-    //         list.Add(new Vector2Int(axialCoordinates.x, axialCoordinates.y - distance));
-    //         list.Add(new Vector2Int(axialCoordinates.x - distance, axialCoordinates.y - distance));
-    //     }
-    //
-    //     return list;
-    // }
+    public static List<Vector3Int> GetNeighbourCoordinatesList(Vector3Int cubeCoordinates)
+    {
+        List<Vector3Int> neighbours = new List<Vector3Int>();
+
+        Vector3Int[] neighbourCoords = new Vector3Int[]
+        {
+            new Vector3Int(1, -1, 0),
+            new Vector3Int(1, 0,-1),
+            new Vector3Int(0, 1,-1),
+            new Vector3Int(-1, 1,0),
+            new Vector3Int(-1, 0,1),
+            new Vector3Int(0, -1,1),
+        };
+
+        foreach (var coord in neighbourCoords)
+        {
+            Vector3Int tileCoordinate = cubeCoordinates + coord;
+            neighbours.Add(tileCoordinate);
+        }
+
+        return neighbours;
+    }
 
     public static Vector3 CubeSubtract(Vector3 a, Vector3 b)
     {
