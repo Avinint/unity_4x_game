@@ -3,7 +3,12 @@ guid: 1df0e13980707144a9fa694817955159
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Toundra
+    second: {fileID: 2100000, guid: 9916dfbf19555a8488b4716920776487, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -116,6 +116,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8344743660317655403}
+  - component: {fileID: 1931459086897529862}
   m_Layer: 0
   m_Name: Settler
   m_TagString: Untagged
@@ -139,3 +140,16 @@ Transform:
   - {fileID: 2662748272840478878}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1931459086897529862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6780720943261184462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90e95d7ec99c27544a220ebea08e9b41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: {fileID: 11400000, guid: 0aa841f7113a12b40b7c4ae7050801c8, type: 2}

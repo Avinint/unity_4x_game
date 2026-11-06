@@ -50,14 +50,12 @@ public class MouseController : Singleton<MouseController>
         // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // RaycastHit hit;
 
-        bool hit = Physics.Raycast(ray, out hitInfo, Mathf.Infinity);
+        
+        if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity) && hitInfo.collider.CompareTag("Grid"))
         {
-            
-            if (hit && hitInfo.collider.CompareTag("Grid"))
-            {
-                OnMouseMoving?.Invoke(hitInfo);
-            }
+            OnMouseMoving?.Invoke(hitInfo);
         }
+        
     }
 
     void CheckMouseClick(Ray ray, int mouseButton)

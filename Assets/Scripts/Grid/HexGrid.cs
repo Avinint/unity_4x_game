@@ -42,9 +42,13 @@ public class HexGrid : MonoBehaviour
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
 
     private bool displayGizmo = true;
+
+    private List<HexTile> path = new List<HexTile>();
     
     // [field:SerializeField] public Player Player { get; set; }
     
+    [field: SerializeField]
+    public GameObject Selector { get; set; }
     
     // public List<GameObject> StartingUnits = new List<GameObject>();
     
@@ -53,7 +57,7 @@ public class HexGrid : MonoBehaviour
         if (BatchSize == 0)
             BatchSize = 1;
         gridOrigin = transform.position;
-        mapGenerator = FindObjectOfType<MapGenerator>();
+        mapGenerator = FindFirstObjectByType<MapGenerator>();
 
 
         if (PlayerSpawningMinDistance == 0)
@@ -103,6 +107,13 @@ public class HexGrid : MonoBehaviour
         }
 
         MouseController.Instance.OnMouseMoving -= OnMouseMove;
+    }
+
+    public HexTile GetTile(int x, int y)
+    {
+       var coordinates =  HexMetrics.OffsetToAxial(x, y, Orientation);
+
+       return Tiles[coordinates];
     }
     
     private void OnMouseMove(RaycastHit hit)
@@ -580,7 +591,19 @@ public class HexGrid : MonoBehaviour
                 Gizmos.DrawSphere(centrePosition + HexMetrics.Corners(HexSize, Orientation)[s % 6], HexSize * 0.1f);
             }
         }
+        
+        
+        
+        if (path != null)
+        {
+            foreach (HexTile tile in path)
+            {
+                Gizmos.DrawCube(tile.CentrePosition + new Vector3(0f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f));
+            }
+        }
     }
+    
+    
 }
 
 public enum HexOrientation

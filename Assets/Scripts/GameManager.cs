@@ -16,6 +16,8 @@ public class GameManager : Singleton<GameManager>
     public int DefaultVisibleRadius = 2;
     public List<GameObject> StartingUnits = new List<GameObject>();
 
+    public Dictionary<Vector2, GameObject> Units { get; private set; } = new Dictionary<Vector2, GameObject>();
+
     public int MaxTurns = 500;
 
     public event System.Action GameStart;
@@ -25,7 +27,7 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         if (HexGrid == null)
-            HexGrid = GameObject.FindObjectOfType<HexGrid>();
+            HexGrid = GameObject.FindFirstObjectByType<HexGrid>();
         if (HexGrid == null)
             Debug.LogError("No HexGrid component found");
     }
@@ -59,7 +61,7 @@ public class GameManager : Singleton<GameManager>
         // }
 
         // int i = 0;
-        Debug.Log("Starting tiles count" + HexGrid.StartTiles.Count);
+        Debug.Log("Starting tiles count " + HexGrid.StartTiles.Count);
         // foreach (HexTile tile in HexGrid.StartTiles)
         // {
         //     Players[i++].StartingTile = tile;
@@ -103,24 +105,35 @@ public class GameManager : Singleton<GameManager>
     {
         GameStart?.Invoke();
     }
+    
+    // chaque unité appartient à un joueur mais la liste sur la grille 
 
     public void AddStartingUnits(Player player)
     {
+       
         var units = StartingUnits;
-        var coordinates = new Vector3(player.StartingTile.OffsetCoordinates.x, 0, player.StartingTile.OffsetCoordinates.y); 
+        GameObject firstUnit = null;
+        var coordinates = new Vector3Int(player.StartingTile.OffsetCoordinates.x, 0, player.StartingTile.OffsetCoordinates.y); 
 
         Vector3 centrePosition = HexMetrics.Center(
             HexGrid.HexSize, 
-            (int)coordinates.x, 
-            (int)coordinates.z, HexGrid.Orientation
+            coordinates.x, 
+            coordinates.z, HexGrid.Orientation
         ) + HexGrid.transform.position;
 
-        Instantiate(
+        HexTile tile = HexGrid.GetTile(coordinates.x, coordinates.y);
+        
+          Units[tile.AxialCoordinates]  = Instantiate(
             units[0],
             centrePosition, 
             HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
             HexGrid.transform);
 
+          Debug.Log("my test " + Units[tile.AxialCoordinates]);
+          Debug.Log("my test2 " + tile);
+          
+          Units[tile.AxialCoordinates] .gameObject.layer = LayerMask.NameToLayer("Grid");
+          tile.AddUnit(Units[tile.AxialCoordinates] );
         var otherUnits = units.Skip(1).ToList();
 
         if (otherUnits.Count == 0) return;
@@ -134,7 +147,7 @@ public class GameManager : Singleton<GameManager>
         foreach (var unit in otherUnits)
         {
             int tries = 0;
-            HexTile tile;
+           
             int randomIndex;
             do
             {
@@ -149,7 +162,7 @@ public class GameManager : Singleton<GameManager>
             if (tile.IsLand())
             {
                 startingArea.Remove(tile.AxialCoordinates);
-                coordinates = new Vector3(tile.OffsetCoordinates.x, 0, tile.OffsetCoordinates.y); 
+                coordinates = new Vector3Int(tile.OffsetCoordinates.x, 0, tile.OffsetCoordinates.y); 
             
                 centrePosition = HexMetrics.Center(
                     HexGrid.HexSize, 

@@ -39,10 +39,17 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     private Transform terrain;
     public Transform Terrain {get { return terrain; } }
 
+    private List<GameObject> units = new();
+
+
+
+
+
     public override string ToString()
     {
         return AxialCoordinates.ToString();
     }
+
 
     public void InitializeState(ITileState initialState = null)
     {
@@ -78,7 +85,9 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     
     public void Reveal()
     {
+        UnityEngine.Object.Destroy(terrain.GetComponent<HexTileGizmo>());
         UnityEngine.Object.Destroy(terrain.gameObject);
+        UnityEngine.Object.Destroy(terrain);
         terrain = UnityEngine.Object.Instantiate(
             TerrainType.Prefab,
             CentrePosition, 
@@ -93,7 +102,10 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
             terrain.Rotate(new Vector3(0, 30, 0));
         }
 
+       
+
         AddGizmo();
+        gizmo.Unlock();
     }
 
     public void OnMouseEnter()
@@ -114,7 +126,13 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     public void OnMoveUnit()
     {
-        CameraController.Instance.CameraTarget.transform.position = Terrain.transform.position;
+      
+        //CameraController.Instance.CameraTarget.transform.position = pos;
+        // Grid.Selector.transform.position = pos;
+        
+      
+        Grid.Selector.transform.position = CentrePosition;
+        
     }
 
   
@@ -197,7 +215,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         //     Grid.transform
         // );
 
-        terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
+        //terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
 
         //TODO: Adjust the size of the prefab to the size of the grid tile
         
@@ -264,6 +282,15 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
                OffsetCoordinates.y <= radius || OffsetCoordinates.y >= gridHeight - radius;
     }
 
+    public void AddUnit(GameObject unit)
+    {
+        Debug.Log("ICI " + unit);
+        units.Add(unit);
+    }
+    
+    
+    
+    
     public bool Equals(HexTile other)
     {
 

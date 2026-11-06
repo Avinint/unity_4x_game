@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     public GameObject Leader;
     public GameObject Civilisation;
 
-    public List<GameObject> StartingUnits { get; set; } = new List<GameObject>();
+    public List<GameObject> units { get; set; } = new List<GameObject>();
 
     private void OnEnable()
     {

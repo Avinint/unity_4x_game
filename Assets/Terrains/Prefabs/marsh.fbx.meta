@@ -3,7 +3,12 @@ guid: a0102a99b4297d448ae2e8e166abf208
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Marsh
+    second: {fileID: 2100000, guid: ad519f648f004924c91802e8cb6225aa, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

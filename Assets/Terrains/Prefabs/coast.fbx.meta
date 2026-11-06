@@ -3,7 +3,12 @@ guid: dc9a7151c751aa64aa2471d702ba259e
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Coast
+    second: {fileID: 2100000, guid: 6552851521bb5df42bbcad6747f52088, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
