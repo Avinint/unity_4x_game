@@ -13,7 +13,7 @@ public class HexTileGizmo : MonoBehaviour
     private void Awake()
     {
         if (Grid == null)
-            Grid = GameObject.FindFirstObjectByType<HexGrid>();
+            Grid = GameObject.FindAnyObjectByType<HexGrid>();
         if (Grid == null)
             Debug.LogError("No HexGrid component found");
     }

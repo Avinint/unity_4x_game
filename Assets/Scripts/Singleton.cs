@@ -18,12 +18,12 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             {
                 if (_instance == null && !_quitting)
                 {
-                    _instance = GameObject.FindFirstObjectByType<T>();
+                    _instance = GameObject.FindAnyObjectByType<T>();
                     if (_instance == null)
                     {
                         GameObject go = new GameObject(typeof(T).ToString());
                         _instance = go.AddComponent<T>();
-                        DontDestroyOnLoad(_instance.gameObject);
+                        if (_instance.transform.parent == null) DontDestroyOnLoad(_instance.gameObject);
                     }
                 }
 
@@ -36,7 +36,8 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (_instance == null) {
             _instance = gameObject.GetComponent<T>();
-            DontDestroyOnLoad(_instance.gameObject);
+            // DontDestroyOnLoad ne fonctionne que sur les objets à la racine
+            if (transform.parent == null) DontDestroyOnLoad(gameObject);
         }
         else if (_instance.GetEntityId() != GetEntityId())
         {

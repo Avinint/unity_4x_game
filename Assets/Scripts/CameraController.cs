@@ -61,7 +61,7 @@ public class CameraController : Singleton<CameraController>
         onCameraChanged?.Invoke(virtualCamera);
 
         virtualCamera.Priority = DEFAULT_PRIORITY;
-        virtualCamera.MoveToTopOfPrioritySubqueue();
+        virtualCamera.Prioritize();
     }
 
     public void OnPanChange(InputAction.CallbackContext context)

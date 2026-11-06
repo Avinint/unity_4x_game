@@ -57,7 +57,7 @@ public class HexGrid : MonoBehaviour
         if (BatchSize == 0)
             BatchSize = 1;
         gridOrigin = transform.position;
-        mapGenerator = FindFirstObjectByType<MapGenerator>();
+        mapGenerator = FindAnyObjectByType<MapGenerator>();
 
 
         if (PlayerSpawningMinDistance == 0)

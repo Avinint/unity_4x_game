@@ -27,7 +27,7 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         if (HexGrid == null)
-            HexGrid = GameObject.FindFirstObjectByType<HexGrid>();
+            HexGrid = GameObject.FindAnyObjectByType<HexGrid>();
         if (HexGrid == null)
             Debug.LogError("No HexGrid component found");
     }
