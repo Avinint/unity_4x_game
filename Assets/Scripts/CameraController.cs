@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Cinemachine;
+
 using UnityEngine.InputSystem;
 
 public class CameraController : Singleton<CameraController>
@@ -12,9 +12,9 @@ public class CameraController : Singleton<CameraController>
     [SerializeField]
     private GameObject cameraTarget;
     [SerializeField]
-    private CinemachineVirtualCamera OverheadCamera;
+    private Unity.Cinemachine.CinemachineCamera OverheadCamera;
     [SerializeField]
-    private CinemachineVirtualCamera focusCamera;
+    private Unity.Cinemachine.CinemachineCamera focusCamera;
    
     
     [SerializeField] private float cameraSpeed = 10f;
@@ -31,7 +31,7 @@ public class CameraController : Singleton<CameraController>
     private Coroutine panCoroutine;
     private Coroutine zoomCoroutine;
 
-    public event Action<CinemachineVirtualCamera> onCameraChanged;
+    public event Action<Unity.Cinemachine.CinemachineCamera> onCameraChanged;
 
     public event Action onSelectAction;
     public event Action onCommandAction;
@@ -49,7 +49,7 @@ public class CameraController : Singleton<CameraController>
 
     void Start()
     {
-        OverheadCamera.m_Lens.FieldOfView = cameraZoomDefault;
+        OverheadCamera.Lens.FieldOfView = cameraZoomDefault;
         ChangeCamera(defaultMode);
     }
 
@@ -57,7 +57,7 @@ public class CameraController : Singleton<CameraController>
     {
         currentMode = mode;
  
-        CinemachineVirtualCamera virtualCamera = GetCamera(mode);
+        Unity.Cinemachine.CinemachineCamera virtualCamera = GetCamera(mode);
         onCameraChanged?.Invoke(virtualCamera);
 
         virtualCamera.Priority = DEFAULT_PRIORITY;
@@ -133,7 +133,7 @@ public class CameraController : Singleton<CameraController>
         }
     }
 
-    private CinemachineVirtualCamera GetCamera(CameraMode mode)
+    private Unity.Cinemachine.CinemachineCamera GetCamera(CameraMode mode)
     {
         switch (mode)
         {
@@ -175,8 +175,8 @@ public class CameraController : Singleton<CameraController>
         while (true)
         {
             //Change the FOV of the camera based on the input. If not keyboard, then adjust the value based on the scrollWheelZoomSpeed
-            float zoomAmount = OverheadCamera.m_Lens.FieldOfView + zoomInput * cameraZoomSpeed * Time.deltaTime;
-            OverheadCamera.m_Lens.FieldOfView = Mathf.Clamp(zoomAmount, cameraZoomMin, cameraZoomMax);
+            float zoomAmount = OverheadCamera.Lens.FieldOfView + zoomInput * cameraZoomSpeed * Time.deltaTime;
+            OverheadCamera.Lens.FieldOfView = Mathf.Clamp(zoomAmount, cameraZoomMin, cameraZoomMax);
 
             yield return null;
         }

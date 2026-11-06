@@ -1,41 +1,38 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Cinemachine;
-using UnityEditor;
+
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class OrbitCameraWithTime : MonoBehaviour
 {
     [SerializeField]
-     CinemachineVirtualCamera orbitalCamera;
-     CinemachineOrbitalTransposer orbitalTransposer;
-     private float rotationSpeed;
+     Unity.Cinemachine.CinemachineCamera orbitalCamera;
+     Unity.Cinemachine.CinemachineOrbitalFollow orbitalTransposer;
+     [SerializeField] private float rotationSpeed = 10f; // degrés/s
 
      private Coroutine rotationCoroutine;
 
      private void Awake()
      {
-         if (orbitalCamera == null) orbitalCamera = GetComponent<CinemachineVirtualCamera>();
+         if (orbitalCamera == null) orbitalCamera = GetComponent<Unity.Cinemachine.CinemachineCamera>();
 
          if (orbitalCamera == null) Debug.Log("Orbital camera missing");
 
-         orbitalTransposer = orbitalCamera.GetCinemachineComponent<CinemachineOrbitalTransposer>();
+         orbitalTransposer = orbitalCamera.GetComponent<Unity.Cinemachine.CinemachineOrbitalFollow>();
          
          if (orbitalTransposer == null) Debug.Log("Orbital transposer missing");
-
-         rotationSpeed = orbitalTransposer.m_XAxis.m_MaxSpeed;
 
          CameraController.Instance.onCameraChanged += OnCameraChange;
          
      }
 
-     private void OnCameraChange(CinemachineVirtualCamera camera)
+     private void OnCameraChange(Unity.Cinemachine.CinemachineCamera camera)
      {
          if (camera != orbitalCamera) return;
 
-         CinemachineOrbitalTransposer newTransposer = camera.GetCinemachineComponent<CinemachineOrbitalTransposer>();
+         Unity.Cinemachine.CinemachineOrbitalFollow newTransposer = camera.GetComponent<Unity.Cinemachine.CinemachineOrbitalFollow>();
          if (orbitalTransposer == newTransposer)
          {
              if (rotationCoroutine != null)
@@ -58,34 +55,8 @@ public class OrbitCameraWithTime : MonoBehaviour
      {
          while (true)
          {
-             orbitalTransposer.m_XAxis.Value += rotationSpeed * Time.deltaTime;
+             orbitalTransposer.HorizontalAxis.Value += rotationSpeed * Time.deltaTime;
              yield return null;
          }
      }
-     
-#if UNITY_EDITOR
-     [CustomEditor(typeof(OrbitCameraWithTime))]
-     public class OrbitCameraEditor : Editor
-     {
-         private float prevMaxSpeed;
-
-         public override void OnInspectorGUI()
-         {
-             base.OnInspectorGUI();
-
-             OrbitCameraWithTime orbitCameraScript = (OrbitCameraWithTime)target;
-
-             if (Application.isPlaying)
-             {
-                 // Check if the maxSpeed has changed
-                 if (orbitCameraScript.orbitalTransposer != null &&
-                     orbitCameraScript.orbitalTransposer.m_XAxis.m_MaxSpeed != prevMaxSpeed)
-                 {
-                     orbitCameraScript.rotationSpeed = orbitCameraScript.orbitalTransposer.m_XAxis.m_MaxSpeed;
-                     prevMaxSpeed = orbitCameraScript.orbitalTransposer.m_XAxis.m_MaxSpeed;
-                 }
-             }
-         }
-     }
-#endif
 }

@@ -20,7 +20,7 @@ public class HexGrid : MonoBehaviour
 
     public List<HexTile> StartTiles { get; set; } = new List<HexTile>();
 
-    [SerializeField] private Dictionary<Vector2Int, HexTile> Tiles = new Dictionary<Vector2Int, HexTile>();
+    private Dictionary<Vector2Int, HexTile> Tiles = new Dictionary<Vector2Int, HexTile>();
     private HexTile _activeTile;
 
     [SerializeField] private Transform unknownPrefab;
