@@ -18,11 +18,21 @@ public class OrbitCameraWithTime : MonoBehaviour
      {
          if (orbitalCamera == null) orbitalCamera = GetComponent<Unity.Cinemachine.CinemachineCamera>();
 
-         if (orbitalCamera == null) Debug.Log("Orbital camera missing");
+         if (orbitalCamera == null)
+         {
+             Debug.LogError("Orbital camera missing : l'objet n'a pas de CinemachineCamera (ancienne VirtualCamera non convertie ?)", this);
+             enabled = false;
+             return;
+         }
 
          orbitalTransposer = orbitalCamera.GetComponent<Unity.Cinemachine.CinemachineOrbitalFollow>();
          
-         if (orbitalTransposer == null) Debug.Log("Orbital transposer missing");
+         if (orbitalTransposer == null)
+         {
+             Debug.LogError("CinemachineOrbitalFollow manquant sur la camera", this);
+             enabled = false;
+             return;
+         }
 
          CameraController.Instance.onCameraChanged += OnCameraChange;
          
