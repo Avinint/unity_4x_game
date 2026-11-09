@@ -189,7 +189,6 @@ public class HexGrid : MonoBehaviour
                 tile.Grid = this;
                 tile.HexSize = HexSize;
                 tile.SetTerrainType(terrainMap[flippedX, flippedY]);
-                tile.InitializeState(new HiddenState());
                 hexTiles.Add(tile.AxialCoordinates, tile);
             }
         }

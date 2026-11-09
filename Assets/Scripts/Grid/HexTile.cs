@@ -23,19 +23,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     public Vector3 CentrePosition { get; set; }
     
 
-    [SerializeField] private TileState tileState;
-    private ITileState state;
-
-    public ITileState State
-    {
-        get { return state; }
-        private set
-        {
-            state = value;
-            tileState = state.State;
-        }
-    }
-
     private Transform terrain;
     public Transform Terrain {get { return terrain; } }
 
@@ -51,43 +38,15 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     }
 
 
-    public void InitializeState(ITileState initialState = null)
-    {
-        if (initialState == null)
-            ChangeState(new VisibleState());
-        else
-            ChangeState(initialState);
-    
-    }
-    
-    private void ChangeState(ITileState newState)
-    {
-        if(newState == null)
-        {
-            Debug.LogError("Trying to set null state.");
-            return;
-        }
-    
-        if(State != newState)
-        {
-            // Debug.Log($"Changing state from {State} to {newState}");
-            if(State != null)
-                State.Exit(this);
-            State = newState;
-            State.Enter(this);
-        }
-    }
-
     public bool IsDiscovered { get; private set; }
 
     public void Discover()
     {
         if (IsDiscovered) return;   // déjà révélée : rien à refaire
         IsDiscovered = true;
-        ChangeState(new VisibleState());
         if (terrain != null) Reveal();
     }
-    
+
     public void Reveal()
     {
         UnityEngine.Object.Destroy(terrain.GetComponent<HexTileGizmo>());
@@ -113,20 +72,24 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         gizmo.Unlock();
     }
 
+    public bool IsHovered { get; private set; }
+
     public void OnMouseEnter()
     {
-        ChangeState(State.OnMouseEnter());
+        if (!IsDiscovered || IsHovered) return;
+        IsHovered = true;
+        LeanTween.cancel(terrain.gameObject);
+        LeanTween.scale(terrain.gameObject, Vector3.one * 1.2f, .2f).setEase(LeanTweenType.easeOutBack);
+        LeanTween.moveY(terrain.gameObject, 5f, .2f).setEase(LeanTweenType.easeOutBack);
     }
-    
+
     public void OnMouseExit()
     {
-        ChangeState(State.OnMouseExit());
-    }
-    
-    public void OnSelect()
-    {
-        ChangeState(State.OnSelect());
-        OnDeselect();
+        if (!IsHovered) return;
+        IsHovered = false;
+        LeanTween.cancel(terrain.gameObject);
+        LeanTween.scale(terrain.gameObject, Vector3.one, .2f).setEase(LeanTweenType.easeOutBack);
+        LeanTween.moveY(terrain.gameObject, 0f, .2f).setEase(LeanTweenType.easeOutBack);
     }
 
     public void OnMoveUnit()
@@ -138,21 +101,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
       
         Grid.Selector.transform.position = CentrePosition;
         
-    }
-
-  
-    
-    
-    public void OnDeselect()
-    {
-        ChangeState(State.OnDeselect());
-    }
-    
-    public void OnFocus()
-    {
-        ChangeState(State.OnFocus());
-        
-        Debug.Log("STATE "  + State);
     }
 
     public HexTile(Vector2Int coordinates, HexOrientation orientation)

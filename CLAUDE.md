@@ -19,7 +19,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - `GameManager` : liste de `Player`, `InitPlayers` appelé sur `HexGrid.OnTileInstancesGenerated`, place les joueurs et unités de départ, événements `GameStart` / `TurnChange`.
 - `Grid/MapGenerator` : bruit -> `TerrainType[,]`, événement `OnTerrainMapGenerated`.
 - `Grid/HexGrid` : crée les `HexTile` en thread (`Task.Run`), voisins (`SetNeighbours`), instanciation par lots (coroutine), placement des joueurs par `DispatchPlayers` (point le plus éloigné : 1er au hasard, puis un des 10 % de cases de terre les plus éloignées des joueurs déjà placés), `TryGetTile(x, y, out tile)` (remplace l'ancien `GetTile`, supprimé).
-- `Grid/HexTile` + `Grid/Tile States` : machine à états (Hidden, Visible, Highlighted, Selected, Focused).
+- `Grid/HexTile` : plus de machine à états. Deux drapeaux indépendants : `IsDiscovered` (brouillard, `Discover()` révèle une seule fois) et `IsHovered` (survol, animation LeanTween). La sélection (unité, recentrage caméra) est dans `SelectionController`.
 - `MouseController` : raycasts souris -> événements `OnMouseMoving`, `OnLeftMouseClick`, etc.
 - `CameraController` (Overhead / Focus) et `OrbitCameraWithTime`.
 - `Unit` + `Unit/State/*` : états d'unité (coquilles vides).

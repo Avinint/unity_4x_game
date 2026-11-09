@@ -23,19 +23,17 @@ public class SelectionController : Singleton<SelectionController>
         cam.onDeselectAction -= Deselect;
     }
 
-    // Seule une case découverte et survolée (état Highlighted) répond.
-    private HexTile HighlightedTile()
+    // Seule une case découverte et survolée répond.
+    private HexTile HoveredTile()
     {
         HexTile tile = Grid.HoveredTile;
-        return tile != null && tile.IsDiscovered && tile.State.State == TileState.Highlighted ? tile : null;
+        return tile != null && tile.IsDiscovered && tile.IsHovered ? tile : null;
     }
 
     private void Select()
     {
-        HexTile tile = HighlightedTile();
+        HexTile tile = HoveredTile();
         if (tile == null) return;
-
-        tile.OnSelect();
 
         Unit unit = tile.GetFirstUnit();
         if (unit == null) return;
@@ -44,7 +42,7 @@ public class SelectionController : Singleton<SelectionController>
         SelectedUnit.Select();
     }
 
-    private void Command() => HighlightedTile()?.OnMoveUnit();
+    private void Command() => HoveredTile()?.OnMoveUnit();
 
     private void Deselect()
     {
