@@ -78,9 +78,14 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         }
     }
 
+    public bool IsDiscovered { get; private set; }
+
     public void Discover()
     {
+        if (IsDiscovered) return;   // déjà révélée : rien à refaire
+        IsDiscovered = true;
         ChangeState(new VisibleState());
+        if (terrain != null) Reveal();
     }
     
     public void Reveal()

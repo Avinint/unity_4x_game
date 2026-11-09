@@ -453,7 +453,7 @@ public class HexGrid : MonoBehaviour
                 // Iterate through the neighbors of the current tile
                 foreach (HexTile neighbor in currentTile.Neighbours)
                 {
-                    if (neighbor.State != new VisibleState()) 
+                    if (!startingArea.ContainsKey(neighbor.AxialCoordinates))
                     {
                         tileQueue.Enqueue(neighbor);
                     }
