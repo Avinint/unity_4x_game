@@ -55,7 +55,7 @@ public class MouseController : Singleton<MouseController>
         bool overUI = UnityEngine.EventSystems.EventSystem.current != null
                       && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
 
-        if (!overUI && Physics.Raycast(ray, out hitInfo, Mathf.Infinity) && hitInfo.collider.CompareTag("Grid"))
+        if (!overUI && TryRaycastGrid(ray, out hitInfo))
         {
             _isOverGrid = true;
             OnMouseMoving?.Invoke(hitInfo);
@@ -65,6 +65,25 @@ public class MouseController : Singleton<MouseController>
             _isOverGrid = false;
             onMouseExit?.Invoke();
         }
+    }
+
+    // Premier collider portant le tag "Grid" sur le rayon : le terrain sous une unité reste atteignable.
+    private static bool TryRaycastGrid(Ray ray, out RaycastHit gridHit)
+    {
+        gridHit = default;
+        bool found = false;
+        float best = float.MaxValue;
+
+        foreach (RaycastHit hit in Physics.RaycastAll(ray, Mathf.Infinity))
+        {
+            if (hit.collider.CompareTag("Grid") && hit.distance < best)
+            {
+                best = hit.distance;
+                gridHit = hit;
+                found = true;
+            }
+        }
+        return found;
     }
 
     void CheckMouseClick(Ray ray, int mouseButton)

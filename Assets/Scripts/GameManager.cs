@@ -37,35 +37,14 @@ public class GameManager : Singleton<GameManager>
         HexGrid.DefaultVisibleTiles = DefaultVisibleTiles;
         HexGrid.DefaultVisibleRadius = DefaultVisibleRadius;
         HexGrid.OnTileInstancesGenerated += InitPlayers;
-        CameraController.Instance.onDeselectAction += DeselectUnit;
+        // Le Singleton crée le contrôleur de sélection au premier accès.
+        SelectionController.Instance.name = "SelectionController";
     }
 
     private void OnDisable()
     {
 
         HexGrid.OnTileInstancesGenerated -= InitPlayers;
-        if (CameraController.Instance != null)
-            CameraController.Instance.onDeselectAction -= DeselectUnit;
-    }
-
-    public Unit SelectedUnit { get; private set; }
-
-    // Sélectionne la première unité de la case (rien si la case est vide).
-    public void SelectUnitOn(HexTile tile)
-    {
-        Unit unit = tile.GetFirstUnit();
-        if (unit == null) return;
-
-        if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
-        SelectedUnit = unit;
-        SelectedUnit.Select();
-    }
-
-    public void DeselectUnit()
-    {
-        if (SelectedUnit == null) return;
-        SelectedUnit.Deselect();
-        SelectedUnit = null;
     }
 
 

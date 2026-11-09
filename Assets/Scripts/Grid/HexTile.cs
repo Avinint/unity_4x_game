@@ -125,7 +125,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     
     public void OnSelect()
     {
-        GameManager.Instance.SelectUnitOn(this);
         ChangeState(State.OnSelect());
         OnDeselect();
     }

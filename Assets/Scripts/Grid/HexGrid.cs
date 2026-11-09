@@ -22,6 +22,7 @@ public class HexGrid : MonoBehaviour
 
     private Dictionary<Vector2Int, HexTile> Tiles = new Dictionary<Vector2Int, HexTile>();
     private HexTile _activeTile;
+    public HexTile HoveredTile => _activeTile;
 
     [SerializeField] private Transform unknownPrefab;
     [SerializeField] private Transform debugPrefab;
