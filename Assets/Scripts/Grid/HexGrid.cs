@@ -58,13 +58,6 @@ public class HexGrid : MonoBehaviour
             BatchSize = 1;
         gridOrigin = transform.position;
         mapGenerator = FindAnyObjectByType<MapGenerator>();
-
-
-        if (PlayerSpawningMinDistance == 0)
-        {
-            int avg = (Width + Height) / 2;
-            PlayerSpawningMinDistance = (int) Mathf.Ceil(avg / (PlayerCount / 2));
-        }
     }
 
     private void OnEnable()
@@ -85,6 +78,7 @@ public class HexGrid : MonoBehaviour
         }
 
         MouseController.Instance.OnMouseMoving += OnMouseMove;
+        MouseController.Instance.onMouseExit += OnMouseLeaveGrid;
         OnTileInstancesGenerated += ToggleGizmo;
 
     }
@@ -107,6 +101,7 @@ public class HexGrid : MonoBehaviour
         }
 
         MouseController.Instance.OnMouseMoving -= OnMouseMove;
+        MouseController.Instance.onMouseExit -= OnMouseLeaveGrid;
     }
 
     public bool TryGetTile(int x, int y, out HexTile tile)
@@ -116,35 +111,34 @@ public class HexGrid : MonoBehaviour
         return Tiles.TryGetValue(coordinates, out tile);
     }
     
+    // La souris quitte la grille : la dernière case survolée redescend.
+    private void OnMouseLeaveGrid()
+    {
+        if (CameraController.Instance.IsLocked) return;
+        if (_activeTile == null) return;
+
+        _activeTile.OnMouseExit();
+        _activeTile = null;
+    }
+
     private void OnMouseMove(RaycastHit hit)
     {
         if (CameraController.Instance.IsLocked) return;
-        if (_activeTile != null) _activeTile.OnMouseExit();
 
-     
-        //Transform objectHit = hit.transform;
-        
-        
         Vector3 position = hit.transform.position;
         float localX = hit.point.x - position.x;
         float localZ = hit.point.z - position.z;
         Vector2Int axial = HexMetrics.CoordinateToAxial(localX, localZ, HexSize, Orientation);
 
-        // if (objectHit.TryGetComponent<HexTell>(out HexTell target))
-        // {
-        //     activeTile = target;
-        //     activeTile.OnMouseEnter();
-        //     Debug.Log("Entering tile : " + activeTile.TerrainType.Name);
-        // }
+        // Souris hors d'une case du jeu : cas normal, on ignore.
+        if (!Tiles.TryGetValue(axial, out HexTile tile)) return;
 
-        HexTile tile = Tiles[axial];
-        
-        // HexTile tile = Tiles.Find(c => c.OffsetCoordinates == location);
-        if (tile != null)
-        {
-           _activeTile = tile;
-           _activeTile.OnMouseEnter();
-        }
+        // Même case que la précédente : rien à faire (évite Exit/Enter à chaque mouvement).
+        if (tile == _activeTile) return;
+
+        if (_activeTile != null) _activeTile.OnMouseExit();
+        _activeTile = tile;
+        _activeTile.OnMouseEnter();
     }
 
     private void SetHexTileTerrainTypes(TerrainType[,] terrainMap)
@@ -303,9 +297,7 @@ public class HexGrid : MonoBehaviour
                 UnityEngine.Random.Range(0, Height), 
                 Orientation);
            // startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
-            startTile = Tiles[axialCoordinates];
- 
-        } while ( startTile.IsNotLand());
+        } while (!Tiles.TryGetValue(axialCoordinates, out startTile) || startTile.IsNotLand());
         
         
 
@@ -314,160 +306,67 @@ public class HexGrid : MonoBehaviour
         return startTile;
     }
  
+    /// <summary>
+    /// Place les joueurs par échantillonnage du point le plus éloigné :
+    /// le 1er au hasard, puis chacun sur une des cases de terre les plus éloignées des joueurs déjà placés.
+    /// </summary>
     public void DispatchPlayers()
     {
-        var gridSize = PlayerSpawningMinDistance / Mathf.Sqrt(2);
-        
-        PlaceFirstPlayer();
+        StartTiles.Clear();
 
-        for (int i = 1; i < PlayerCount ; i++)
+        if (PlayerSpawningMinDistance == 0)
         {
-            PlaceSubsequentPlayer();
+            int avg = (Width + Height) / 2;
+            PlayerSpawningMinDistance = avg / Mathf.Max(1, PlayerCount / 2);
         }
-    }
-    
-    private void PlaceFirstPlayer()
-    {
-        Vector2Int axialCoordinates;
-        HexTile tile;
 
-        do
+        List<HexTile> candidates = Tiles.Values
+            .Where(t => t.IsLand() && !t.IsCloseToGridEdge(DefaultVisibleRadius, Width, Height))
+            .ToList();
+
+        if (candidates.Count == 0)
         {
-            axialCoordinates = HexMetrics.OffsetToAxial(
-                UnityEngine.Random.Range((Width/2) - PlayerSpawningMinDistance  , (Width/2) + PlayerSpawningMinDistance ),
-                UnityEngine.Random.Range((Height / 2) - PlayerSpawningMinDistance  , (Height / 2) + PlayerSpawningMinDistance ), 
-                Orientation);
-            tile =  Tiles[axialCoordinates];
- 
-        } while (tile.IsNotLand());
-
-        CameraController.Instance.CameraTarget.transform.position = tile.Terrain.transform.position;
-
-        StartTiles.Add(tile);
-        tile.Discover();
-    }
-
-    private void PlaceSubsequentPlayer()
-    {
-        Vector2Int axialCoordinates;
-        HexTile tile;
-        
-        switch(StartTiles.Count)
-        {
-            case 1:
-                do
-                {
-                    axialCoordinates = HexMetrics.OffsetToAxial(
-                        UnityEngine.Random.Range(DefaultVisibleRadius, (Width / 2) - PlayerSpawningMinDistance),
-                        UnityEngine.Random.Range(DefaultVisibleRadius, (Height / 2) - PlayerSpawningMinDistance),
-                        Orientation);
-                    tile = Tiles[axialCoordinates];
-                } while (tile.IsNotLand());
-
-                break;
-
-            case 2:
-                do
-                {
-                    axialCoordinates = HexMetrics.OffsetToAxial(
-                        UnityEngine.Random.Range( (Width / 2 ) + PlayerSpawningMinDistance, Width - DefaultVisibleRadius),
-                        UnityEngine.Random.Range(DefaultVisibleRadius, (Height / 2) - PlayerSpawningMinDistance),
-                        Orientation);
-                    tile = Tiles[axialCoordinates];
-                } while (tile.IsNotLand());
-
-                break;
-            
-            case 3:
-                do
-                {
-                    axialCoordinates = HexMetrics.OffsetToAxial(
-                        UnityEngine.Random.Range(DefaultVisibleRadius, (Width / 2) - PlayerSpawningMinDistance),
-                        UnityEngine.Random.Range( (Height / 2 ) + PlayerSpawningMinDistance, Height - DefaultVisibleRadius),
-                        Orientation);
-                    tile = Tiles[axialCoordinates];
-                } while (tile.IsNotLand());
-
-                break;
-            
-            case 4:
-                do
-                {
-                    axialCoordinates = HexMetrics.OffsetToAxial(
-                        UnityEngine.Random.Range( (Width / 2 ) + PlayerSpawningMinDistance, Width - DefaultVisibleRadius),
-                        UnityEngine.Random.Range( (Height / 2 ) + PlayerSpawningMinDistance, Height - DefaultVisibleRadius),
-                        Orientation);
-                    tile = Tiles[axialCoordinates];
-                } while (tile.IsNotLand());
-
-                break;
-            default:
-                do
-                {
-                    axialCoordinates = HexMetrics.OffsetToAxial(
-                        UnityEngine.Random.Range( (Width / 2 ) + PlayerSpawningMinDistance, Width - DefaultVisibleRadius),
-                        UnityEngine.Random.Range( (Height / 2 ) + PlayerSpawningMinDistance, Height - DefaultVisibleRadius),
-                        Orientation);
-                    tile = Tiles[axialCoordinates];
-                } while (tile.IsNotLand());
-                break;
+            Debug.LogError("DispatchPlayers : aucune case de terre disponible pour placer les joueurs.");
+            return;
         }
-        
-        
-        // foreach (var tile in StartTiles)
-        // {
-        //     if (HexMetrics.AxialDistance(newTile.AxialCoordinates, tile.AxialCoordinates) <
-        //         PlayerSpawningMinDistance)
-        //     {
-        //         isCloseToStartingPoint = true;
-        //         break;
-        //     }
-        // }
-        
-          
-        // bool failure = TileNotViable(newTile, isCloseToStartingPoint);
-        // int tries = 0;
-        //
-        // if (failure)
-        // {
-        //     var subList1 = candidateTiles.GetRange(0, randomIndex);
-        //     subList1.Reverse();
-        //     var subList2 =  candidateTiles.GetRange(0, randomIndex);
-        //     do
-        //     {
-        //         newTile = candidateTiles[randomIndex];
-        //
-        //         tries++;
-        //         Debug.Log(tries);
-        //
-        //         failure = TileNotViable(newTile, isCloseToStartingPoint);
-        //     } while (tries <= (candidateTiles.Count )  && failure == true);
-        //
-        //     if (failure)
-        //     {
-        //         throw new Exception("Impossible de trouver une case viable, Type : " + newTile.TerrainType.Name);
-            // }
+
+        int count = Mathf.Min(PlayerCount, candidates.Count);
+        if (count < PlayerCount)
+            Debug.LogWarning($"DispatchPlayers : {PlayerCount} joueurs demandés, {count} cases disponibles.");
+
+        // Distance de chaque candidat au joueur placé le plus proche.
+        int[] minDistance = new int[candidates.Count];
+        for (int i = 0; i < minDistance.Length; i++) minDistance[i] = int.MaxValue;
+
+        for (int p = 0; p < count; p++)
+        {
+            int chosen = p == 0 ? UnityEngine.Random.Range(0, candidates.Count) : PickFarthestIndex(minDistance);
+            if (p > 0 && minDistance[chosen] < PlayerSpawningMinDistance)
+                Debug.LogWarning($"Joueur {p} : distance minimale non respectée ({minDistance[chosen]} < {PlayerSpawningMinDistance}).");
+
+            HexTile tile = candidates[chosen];
             StartTiles.Add(tile);
             tile.Discover();
-        // }
-        
-       
-        // foreach (var newTile in ring)
-        // {
-        //     if (Tiles.ContainsKey( newTile.AxialCoordinates) &&  newTile.IsNotCloseToGridEdge(DefaultVisibleRadius, Width, Height))
-        //     {
-        //        
-        //         candidateTiles.Add( newTile.AxialCoordinates,  newTile);
-        //          newTile.Discover();
-        //         Debug.Log( newTile.AxialCoordinates);
-        //     }
-        //
-        //
-        // }
-    //     
-    //     var gridSize = PlayerSpawningMinDistance / Mathf.Sqrt(2);
-    //     
-    //     
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                int d = HexMetrics.AxialDistance(candidates[i].AxialCoordinates, tile.AxialCoordinates);
+                if (d < minDistance[i]) minDistance[i] = d;
+            }
+        }
+
+        CameraController.Instance.CameraTarget.transform.position = StartTiles[0].Terrain.transform.position;
+    }
+
+    // Tire au hasard parmi les 10 % de candidats les plus éloignés des joueurs déjà placés.
+    private static int PickFarthestIndex(int[] minDistance)
+    {
+        int topCount = Mathf.Max(1, minDistance.Length / 10);
+        int[] order = Enumerable.Range(0, minDistance.Length)
+            .OrderByDescending(i => minDistance[i])
+            .Take(topCount)
+            .ToArray();
+        return order[UnityEngine.Random.Range(0, order.Length)];
     }
 
     private bool TileNotViable(HexTile tile, bool isCloseToStartingPoint)

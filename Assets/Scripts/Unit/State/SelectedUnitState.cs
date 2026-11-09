@@ -8,11 +8,11 @@ public class SelectedUnitState : BaseUnitState
 
     public override void Enter(Unit unit)
     {
-        
+        Debug.Log("Unit " + unit.name + " selected");
     }
-    
+
     public override void Exit(Unit unit)
     {
-        
+        Debug.Log("Unit " + unit.name + " deselected");
     }
 }

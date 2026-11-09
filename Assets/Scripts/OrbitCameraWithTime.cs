@@ -35,7 +35,14 @@ public class OrbitCameraWithTime : MonoBehaviour
          }
 
          CameraController.Instance.onCameraChanged += OnCameraChange;
-         
+
+     }
+
+     private void OnDestroy()
+     {
+         // L'abonnement se fait dans Awake : on se désabonne à la destruction.
+         if (CameraController.Instance != null)
+             CameraController.Instance.onCameraChanged -= OnCameraChange;
      }
 
      private void OnCameraChange(Unity.Cinemachine.CinemachineCamera camera)

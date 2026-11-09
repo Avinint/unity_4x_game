@@ -10,9 +10,11 @@ public class MouseController : Singleton<MouseController>
     public Action<RaycastHit> OnRightMouseClick;
     public Action<RaycastHit> OnMiddleMouseClick;
     public Action<RaycastHit> OnMouseMoving;
-    public Action<RaycastHit> onMouseExit;
+    // Déclenché une fois quand la souris quitte la grille (autre objet, vide ou UI).
+    public Action onMouseExit;
 
     private Camera _mainCamera;
+    private bool _isOverGrid;
     
     // Start is called before the first frame update
     void Start()
@@ -50,12 +52,19 @@ public class MouseController : Singleton<MouseController>
         // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // RaycastHit hit;
 
-        
-        if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity) && hitInfo.collider.CompareTag("Grid"))
+        bool overUI = UnityEngine.EventSystems.EventSystem.current != null
+                      && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+
+        if (!overUI && Physics.Raycast(ray, out hitInfo, Mathf.Infinity) && hitInfo.collider.CompareTag("Grid"))
         {
+            _isOverGrid = true;
             OnMouseMoving?.Invoke(hitInfo);
         }
-        
+        else if (_isOverGrid)
+        {
+            _isOverGrid = false;
+            onMouseExit?.Invoke();
+        }
     }
 
     void CheckMouseClick(Ray ray, int mouseButton)

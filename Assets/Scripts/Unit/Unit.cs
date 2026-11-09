@@ -5,20 +5,35 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public UnitType type;
-    
-    // Start is called before the first frame update
-    void Start()
+
+    public IUnitState State { get; private set; }
+    public bool IsSelected => State != null && State.State == UnitState.Selected;
+
+    private void Awake()
     {
-        
+        ChangeState(new IdleUnitState());
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ChangeState(IUnitState newState)
     {
-        
+        if (newState == null)
+        {
+            Debug.LogError("Trying to set null unit state.");
+            return;
+        }
+
+        State?.Exit(this);
+        State = newState;
+        State.Enter(this);
+    }
+
+    public void Select()
+    {
+        if (!IsSelected) ChangeState(new SelectedUnitState());
+    }
+
+    public void Deselect()
+    {
+        if (IsSelected) ChangeState(new IdleUnitState());
     }
 }
-
-
-
-

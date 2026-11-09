@@ -37,12 +37,35 @@ public class GameManager : Singleton<GameManager>
         HexGrid.DefaultVisibleTiles = DefaultVisibleTiles;
         HexGrid.DefaultVisibleRadius = DefaultVisibleRadius;
         HexGrid.OnTileInstancesGenerated += InitPlayers;
+        CameraController.Instance.onDeselectAction += DeselectUnit;
     }
-    
+
     private void OnDisable()
     {
-     
+
         HexGrid.OnTileInstancesGenerated -= InitPlayers;
+        if (CameraController.Instance != null)
+            CameraController.Instance.onDeselectAction -= DeselectUnit;
+    }
+
+    public Unit SelectedUnit { get; private set; }
+
+    // Sélectionne la première unité de la case (rien si la case est vide).
+    public void SelectUnitOn(HexTile tile)
+    {
+        Unit unit = tile.GetFirstUnit();
+        if (unit == null) return;
+
+        if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
+        SelectedUnit = unit;
+        SelectedUnit.Select();
+    }
+
+    public void DeselectUnit()
+    {
+        if (SelectedUnit == null) return;
+        SelectedUnit.Deselect();
+        SelectedUnit = null;
     }
 
 
@@ -121,9 +144,11 @@ public class GameManager : Singleton<GameManager>
             coordinates.z, HexGrid.Orientation
         ) + HexGrid.transform.position;
 
-        if (!HexGrid.TryGetTile(coordinates.x, coordinates.y, out HexTile tile))
+        // Le Vector3Int a y = 0 : la case de départ est déjà connue, pas besoin de la rechercher.
+        HexTile tile = player.StartingTile;
+        if (tile == null)
         {
-            Debug.LogError($"Starting tile not found at {coordinates.x},{coordinates.y}");
+            Debug.LogError("Le joueur n'a pas de case de départ");
             return;
         }
         
@@ -174,11 +199,12 @@ public class GameManager : Singleton<GameManager>
                     (int)coordinates.z, HexGrid.Orientation
                 ) + HexGrid.transform.position;
 
-                Instantiate(
+                GameObject instance = Instantiate(
                     unit,
-                    centrePosition, 
-                    HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
+                    centrePosition,
+                    HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity,
                     HexGrid.transform);
+                tile.AddUnit(instance);
             }
         }
 

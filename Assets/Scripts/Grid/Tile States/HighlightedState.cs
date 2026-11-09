@@ -22,8 +22,8 @@ public class HighlightedState : BaseTileState
         LeanTween.scale(tile.Terrain.gameObject, Vector3.one, .2f).setEase(LeanTweenType.easeOutBack);
         LeanTween.moveY(tile.Terrain.gameObject, 0f, .2f).setEase(LeanTweenType.easeOutBack);
         CameraController.Instance.onSelectAction -= tile.OnSelect;
-        CameraController.Instance.onCommandAction += tile.OnMoveUnit;
-        
+        CameraController.Instance.onCommandAction -= tile.OnMoveUnit;
+
     }
 
     public override ITileState OnMouseExit()

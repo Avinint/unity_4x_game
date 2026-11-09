@@ -120,6 +120,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     
     public void OnSelect()
     {
+        GameManager.Instance.SelectUnitOn(this);
         ChangeState(State.OnSelect());
         OnDeselect();
     }
@@ -284,8 +285,17 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     public void AddUnit(GameObject unit)
     {
-        Debug.Log("ICI " + unit);
         units.Add(unit);
+    }
+
+    // Première unité de la case (null s'il n'y en a pas).
+    public Unit GetFirstUnit()
+    {
+        foreach (var go in units)
+        {
+            if (go != null && go.TryGetComponent(out Unit unit)) return unit;
+        }
+        return null;
     }
     
     
