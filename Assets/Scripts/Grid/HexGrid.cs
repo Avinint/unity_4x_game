@@ -109,11 +109,11 @@ public class HexGrid : MonoBehaviour
         MouseController.Instance.OnMouseMoving -= OnMouseMove;
     }
 
-    public HexTile GetTile(int x, int y)
+    public bool TryGetTile(int x, int y, out HexTile tile)
     {
-       var coordinates =  HexMetrics.OffsetToAxial(x, y, Orientation);
+        var coordinates = HexMetrics.OffsetToAxial(x, y, Orientation);
 
-       return Tiles[coordinates];
+        return Tiles.TryGetValue(coordinates, out tile);
     }
     
     private void OnMouseMove(RaycastHit hit)

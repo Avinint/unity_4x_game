@@ -121,7 +121,11 @@ public class GameManager : Singleton<GameManager>
             coordinates.z, HexGrid.Orientation
         ) + HexGrid.transform.position;
 
-        HexTile tile = HexGrid.GetTile(coordinates.x, coordinates.y);
+        if (!HexGrid.TryGetTile(coordinates.x, coordinates.y, out HexTile tile))
+        {
+            Debug.LogError($"Starting tile not found at {coordinates.x},{coordinates.y}");
+            return;
+        }
         
           Units[tile.AxialCoordinates]  = Instantiate(
             units[0],
