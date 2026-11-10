@@ -361,7 +361,6 @@ public class HexGrid : MonoBehaviour
 
             HexTile tile = candidates[chosen];
             StartTiles.Add(tile);
-            tile.Discover();
 
             for (int i = 0; i < candidates.Count; i++)
             {
@@ -369,8 +368,6 @@ public class HexGrid : MonoBehaviour
                 if (d < minDistance[i]) minDistance[i] = d;
             }
         }
-
-        CameraController.Instance.CameraTarget.transform.position = StartTiles[0].Terrain.transform.position;
     }
 
     // Tire au hasard parmi les 10 % de candidats les plus éloignés des joueurs déjà placés.

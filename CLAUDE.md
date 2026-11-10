@@ -38,9 +38,9 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 ## À modifier après les tests (survol des cases)
 - `HexGrid.OnMouseMove` : une souris hors d'une case du jeu (UI, autre objet) est un cas NORMAL : ignorer sans message (pas de LogError). (`TryGetValue` déjà en place.)
 
-## À faire (révélation des zones de départ)
-- Pour l'instant, tous les joueurs révèlent leur zone (`GameManager.InitPlayers` -> `SetVisibleTiles`, et `tile.Discover()` dans `HexGrid.DispatchPlayers`) : sert à vérifier la répartition des 5 joueurs. En partie normale, seul le joueur local doit révéler sa zone.
-- Ajouter `LocalPlayer` dans `GameManager` et une case `RevealAllPlayers` (débogage) : ne révéler que le joueur local sauf si la case est cochée. Les unités et zones des autres joueurs restent créées.
+## Révélation des zones de départ
+- `GameManager.LocalPlayer` (champ `localPlayer`, par défaut le premier de `Players`) et `RevealAllPlayers` (coché par défaut, débogage). Décoché, seule la zone du joueur local est révélée et la caméra démarre sur sa case.
+- À faire : les unités des autres joueurs sont créées même sur des cases cachées, leur modèle reste visible au-dessus du brouillard (à masquer plus tard).
 
 ## À faire (caméra)
 - Définir une vue isométrique bien pensée (angle fixe). L'orthographique vu de dessus a été essayé : le marqueur (forme verticale, 7 unités de haut) n'y est vu que par sa tranche.

@@ -8,6 +8,10 @@ using UnityEngine.InputSystem;
 public class GameManager : Singleton<GameManager>
 {
     public List<Player> Players = new List<Player>();
+    [SerializeField] private Player localPlayer;       // joueur local (par défaut : le premier de la liste)
+    public bool RevealAllPlayers = true;               // débogage : révéler les zones de tous les joueurs
+
+    public Player LocalPlayer => localPlayer != null ? localPlayer : (Players.Count > 0 ? Players[0] : null);
     [field:SerializeField] public HexGrid HexGrid { get; private set; }
     
     public List<Vector2> DefaultVisibleTiles = new List<Vector2> { new Vector2(-1, -1) };
@@ -82,9 +86,13 @@ public class GameManager : Singleton<GameManager>
             player.StartingTile = tile;
             HexGrid.StartTiles.RemoveAt(index);
             player.StartingArea = HexGrid.GetStartingArea( player.StartingTile);
-            SetVisibleTiles(player.StartingArea);
+            if (RevealAllPlayers || player == LocalPlayer) SetVisibleTiles(player.StartingArea);
             AddStartingUnits(player);
         }
+
+        // La caméra démarre sur la case de départ du joueur local.
+        if (LocalPlayer != null && LocalPlayer.StartingTile != null)
+            CameraController.Instance.CameraTarget.transform.position = LocalPlayer.StartingTile.CentrePosition;
     }
     
     private void SetVisibleTiles(Dictionary<Vector2Int, HexTile> tiles)
