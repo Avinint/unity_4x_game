@@ -140,14 +140,14 @@ public static class HexMetrics
 
     private static Vector2Int CubeToOffsetPointy(int q, int r, int s)
     {
-        Vector2Int offsetCoordinates = new Vector2Int(q + (r + (r & 1)) / 2, r);
+        Vector2Int offsetCoordinates = new Vector2Int(q + (r - (r & 1)) / 2, r);
         return offsetCoordinates;
     }
     
     
     private static Vector2Int CubeToOffsetFlat(int q, int r, int s)
     {
-        Vector2Int offsetCoordinates = new Vector2Int(q, r + (q + (q & 1)) / 2);
+        Vector2Int offsetCoordinates = new Vector2Int(q, r + (q - (q & 1)) / 2);
         return offsetCoordinates;
     }
     
