@@ -196,19 +196,24 @@ public static class HexMetrics
 
     private static Vector2Int CoordinateToPointyAxial(float x, float z, float hexSize)
     {
-        Vector2Int pointyHexCoordinates = new Vector2Int();
-        pointyHexCoordinates.x = (int)((Mathf.Sqrt(3) / 3 * x - 1f / 3 * z) / hexSize);
-        pointyHexCoordinates.y = (int)((2f / 3 * z) / hexSize);
+        float q = (Mathf.Sqrt(3) / 3 * x - 1f / 3 * z) / hexSize;
+        float r = (2f / 3 * z) / hexSize;
 
-        return AxialRound(pointyHexCoordinates);
+        return AxialRound(q, r);
     }
 
     private static Vector2Int CoordinateToFlatAxial(float x, float z, float hexSize)
     {
-        Vector2Int flatHexCoordinates = new Vector2Int();
-        flatHexCoordinates.x =  (int)((2f / 3 * x) / hexSize);
-        flatHexCoordinates.y =  (int) ((-1f / 3 * x + Mathf.Sqrt(3) / 3 * z) / hexSize);
-        return AxialRound(flatHexCoordinates);
+        float q = (2f / 3 * x) / hexSize;
+        float r = (-1f / 3 * x + Mathf.Sqrt(3) / 3 * z) / hexSize;
+
+        return AxialRound(q, r);
+    }
+
+    // Arrondit une coordonnée axiale fractionnaire vers l'hexagone le plus proche.
+    private static Vector2Int AxialRound(float q, float r)
+    {
+        return CubeToAxial(CubeRound(new Vector3(q, r, -q - r)));
     }
 
     public static Vector2Int CoordinateToOffset(float x, float z, float hexSize, HexOrientation orientation)
