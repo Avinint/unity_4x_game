@@ -112,7 +112,20 @@ public class HexGrid : MonoBehaviour
         return Tiles.TryGetValue(coordinates, out tile);
     }
     
-    // La souris quitte la grille : la dernière case survolée redescend.
+    [field: SerializeField] public GameObject HoverMarker { get; set; }
+
+    // Le marqueur de survol suit la case survolée (découverte) et se masque sinon.
+    public void UpdateHoverMarker()
+    {
+        if (HoverMarker == null) return;
+        // Pas de marqueur de survol sur la case sélectionnée (elle a déjà le sien).
+        HexTile selected = SelectionController.Instance != null ? SelectionController.Instance.SelectedTile : null;
+        bool show = _activeTile != null && _activeTile.IsHovered && _activeTile != selected;
+        HoverMarker.SetActive(show);
+        if (show) HoverMarker.transform.position = _activeTile.CentrePosition;
+    }
+
+    // La souris quitte la grille : le survol s'efface.
     private void OnMouseLeaveGrid()
     {
         if (CameraController.Instance.IsLocked) return;
@@ -120,6 +133,7 @@ public class HexGrid : MonoBehaviour
 
         _activeTile.OnMouseExit();
         _activeTile = null;
+        UpdateHoverMarker();
     }
 
     private void OnMouseMove(RaycastHit hit)
@@ -140,6 +154,7 @@ public class HexGrid : MonoBehaviour
         if (_activeTile != null) _activeTile.OnMouseExit();
         _activeTile = tile;
         _activeTile.OnMouseEnter();
+        UpdateHoverMarker();
     }
 
     private void SetHexTileTerrainTypes(TerrainType[,] terrainMap)

@@ -3,6 +3,7 @@ using UnityEngine;
 public class SelectionController : Singleton<SelectionController>
 {
     public Unit SelectedUnit { get; private set; }
+    public HexTile SelectedTile { get; private set; }
 
     private HexGrid Grid => GameManager.Instance.HexGrid;
 
@@ -12,6 +13,9 @@ public class SelectionController : Singleton<SelectionController>
         cam.onSelectAction += Select;
         cam.onCommandAction += Command;
         cam.onDeselectAction += Deselect;
+
+        // Le marqueur n'apparaît qu'avec une unité sélectionnée.
+        if (Grid != null && Grid.Selector != null) Grid.Selector.SetActive(false);
     }
 
     private void OnDisable()
@@ -40,6 +44,15 @@ public class SelectionController : Singleton<SelectionController>
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
         SelectedUnit = unit;
         SelectedUnit.Select();
+        SelectedTile = tile;
+
+        if (Grid.Selector != null)
+        {
+            Grid.Selector.transform.position = tile.CentrePosition;
+            Grid.Selector.SetActive(true);
+        }
+
+        Grid.UpdateHoverMarker();
     }
 
     private void Command() => HoveredTile()?.OnMoveUnit();
@@ -49,5 +62,10 @@ public class SelectionController : Singleton<SelectionController>
         if (SelectedUnit == null) return;
         SelectedUnit.Deselect();
         SelectedUnit = null;
+        SelectedTile = null;
+
+        if (Grid.Selector != null) Grid.Selector.SetActive(false);
+
+        Grid.UpdateHoverMarker();
     }
 }

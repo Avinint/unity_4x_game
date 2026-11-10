@@ -78,18 +78,11 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     {
         if (!IsDiscovered || IsHovered) return;
         IsHovered = true;
-        LeanTween.cancel(terrain.gameObject);
-        LeanTween.scale(terrain.gameObject, Vector3.one * 1.2f, .2f).setEase(LeanTweenType.easeOutBack);
-        LeanTween.moveY(terrain.gameObject, 5f, .2f).setEase(LeanTweenType.easeOutBack);
     }
 
     public void OnMouseExit()
     {
-        if (!IsHovered) return;
         IsHovered = false;
-        LeanTween.cancel(terrain.gameObject);
-        LeanTween.scale(terrain.gameObject, Vector3.one, .2f).setEase(LeanTweenType.easeOutBack);
-        LeanTween.moveY(terrain.gameObject, 0f, .2f).setEase(LeanTweenType.easeOutBack);
     }
 
     public void OnMoveUnit()
