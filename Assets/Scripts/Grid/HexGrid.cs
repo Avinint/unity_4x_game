@@ -345,40 +345,19 @@ public class HexGrid : MonoBehaviour
             return;
         }
 
-        int count = Mathf.Min(PlayerCount, candidates.Count);
-        if (count < PlayerCount)
-            Debug.LogWarning($"DispatchPlayers : {PlayerCount} joueurs demandés, {count} cases disponibles.");
+        var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
+        var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random());
 
-        // Distance de chaque candidat au joueur placé le plus proche.
-        int[] minDistance = new int[candidates.Count];
-        for (int i = 0; i < minDistance.Length; i++) minDistance[i] = int.MaxValue;
+        if (picks.Count < PlayerCount)
+            Debug.LogWarning($"DispatchPlayers : {PlayerCount} joueurs demandés, {picks.Count} cases disponibles.");
 
-        for (int p = 0; p < count; p++)
+        for (int p = 0; p < picks.Count; p++)
         {
-            int chosen = p == 0 ? UnityEngine.Random.Range(0, candidates.Count) : PickFarthestIndex(minDistance);
-            if (p > 0 && minDistance[chosen] < PlayerSpawningMinDistance)
-                Debug.LogWarning($"Joueur {p} : distance minimale non respectée ({minDistance[chosen]} < {PlayerSpawningMinDistance}).");
+            if (p > 0 && picks[p].DistanceToNearest < PlayerSpawningMinDistance)
+                Debug.LogWarning($"Joueur {p} : distance minimale non respectée ({picks[p].DistanceToNearest} < {PlayerSpawningMinDistance}).");
 
-            HexTile tile = candidates[chosen];
-            StartTiles.Add(tile);
-
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                int d = HexMetrics.AxialDistance(candidates[i].AxialCoordinates, tile.AxialCoordinates);
-                if (d < minDistance[i]) minDistance[i] = d;
-            }
+            StartTiles.Add(candidates[picks[p].Index]);
         }
-    }
-
-    // Tire au hasard parmi les 10 % de candidats les plus éloignés des joueurs déjà placés.
-    private static int PickFarthestIndex(int[] minDistance)
-    {
-        int topCount = Mathf.Max(1, minDistance.Length / 10);
-        int[] order = Enumerable.Range(0, minDistance.Length)
-            .OrderByDescending(i => minDistance[i])
-            .Take(topCount)
-            .ToArray();
-        return order[UnityEngine.Random.Range(0, order.Length)];
     }
 
     private bool TileNotViable(HexTile tile, bool isCloseToStartingPoint)
