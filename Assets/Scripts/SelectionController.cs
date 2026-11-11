@@ -39,8 +39,9 @@ public class SelectionController : Singleton<SelectionController>
         HexTile tile = HoveredTile();
         if (tile == null) return;
 
+        // Clic sur une case sans unité : désélection.
         Unit unit = tile.GetFirstUnit();
-        if (unit == null) return;
+        if (unit == null) { Deselect(); return; }
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
         SelectedUnit = unit;
         SelectedUnit.Select();
@@ -55,7 +56,20 @@ public class SelectionController : Singleton<SelectionController>
         Grid.UpdateHoverMarker();
     }
 
-    private void Command() => HoveredTile()?.OnMoveUnit();
+    // Déplacement direct (téléportation) de l'unité sélectionnée vers une case de terre découverte.
+    private void Command()
+    {
+        HexTile target = HoveredTile();
+        if (SelectedUnit == null || target == null || target == SelectedTile || target.IsNotLand()) return;
+
+        SelectedTile.RemoveUnit(SelectedUnit.gameObject);
+        target.AddUnit(SelectedUnit.gameObject);
+        SelectedUnit.transform.position = target.CentrePosition;
+        SelectedTile = target;
+
+        if (Grid.Selector != null) Grid.Selector.transform.position = target.CentrePosition;
+        Grid.UpdateHoverMarker();
+    }
 
     private void Deselect()
     {

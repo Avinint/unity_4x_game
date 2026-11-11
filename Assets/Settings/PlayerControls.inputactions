@@ -239,17 +239,6 @@
                 },
                 {
                     "name": "",
-                    "id": "35bf6788-1e06-42c2-ac40-573f31c814fe",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard and Mouse",
-                    "action": "Deselect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "80b376c1-ca9d-4c5c-ab37-a0ec28361f34",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",

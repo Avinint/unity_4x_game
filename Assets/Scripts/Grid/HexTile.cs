@@ -85,17 +85,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         IsHovered = false;
     }
 
-    public void OnMoveUnit()
-    {
-      
-        //CameraController.Instance.CameraTarget.transform.position = pos;
-        // Grid.Selector.transform.position = pos;
-        
-      
-        Grid.Selector.transform.position = CentrePosition;
-        
-    }
-
     public HexTile(Vector2Int coordinates, HexOrientation orientation)
     {
         Orientation = orientation;
@@ -231,6 +220,11 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     public void AddUnit(GameObject unit)
     {
         units.Add(unit);
+    }
+
+    public void RemoveUnit(GameObject unit)
+    {
+        units.Remove(unit);
     }
 
     // Première unité de la case (null s'il n'y en a pas).
