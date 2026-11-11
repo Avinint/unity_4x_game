@@ -1,129 +1,71 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using UnityEngine;
 
-public class PathFinder
+// A* sur coordonnées axiales, coût 1 par case.
+public static class PathFinder
 {
-    private HexGrid grid;
-    
-    public PathFinder(int Width, int Height)
+    private static readonly Vector2Int[] Directions =
     {
-        
+        new(1, 0), new(1, -1), new(0, -1), new(-1, 0), new(-1, 1), new(0, 1)
+    };
+
+    // Chemin de origin (exclue) à destination (incluse). Liste vide si origin == destination,
+    // null si destination inaccessible. isPassable dit si une case existe et peut être traversée.
+    public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination, Func<Vector2Int, bool> isPassable)
+    {
+        if (origin == destination) return new List<Vector2Int>();
+        if (!isPassable(destination)) return null;
+
+        var open = new List<Vector2Int> { origin };
+        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        var costFromOrigin = new Dictionary<Vector2Int, int> { [origin] = 0 };
+        var closed = new HashSet<Vector2Int>();
+
+        while (open.Count > 0)
+        {
+            Vector2Int current = Cheapest(open, costFromOrigin, destination);
+            if (current == destination) return Rebuild(cameFrom, origin, destination);
+
+            open.Remove(current);
+            closed.Add(current);
+
+            foreach (var dir in Directions)
+            {
+                Vector2Int next = current + dir;
+                if (closed.Contains(next) || !isPassable(next)) continue;
+
+                int cost = costFromOrigin[current] + 1;
+                if (costFromOrigin.TryGetValue(next, out int known) && cost >= known) continue;
+
+                costFromOrigin[next] = cost;
+                cameFrom[next] = current;
+                if (!open.Contains(next)) open.Add(next);
+            }
+        }
+        return null;
     }
 
-    public static List<HexTile> FindPath(HexTile origin, HexTile destination)
+    // Plus petit coût estimé ; à égalité, la case la plus proche de la destination.
+    private static Vector2Int Cheapest(List<Vector2Int> open, Dictionary<Vector2Int, int> costFromOrigin, Vector2Int destination)
     {
-        Dictionary<HexTile, PathNode> nodesNotEvaluated = new Dictionary<HexTile, PathNode>();
-        Dictionary<HexTile, PathNode> nodesAlreadyEvaluated = new Dictionary<HexTile, PathNode>();
-
-        PathNode startNode = new PathNode(origin, origin, destination, 0);
-        nodesNotEvaluated.Add(origin, startNode);
-
-        bool gotPath = EvaluateNextNode(nodesNotEvaluated, nodesAlreadyEvaluated, origin, destination,
-            out List<HexTile> path);
-
-        while (!gotPath)
+        Vector2Int best = open[0];
+        int bestH = HexMetrics.AxialDistance(best, destination);
+        int bestF = costFromOrigin[best] + bestH;
+        for (int i = 1; i < open.Count; i++)
         {
-            gotPath = EvaluateNextNode(nodesNotEvaluated, nodesAlreadyEvaluated, origin, destination, out path);
+            int h = HexMetrics.AxialDistance(open[i], destination);
+            int f = costFromOrigin[open[i]] + h;
+            if (f < bestF || (f == bestF && h < bestH)) { best = open[i]; bestF = f; bestH = h; }
         }
+        return best;
+    }
 
+    private static List<Vector2Int> Rebuild(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int origin, Vector2Int destination)
+    {
+        var path = new List<Vector2Int>();
+        for (Vector2Int c = destination; c != origin; c = cameFrom[c]) path.Add(c);
+        path.Reverse();
         return path;
-    }
-
-    private static bool EvaluateNextNode(Dictionary<HexTile, PathNode> nodesNotEvaluated,
-        Dictionary<HexTile, PathNode> nodesEvaluated, HexTile origin, HexTile destination, out List<HexTile> path)
-    {
-        PathNode currentNode = GetCheapestNode(nodesNotEvaluated.Values.ToArray());
-
-        if (currentNode == null)
-        {
-            path = new List<HexTile>();
-            return false;
-        }
-
-        nodesNotEvaluated.Remove(currentNode.target);
-        nodesEvaluated.Add(currentNode.target, currentNode);
-
-        path = new List<HexTile>();
-
-        if (currentNode.target == destination)
-        {
-            path.Add(currentNode.target);
-            while (currentNode.target != origin)
-            {
-                path.Add(currentNode.parent.target);
-                currentNode = currentNode.parent;
-            }
-
-            return true;
-        }
-
-        List<PathNode> neighbours = new List<PathNode>();
-
-        foreach (HexTile tile in currentNode.target.Neighbours)
-        {
-            PathNode node = new PathNode(tile, origin, destination, currentNode.GetCost());
-
-            if (tile.IsNotLand())
-            {
-                node.baseCost = 999999;
-                // continue;
-            }
-            
-            neighbours.Add(node);
-        }
-
-        foreach (PathNode neighbour in neighbours)
-        {
-            if (nodesEvaluated.Keys.Contains(neighbour.target)) continue;
-
-            if (neighbour.GetCost() < currentNode.GetCost() || !nodesNotEvaluated.Keys.Contains(neighbour.target))
-            {
-                neighbour.SetParent(currentNode);
-                if (!nodesNotEvaluated.Keys.Contains(neighbour.target))
-                {
-                    nodesNotEvaluated.Add(neighbour.target, neighbour);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // public void OnDrawGizmos()
-    // {
-    //     if (path != null)
-    //     {
-    //         foreach (HexTile tile in path)
-    //         {
-    //             Gizmos.DrawCube(tile);
-    //         }
-    //     }
-    // }
-
-    private static PathNode GetCheapestNode(PathNode[] nodesNotEvaluated)
-    {
-        if (nodesNotEvaluated.Length == 0) { return null; }
-
-        PathNode selectedNode = nodesNotEvaluated[0];
-
-        for (int i = 1; i < nodesNotEvaluated.Length; i++)
-        {
-            var currentNode = nodesNotEvaluated[i];
-            if (currentNode.GetCost() < selectedNode.GetCost())
-            {
-                selectedNode = currentNode;
-            }
-            
-            else if (currentNode.GetCost() == selectedNode.GetCost() &&
-                currentNode.costToDestination < selectedNode.costToDestination)
-            {
-                selectedNode = currentNode;
-            }
-        }
-
-        return selectedNode;
     }
 }
