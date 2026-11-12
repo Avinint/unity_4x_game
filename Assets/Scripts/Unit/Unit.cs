@@ -17,6 +17,16 @@ public class Unit : MonoBehaviour
         ResetMovementPoints();
     }
 
+    private void OnEnable()
+    {
+        if (GameManager.Instance != null) GameManager.Instance.TurnChange += ResetMovementPoints;
+    }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance != null) GameManager.Instance.TurnChange -= ResetMovementPoints;
+    }
+
     // Points de mouvement du type (appelé au début de chaque tour).
     public void ResetMovementPoints() => MovementPoints = type != null ? type.MovementPoints : 0;
 

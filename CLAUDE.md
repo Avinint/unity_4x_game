@@ -3,7 +3,8 @@
 Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, réponses brèves et précises.
 
 ## Méthode de travail
-- Avant toute écriture (code, scène, CLAUDE.md), montrer les changements prévus (diff ou extraits avant/après, fichiers concernés) et attendre la validation explicite de l'utilisateur. Pas d'écriture avant le feu vert.
+- Avant toute écriture (code, scène), montrer les changements prévus (diff ou extraits avant/après, fichiers concernés) et attendre la validation explicite de l'utilisateur. Pas d'écriture avant le feu vert.
+- CLAUDE.md et ajouts à `.gitignore` : écrire directement, sans montrer le diff ; résumer en une ligne ce qui a changé.
 - Travailler par petites étapes, une à la fois, et vérifier en jeu entre deux étapes.
 - Ne jamais commiter : l'utilisateur commite lui-même.
 
@@ -20,19 +21,19 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 
 ## Architecture (Assets/Scripts)
 - `Singleton<T>` : base des managers (DontDestroyOnLoad seulement si l'objet est à la racine).
-- `GameManager` : liste de `Player`, `InitPlayers` appelé sur `HexGrid.OnTileInstancesGenerated`, place les joueurs et unités de départ, événements `GameStart` / `TurnChange`.
+- `GameManager` : liste de `Player`, `InitPlayers` appelé sur `HexGrid.OnTileInstancesGenerated`, place les joueurs et unités de départ, événements `GameStart` / `TurnChange`. `CurrentTurn` (commence à 1) ; Entrée (`World/ChangeTurn` -> `ChangeTurn`) l'incrémente, log « Tour N », puis lève `TurnChange`.
 - `Grid/MapGenerator` : bruit -> `TerrainType[,]`, événement `OnTerrainMapGenerated`.
 - `Grid/HexGrid` : crée les `HexTile` en thread (`Task.Run`), voisins (`SetNeighbours`), instanciation par lots (coroutine), placement des joueurs par `DispatchPlayers`, qui délègue le choix à `StartPositionPicker` (fonction pure testée : 1er au hasard, puis un des 10 % de cases de terre les plus éloignées des joueurs déjà placés), `TryGetTile(x, y, out tile)` (coordonnées offset, remplace l'ancien `GetTile`) et `TryGetTileAxial(axial, out tile)`.
 - `Grid/HexTile` : plus de machine à états. Deux drapeaux indépendants : `IsDiscovered` (brouillard, `Discover()` révèle une seule fois) et `IsHovered` (survol, affiché par le marqueur blanc `HexGrid.HoverMarker`, masqué sur la case sélectionnée).
-- `SelectionController` (Singleton créé par `GameManager`) : écoute les actions de `CameraController`. Clic gauche : sélectionne la première unité de la case survolée (case vide : désélection). Clic droit (`Interact`) : déplace l'unité sélectionnée par chemin (`PathFinder`, cases de terre découvertes) ; elle change de case dès le départ (`HexTile.RemoveUnit`/`AddUnit`) ; commande ignorée pendant le trajet. Échap / Retour arrière : désélection. `HexGrid.Selector` suit l'unité à chaque image (`Update`). Pas de recentrage de la caméra au clic.
+- `SelectionController` (Singleton créé par `GameManager`) : écoute les actions de `CameraController`. Clic gauche : sélectionne la première unité de la case survolée (case vide : désélection). Clic droit (`Interact`) : déplace l'unité sélectionnée par chemin (`PathFinder`, cases de terre découvertes), coupé à ses points de mouvement ; elle change de case (celle où elle s'arrête) dès le départ (`HexTile.RemoveUnit`/`AddUnit`) ; commande ignorée pendant le trajet. Échap / Retour arrière : désélection. `HexGrid.Selector` suit l'unité à chaque image (`Update`). Pas de recentrage de la caméra au clic.
 - `MouseController` : raycasts souris -> événements `OnMouseMoving`, `OnLeftMouseClick`, etc.
 - `CameraController` (Overhead / Focus) et `OrbitCameraWithTime`.
-- `Unit` + `Unit/State/*` : états d'unité (Idle / Selected utilisés, les autres vides). `MoveAlong(points)` : déplacement animé case par case (`moveSpeed`, drapeau `IsMoving`, sans passer par `MovingUnitState`).
+- `Unit` + `Unit/State/*` : états d'unité (Idle / Selected utilisés, les autres vides). `MoveAlong(points)` : déplacement animé case par case (`moveSpeed`, drapeau `IsMoving`, sans passer par `MovingUnitState`), coûte 1 point par case. `MovementPoints` vient de `UnitType.MovementPoints` (2 par défaut), rechargé par `ResetMovementPoints` au démarrage et sur `TurnChange` (abonnement dans `OnEnable`/`OnDisable`).
 - `Grid/PathFinder` : A* pur sur coordonnées axiales, `FindPath(origin, destination, isPassable)`, coût 1 par case ; renvoie le chemin sans la case de départ, liste vide si même case, null si inaccessible. Testé (`PathFinderTests`).
 
 ## État du jeu
-- Fait : génération de carte, brouillard (`IsDiscovered`), placement des joueurs, caméras, survol et sélection d'unité (marqueurs), déplacement par chemin animé.
-- Pas branché : boucle de tour (`TurnChange` sans abonné, `MaxTurns` inutilisé, Entrée liée à `ChangeTurn`), points de mouvement, coût selon le terrain, aperçu du chemin, ressources.
+- Fait : génération de carte, brouillard (`IsDiscovered`), placement des joueurs, caméras, survol et sélection d'unité (marqueurs), déplacement par chemin animé, points de mouvement, passage du tour avec Entrée (toutes les unités rechargées).
+- Pas branché : HUD (numéro de tour, points restants ; UI Toolkit prévu), tour par joueur (joueur courant), fin de partie (`MaxTurns` inutilisé), coût selon le terrain, aperçu du chemin, ressources.
 
 ## Points fragiles connus
 - `BaseUnitState` : classe simple (plus de `Singleton`/`MonoBehaviour`), états créés avec `new`. `Unit` a un `State` et un `ChangeState` (Idle / Selected utilisés, les autres états sont vides).

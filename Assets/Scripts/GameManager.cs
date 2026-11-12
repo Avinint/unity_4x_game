@@ -23,6 +23,7 @@ public class GameManager : Singleton<GameManager>
     public Dictionary<Vector2, GameObject> Units { get; private set; } = new Dictionary<Vector2, GameObject>();
 
     public int MaxTurns = 500;
+    public int CurrentTurn { get; private set; } = 1;
 
     public event System.Action GameStart;
     public event System.Action TurnChange;
@@ -107,6 +108,8 @@ public class GameManager : Singleton<GameManager>
     {
         if (context.performed)
         {
+            CurrentTurn++;
+            Debug.Log($"Tour {CurrentTurn}");
             TurnChange?.Invoke();
         }
     }
