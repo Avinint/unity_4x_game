@@ -109,7 +109,6 @@ public class GameManager : Singleton<GameManager>
         if (context.performed)
         {
             CurrentTurn++;
-            Debug.Log($"Tour {CurrentTurn}");
             TurnChange?.Invoke();
         }
     }
