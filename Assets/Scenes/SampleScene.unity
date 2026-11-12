@@ -1495,7 +1495,7 @@ GameObject:
   - component: {fileID: 1437649290}
   - component: {fileID: 1437649289}
   m_Layer: 0
-  m_Name: Player  5
+  m_Name: Player 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1726,10 +1726,13 @@ MonoBehaviour:
   OverheadCamera: {fileID: 1811976905}
   focusCamera: {fileID: 636859190}
   cameraSpeed: 10
-  cameraZoomSpeed: 1
-  cameraZoomMin: 15
-  cameraZoomMax: 100
-  cameraZoomDefault: 50
+  pitch: 55
+  fieldOfView: 30
+  distanceMin: 40
+  distanceMax: 250
+  distanceDefault: 120
+  distanceZoomSpeed: 2.5
+  scrollZoomStep: 0.15
   defaultMode: 0
   currentMode: 0
   isLocked: 0

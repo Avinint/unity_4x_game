@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Affiche le numéro de tour ; mis à jour à chaque TurnChange.
+// Affiche le tour, le joueur courant et l'unité sélectionnée.
 [RequireComponent(typeof(UIDocument))]
 public class HUD : MonoBehaviour
 {
@@ -16,17 +16,26 @@ public class HUD : MonoBehaviour
         unitLabel = root.Q<Label>("unitLabel");
         lastUnitText = null;
         GameManager.Instance.TurnChange += Refresh;
+        GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (GameManager.Instance != null) GameManager.Instance.TurnChange -= Refresh;
+        if (GameManager.Instance == null) return;
+        GameManager.Instance.TurnChange -= Refresh;
+        GameManager.Instance.PlayerTurnStart -= OnPlayerTurnStart;
     }
+
+    private void OnPlayerTurnStart(Player player) => Refresh();
 
     private void Refresh()
     {
-        if (turnLabel != null) turnLabel.text = $"Tour {GameManager.Instance.CurrentTurn}";
+        if (turnLabel == null) return;
+        Player player = GameManager.Instance.CurrentPlayer;
+        turnLabel.text = player != null
+            ? $"Tour {GameManager.Instance.CurrentTurn} — {player.name}"
+            : $"Tour {GameManager.Instance.CurrentTurn}";
     }
 
     // Unité sélectionnée et points restants ; texte réécrit seulement s'il change.

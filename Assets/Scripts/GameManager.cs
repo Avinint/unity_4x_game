@@ -106,6 +106,7 @@ public class GameManager : Singleton<GameManager>
     private void BuildTurnOrder()
     {
         turns = new TurnCycle<Player>(Players, LocalPlayer);
+        PlayerTurnStart?.Invoke(CurrentPlayer);   // début de partie : tour du premier joueur
     }
     
     private void SetVisibleTiles(Dictionary<Vector2Int, HexTile> tiles)
