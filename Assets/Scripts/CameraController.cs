@@ -18,10 +18,18 @@ public class CameraController : Singleton<CameraController>
    
     
     [SerializeField] private float cameraSpeed = 10f;
-    [SerializeField] private float cameraZoomSpeed = 1f;
-    [SerializeField] private float cameraZoomMin = 15f;
-    [SerializeField] private float cameraZoomMax = 100f;
-    [SerializeField] private float cameraZoomDefault = 50f;
+
+    [Header("Vue inclinée (Overhead)")]
+    [SerializeField, Range(20f, 89f)] private float pitch = 55f;   // inclinaison ; 90 = vue de dessus
+    [SerializeField] private float fieldOfView = 30f;
+    [SerializeField] private float distanceMin = 40f;
+    [SerializeField] private float distanceMax = 250f;
+    [SerializeField] private float distanceDefault = 120f;
+    [SerializeField] private float distanceZoomSpeed = 2.5f;
+    [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
+
+    private float distance;
+    private Unity.Cinemachine.CinemachineFollow overheadFollow;
 
     [SerializeField] private CameraMode defaultMode = CameraMode.Overhead;
 
@@ -49,8 +57,23 @@ public class CameraController : Singleton<CameraController>
 
     void Start()
     {
-        OverheadCamera.Lens.FieldOfView = cameraZoomDefault;
+        overheadFollow = OverheadCamera.GetComponent<Unity.Cinemachine.CinemachineFollow>();
+        // Décalage exprimé en coordonnées monde : nord toujours en haut.
+        var tracker = overheadFollow.TrackerSettings;
+        tracker.BindingMode = Unity.Cinemachine.TargetTracking.BindingMode.WorldSpace;
+        overheadFollow.TrackerSettings = tracker;
+
+        OverheadCamera.Lens.FieldOfView = fieldOfView;
+        SetDistance(distanceDefault);
         ChangeCamera(defaultMode);
+    }
+
+    // Place la caméra à `distance` de la cible, inclinée de `pitch`, côté sud.
+    private void SetDistance(float value)
+    {
+        distance = Mathf.Clamp(value, distanceMin, distanceMax);
+        float rad = pitch * Mathf.Deg2Rad;
+        overheadFollow.FollowOffset = new Vector3(0f, distance * Mathf.Sin(rad), -distance * Mathf.Cos(rad));
     }
 
     public void ChangeCamera(CameraMode mode)
@@ -116,6 +139,15 @@ public class CameraController : Singleton<CameraController>
     public void OnZoomChanged(InputAction.CallbackContext context)
     {
         if (isLocked) return;
+
+        // Molette : un cran = un pas immédiat (la boucle par image ne dure qu'une image).
+        if (context.control?.device is Mouse)
+        {
+            if (context.performed)
+                SetDistance(distance * (1f + Mathf.Sign(context.ReadValue<float>()) * scrollZoomStep));
+            return;
+        }
+
         if (context.performed)
         {
             if (zoomCoroutine != null)
@@ -154,14 +186,11 @@ public class CameraController : Singleton<CameraController>
             
             // move the camera in the direction of the input vector (2D)
             Vector2 inputVector = context.ReadValue<Vector2>();
-            Debug.Log("Moving: " + inputVector);
-            
+
             // move the camera in the direction of the input vector (3D)
             Vector3 moveVector = new Vector3(inputVector.x, 0, inputVector.y);
             cameraTarget.transform.position += moveVector * cameraSpeed * Time.deltaTime;
 
-            Debug.Log("Position: " + cameraTarget.transform.position);
-            
             yield return null;
         }
     }
@@ -175,8 +204,7 @@ public class CameraController : Singleton<CameraController>
         while (true)
         {
             //Change the FOV of the camera based on the input. If not keyboard, then adjust the value based on the scrollWheelZoomSpeed
-            float zoomAmount = OverheadCamera.Lens.FieldOfView + zoomInput * cameraZoomSpeed * Time.deltaTime;
-            OverheadCamera.Lens.FieldOfView = Mathf.Clamp(zoomAmount, cameraZoomMin, cameraZoomMax);
+            SetDistance(distance + zoomInput * distanceZoomSpeed * Time.deltaTime);
 
             yield return null;
         }

@@ -5,6 +5,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 ## Méthode de travail
 - Avant toute écriture (code, scène), montrer les changements prévus (diff ou extraits avant/après, fichiers concernés) et attendre la validation explicite de l'utilisateur. Pas d'écriture avant le feu vert.
 - CLAUDE.md et ajouts à `.gitignore` : écrire directement, sans montrer le diff ; résumer en une ligne ce qui a changé.
+- Mettre CLAUDE.md à jour dans la même étape que le changement qu'il décrit (pas après coup), pour qu'il parte dans le même commit.
 - Travailler par petites étapes, une à la fois, et vérifier en jeu entre deux étapes.
 - Ne jamais commiter : l'utilisateur commite lui-même.
 
@@ -29,7 +30,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - `Grid/HexTile` : plus de machine à états. Deux drapeaux indépendants : `IsDiscovered` (brouillard, `Discover()` révèle une seule fois) et `IsHovered` (survol, affiché par le marqueur blanc `HexGrid.HoverMarker`, masqué sur la case sélectionnée).
 - `SelectionController` (Singleton créé par `GameManager`) : écoute les actions de `CameraController`. Clic gauche : sélectionne la première unité de la case survolée (case vide : désélection). Clic droit (`Interact`) : déplace l'unité sélectionnée par chemin (`PathFinder`, cases de terre découvertes), coupé à ses points de mouvement ; elle change de case (celle où elle s'arrête) dès le départ (`HexTile.RemoveUnit`/`AddUnit`) ; commande ignorée pendant le trajet. Échap / Retour arrière : désélection. `HexGrid.Selector` suit l'unité à chaque image (`Update`). Pas de recentrage de la caméra au clic.
 - `MouseController` : raycasts souris -> événements `OnMouseMoving`, `OnLeftMouseClick`, etc.
-- `CameraController` (Overhead / Focus) et `OrbitCameraWithTime`.
+- `CameraController` (Overhead / Focus) et `OrbitCameraWithTime`. Overhead : vue en perspective inclinée, nord en haut (`CinemachineFollow` en `WorldSpace`, décalage `(0, d·sin(pitch), −d·cos(pitch))` posé par `SetDistance`, `HardLookAt` sur `CameraTarget`). Réglages : `pitch` 55°, `fieldOfView` 30°, distance 40–250 (défaut 120), `distanceZoomSpeed` (A/E, continu), `scrollZoomStep` (molette : 15 % de la distance par cran, molette vers le haut = éloigner, choix de l'utilisateur). Le zoom change la distance, plus le FOV. Pan inchangé (flèches, axes monde).
 - `Unit` + `Unit/State/*` : états d'unité (Idle / Selected utilisés, les autres vides). `MoveAlong(points)` : déplacement animé case par case (`moveSpeed`, drapeau `IsMoving`, sans passer par `MovingUnitState`), coûte 1 point par case. `MovementPoints` vient de `UnitType.MovementPoints` (2 par défaut), rechargé par `ResetMovementPoints` au démarrage et sur `TurnChange` (abonnement dans `OnEnable`/`OnDisable`).
 - `Grid/PathFinder` : A* pur sur coordonnées axiales, `FindPath(origin, destination, isPassable)`, coût 1 par case ; renvoie le chemin sans la case de départ, liste vide si même case, null si inaccessible. Testé (`PathFinderTests`).
 
@@ -48,8 +49,9 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - À faire : les unités des autres joueurs sont créées même sur des cases cachées, leur modèle reste visible au-dessus du brouillard (à masquer plus tard).
 
 ## À faire (caméra)
-- Définir une vue isométrique bien pensée (angle fixe). L'orthographique vu de dessus a été essayé : le marqueur (forme verticale, 7 unités de haut) n'y est vu que par sa tranche.
-- Ensuite, revérifier la lisibilité de `Selector` et `hoverMarker`. Si besoin, les remplacer par un contour d'hexagone à plat (`LineRenderer` sur `HexMetrics.Corners`).
+- Vue inclinée en perspective choisie (l'orthographique vu de dessus avait été essayé : le marqueur vertical n'y était vu que par sa tranche). À régler en jeu : `pitch`, distances.
+- Plus tard, au choix : inclinaison qui varie avec le zoom (plus à plat de près), rotation par pas de 60° (le pan devra suivre l'orientation), limiter `CameraTarget` aux bords de la carte.
+- Revérifier la lisibilité de `Selector` et `hoverMarker`. Si besoin, les remplacer par un contour d'hexagone à plat (`LineRenderer` sur `HexMetrics.Corners`).
 
 ## Historique migration
 Unity 2022.3.46f1 -> Unity 6, Built-in -> URP, Cinemachine 2 -> 3. Notes détaillées dans le projet Claude « Fief » (`claude/migration-unity6.md`).
