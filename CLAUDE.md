@@ -23,7 +23,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 ## Architecture (Assets/Scripts)
 - `Singleton<T>` : base des managers (DontDestroyOnLoad seulement si l'objet est à la racine).
 - `GameManager` : liste de `Player`, `InitPlayers` appelé sur `HexGrid.OnTileInstancesGenerated`, place les joueurs et unités de départ, événements `GameStart` / `TurnChange`. `CurrentTurn` (commence à 1) ; Entrée (`World/ChangeTurn` -> `ChangeTurn`) l'incrémente puis lève `TurnChange`.
-- `UI/HUD` (UI Toolkit) : objet `HUD` de la scène (`UIDocument` + `HUD.cs`), fichiers dans `Assets/UI/HUD/` (`HUD.uxml`, `HUD.uss`, `HUDTheme.tss`, `HUDPanelSettings.asset`, 1920×1080 adapté à l'écran). Bandeau en haut avec « Tour N » mis à jour sur `TurnChange`. Bande verticale à droite envisagée plus tard (USS seulement).
+- `UI/HUD` (UI Toolkit) : objet `HUD` de la scène (`UIDocument` + `HUD.cs`), fichiers dans `Assets/UI/HUD/` (`HUD.uxml`, `HUD.uss`, `HUDTheme.tss`, `HUDPanelSettings.asset`, 1920×1080 adapté à l'écran). Bandeau en haut : à gauche l'unité sélectionnée et ses points (« Warrior — Mouvement 1/2 », lu à chaque image dans `Update`, masqué sans sélection), à droite « Tour N » mis à jour sur `TurnChange`. Bande verticale à droite envisagée plus tard (USS seulement).
 - `Grid/MapGenerator` : bruit -> `TerrainType[,]`, événement `OnTerrainMapGenerated`.
 - `Grid/HexGrid` : crée les `HexTile` en thread (`Task.Run`), voisins (`SetNeighbours`), instanciation par lots (coroutine), placement des joueurs par `DispatchPlayers`, qui délègue le choix à `StartPositionPicker` (fonction pure testée : 1er au hasard, puis un des 10 % de cases de terre les plus éloignées des joueurs déjà placés), `TryGetTile(x, y, out tile)` (coordonnées offset, remplace l'ancien `GetTile`) et `TryGetTileAxial(axial, out tile)`.
 - `Grid/HexTile` : plus de machine à états. Deux drapeaux indépendants : `IsDiscovered` (brouillard, `Discover()` révèle une seule fois) et `IsHovered` (survol, affiché par le marqueur blanc `HexGrid.HoverMarker`, masqué sur la case sélectionnée).
@@ -34,8 +34,8 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - `Grid/PathFinder` : A* pur sur coordonnées axiales, `FindPath(origin, destination, isPassable)`, coût 1 par case ; renvoie le chemin sans la case de départ, liste vide si même case, null si inaccessible. Testé (`PathFinderTests`).
 
 ## État du jeu
-- Fait : génération de carte, brouillard (`IsDiscovered`), placement des joueurs, caméras, survol et sélection d'unité (marqueurs), déplacement par chemin animé, points de mouvement, passage du tour avec Entrée (toutes les unités rechargées), HUD avec le numéro de tour.
-- Pas branché : points restants dans le HUD, tour par joueur (joueur courant), fin de partie (`MaxTurns` inutilisé), coût selon le terrain, aperçu du chemin, ressources.
+- Fait : génération de carte, brouillard (`IsDiscovered`), placement des joueurs, caméras, survol et sélection d'unité (marqueurs), déplacement par chemin animé, points de mouvement, passage du tour avec Entrée (toutes les unités rechargées), HUD (numéro de tour, unité sélectionnée et points restants).
+- Pas branché : tour par joueur (joueur courant, gardé pour la fin), fin de partie (`MaxTurns` inutilisé), coût selon le terrain, aperçu du chemin, ressources.
 
 ## Points fragiles connus
 - `BaseUnitState` : classe simple (plus de `Singleton`/`MonoBehaviour`), états créés avec `new`. `Unit` a un `State` et un `ChangeState` (Idle / Selected utilisés, les autres états sont vides).
