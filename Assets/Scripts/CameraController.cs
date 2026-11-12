@@ -190,11 +190,24 @@ public class CameraController : Singleton<CameraController>
             // move the camera in the direction of the input vector (3D)
             Vector3 moveVector = new Vector3(inputVector.x, 0, inputVector.y);
             cameraTarget.transform.position += moveVector * cameraSpeed * Time.deltaTime;
+            ClampTarget();
 
             yield return null;
         }
     }
     
+    // Garde la cible de la caméra au-dessus de la carte.
+    private void ClampTarget()
+    {
+        HexGrid grid = GameManager.Instance.HexGrid;
+        if (grid == null) return;
+        Rect bounds = grid.WorldBounds;
+        Vector3 p = cameraTarget.transform.position;
+        p.x = Mathf.Clamp(p.x, bounds.xMin, bounds.xMax);
+        p.z = Mathf.Clamp(p.z, bounds.yMin, bounds.yMax);
+        cameraTarget.transform.position = p;
+    }
+
     public IEnumerator processZoom(InputAction.CallbackContext context)
     {
         //Change the FOV of the camera based on the input. If not keyboard, then adjust the value based on the scrollWheelZoomSpeed

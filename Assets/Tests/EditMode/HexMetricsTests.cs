@@ -67,4 +67,56 @@ public class HexMetricsTests
         foreach (var corner in corners)
             Assert.AreEqual(HexMetrics.OuterRadius(HexSize), corner.magnitude, 0.0001f);
     }
+
+    [TestCase(HexOrientation.PointyTop)]
+    [TestCase(HexOrientation.FlatTop)]
+    public void GridBounds_SingleTile_IsPointAtFirstCentre(HexOrientation orientation)
+    {
+        Rect bounds = HexMetrics.GridBounds(1, 1, HexSize, orientation);
+        Vector3 c = HexMetrics.Center(HexSize, 0, 0, orientation);
+
+        Assert.AreEqual(Vector2.zero, bounds.size);
+        Assert.AreEqual(new Vector2(c.x, c.z), bounds.position);
+    }
+
+    [TestCase(HexOrientation.PointyTop)]
+    [TestCase(HexOrientation.FlatTop)]
+    public void GridBounds_ContainsEveryCentre(HexOrientation orientation)
+    {
+        Rect bounds = HexMetrics.GridBounds(7, 5, HexSize, orientation);
+
+        for (int z = 0; z < 5; z++)
+            for (int x = 0; x < 7; x++)
+            {
+                Vector3 c = HexMetrics.Center(HexSize, x, z, orientation);
+                Assert.IsTrue(c.x >= bounds.xMin && c.x <= bounds.xMax && c.z >= bounds.yMin && c.z <= bounds.yMax,
+                    $"{orientation} ({x},{z}) hors de {bounds}");
+            }
+    }
+
+    [TestCase(HexOrientation.PointyTop)]
+    [TestCase(HexOrientation.FlatTop)]
+    public void GridBounds_TouchesExtremeCentres(HexOrientation orientation)
+    {
+        Rect bounds = HexMetrics.GridBounds(7, 5, HexSize, orientation);
+        bool minX = false, maxX = false, minZ = false, maxZ = false;
+
+        for (int z = 0; z < 5; z++)
+            for (int x = 0; x < 7; x++)
+            {
+                Vector3 c = HexMetrics.Center(HexSize, x, z, orientation);
+                minX |= Mathf.Approximately(c.x, bounds.xMin);
+                maxX |= Mathf.Approximately(c.x, bounds.xMax);
+                minZ |= Mathf.Approximately(c.z, bounds.yMin);
+                maxZ |= Mathf.Approximately(c.z, bounds.yMax);
+            }
+
+        Assert.IsTrue(minX && maxX && minZ && maxZ, $"{orientation} : un bord ne touche aucun centre");
+    }
+
+    [Test]
+    public void GridBounds_EmptyGrid_IsZero()
+    {
+        Assert.AreEqual(Rect.zero, HexMetrics.GridBounds(0, 5, HexSize, HexOrientation.PointyTop));
+    }
 }

@@ -113,6 +113,17 @@ public class HexGrid : MonoBehaviour
     }
 
     public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(axial, out tile);
+
+    // Rectangle (x, z) couvrant les centres des cases, en coordonnées monde.
+    public Rect WorldBounds
+    {
+        get
+        {
+            Rect bounds = HexMetrics.GridBounds(Width, Height, HexSize, Orientation);
+            bounds.position += new Vector2(transform.position.x, transform.position.z);
+            return bounds;
+        }
+    }
     
     [field: SerializeField] public GameObject HoverMarker { get; set; }
 

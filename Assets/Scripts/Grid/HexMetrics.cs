@@ -58,7 +58,25 @@ public static class HexMetrics
 
         return centrePosition;
     }
-    
+
+    // Rectangle (x, z) couvrant les centres de toutes les cases d'une grille width × height (coordonnées locales).
+    public static Rect GridBounds(int width, int height, float hexSize, HexOrientation orientation)
+    {
+        if (width <= 0 || height <= 0) return Rect.zero;
+        Vector3 first = Center(hexSize, 0, 0, orientation);
+        float minX = first.x, maxX = first.x, minZ = first.z, maxZ = first.z;
+        for (int z = 0; z < height; z++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Vector3 c = Center(hexSize, x, z, orientation);
+                minX = Mathf.Min(minX, c.x); maxX = Mathf.Max(maxX, c.x);
+                minZ = Mathf.Min(minZ, c.z); maxZ = Mathf.Max(maxZ, c.z);
+            }
+        }
+        return Rect.MinMaxRect(minX, minZ, maxX, maxZ);
+    }
+
     public static Vector3Int OffsetToCube(Vector2Int offsetCoord, HexOrientation orientation)
     {
         return OffsetToCube((int)offsetCoord.x, (int)offsetCoord.y, orientation);
