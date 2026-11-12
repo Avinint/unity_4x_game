@@ -61,7 +61,8 @@ public class SelectionController : Singleton<SelectionController>
     private void Command()
     {
         HexTile target = HoveredTile();
-        if (SelectedUnit == null || SelectedUnit.IsMoving || SelectedUnit.MovementPoints <= 0
+        if (SelectedUnit == null || SelectedUnit.Owner != GameManager.Instance.CurrentPlayer
+            || SelectedUnit.IsMoving || SelectedUnit.MovementPoints <= 0
             || target == null || target == SelectedTile) return;
 
         List<Vector2Int> path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable);

@@ -5,6 +5,7 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public UnitType type;
+    public Player Owner { get; set; }
 
     public IUnitState State { get; private set; }
     public bool IsSelected => State != null && State.State == UnitState.Selected;
@@ -19,12 +20,18 @@ public class Unit : MonoBehaviour
 
     private void OnEnable()
     {
-        if (GameManager.Instance != null) GameManager.Instance.TurnChange += ResetMovementPoints;
+        if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
     }
 
     private void OnDisable()
     {
-        if (GameManager.Instance != null) GameManager.Instance.TurnChange -= ResetMovementPoints;
+        if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart -= OnPlayerTurnStart;
+    }
+
+    // Points rechargés au début du tour de son propriétaire.
+    private void OnPlayerTurnStart(Player player)
+    {
+        if (player == Owner) ResetMovementPoints();
     }
 
     // Points de mouvement du type (appelé au début de chaque tour).

@@ -23,10 +23,14 @@ public class GameManager : Singleton<GameManager>
     public Dictionary<Vector2, GameObject> Units { get; private set; } = new Dictionary<Vector2, GameObject>();
 
     public int MaxTurns = 500;
-    public int CurrentTurn { get; private set; } = 1;
+    private TurnCycle<Player> turns = new TurnCycle<Player>(new List<Player>(), null);
+    public int CurrentTurn => turns.Round;
+    public IReadOnlyList<Player> TurnOrder => turns.Order;
+    public Player CurrentPlayer => turns.Current;
 
     public event System.Action GameStart;
-    public event System.Action TurnChange;
+    public event System.Action TurnChange;                // nouvelle manche
+    public event System.Action<Player> PlayerTurnStart;   // début du tour d'un joueur
 
 
     protected override void Awake()
@@ -94,6 +98,14 @@ public class GameManager : Singleton<GameManager>
         // La caméra démarre sur la case de départ du joueur local.
         if (LocalPlayer != null && LocalPlayer.StartingTile != null)
             CameraController.Instance.CameraTarget.transform.position = LocalPlayer.StartingTile.CentrePosition;
+
+        BuildTurnOrder();
+    }
+
+    // Ordre de jeu : le joueur local d'abord, puis les autres dans l'ordre de Players.
+    private void BuildTurnOrder()
+    {
+        turns = new TurnCycle<Player>(Players, LocalPlayer);
     }
     
     private void SetVisibleTiles(Dictionary<Vector2Int, HexTile> tiles)
@@ -104,13 +116,28 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    // Entrée : fin du tour du joueur local.
     public void ChangeTurn(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        if (!context.performed || CurrentPlayer != LocalPlayer) return;
+        EndPlayerTurn();
+    }
+
+    // Passe au joueur suivant ; nouvelle manche après le dernier.
+    // Les joueurs sans IA passent leur tour aussitôt, jusqu'au retour du joueur local.
+    private void EndPlayerTurn()
+    {
+        do
         {
-            CurrentTurn++;
-            TurnChange?.Invoke();
-        }
+            if (turns.Advance()) TurnChange?.Invoke();
+            PlayerTurnStart?.Invoke(CurrentPlayer);
+        } while (CurrentPlayer != LocalPlayer);
+    }
+
+    private static void SetOwner(GameObject unitObject, Player player)
+    {
+        if (unitObject.TryGetComponent(out Unit unit)) unit.Owner = player;
+        player.units.Add(unitObject);
     }
 
     private void Start()
@@ -152,6 +179,7 @@ public class GameManager : Singleton<GameManager>
           
           Units[tile.AxialCoordinates] .gameObject.layer = LayerMask.NameToLayer("Grid");
           tile.AddUnit(Units[tile.AxialCoordinates] );
+          SetOwner(Units[tile.AxialCoordinates], player);
         var otherUnits = units.Skip(1).ToList();
 
         if (otherUnits.Count == 0) return;
@@ -194,6 +222,7 @@ public class GameManager : Singleton<GameManager>
                     HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity,
                     HexGrid.transform);
                 tile.AddUnit(instance);
+                SetOwner(instance, player);
             }
         }
 
