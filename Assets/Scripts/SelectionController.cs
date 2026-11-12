@@ -61,10 +61,15 @@ public class SelectionController : Singleton<SelectionController>
     private void Command()
     {
         HexTile target = HoveredTile();
-        if (SelectedUnit == null || SelectedUnit.IsMoving || target == null || target == SelectedTile) return;
+        if (SelectedUnit == null || SelectedUnit.IsMoving || SelectedUnit.MovementPoints <= 0
+            || target == null || target == SelectedTile) return;
 
         List<Vector2Int> path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable);
-        if (path == null) return;
+        if (path == null || path.Count == 0) return;
+
+        // On s'arrête là où les points s'épuisent.
+        if (path.Count > SelectedUnit.MovementPoints) path.RemoveRange(SelectedUnit.MovementPoints, path.Count - SelectedUnit.MovementPoints);
+        Grid.TryGetTileAxial(path[path.Count - 1], out HexTile end);
 
         var points = new List<Vector3>();
         foreach (var axial in path)
@@ -75,8 +80,8 @@ public class SelectionController : Singleton<SelectionController>
 
         // La case de l'unité change dès le départ.
         SelectedTile.RemoveUnit(SelectedUnit.gameObject);
-        target.AddUnit(SelectedUnit.gameObject);
-        SelectedTile = target;
+        end.AddUnit(SelectedUnit.gameObject);
+        SelectedTile = end;
         SelectedUnit.MoveAlong(points);
         Grid.UpdateHoverMarker();
     }

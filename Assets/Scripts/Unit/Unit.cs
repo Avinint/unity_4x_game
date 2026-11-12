@@ -9,10 +9,16 @@ public class Unit : MonoBehaviour
     public IUnitState State { get; private set; }
     public bool IsSelected => State != null && State.State == UnitState.Selected;
 
+    public int MovementPoints { get; private set; }
+
     private void Awake()
     {
         ChangeState(new IdleUnitState());
+        ResetMovementPoints();
     }
+
+    // Points de mouvement du type (appelé au début de chaque tour).
+    public void ResetMovementPoints() => MovementPoints = type != null ? type.MovementPoints : 0;
 
     public void ChangeState(IUnitState newState)
     {
@@ -45,6 +51,7 @@ public class Unit : MonoBehaviour
     public void MoveAlong(List<Vector3> points)
     {
         if (IsMoving || points == null || points.Count == 0) return;
+        MovementPoints -= points.Count;
         StartCoroutine(MoveRoutine(points));
     }
 
