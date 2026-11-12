@@ -55,4 +55,58 @@ public class HexTileTests
         tile.OnMouseExit();
         Assert.IsFalse(tile.IsHovered);
     }
+
+    // Unité de test : un objet avec Unit et un enfant avec un MeshRenderer.
+    private GameObject unitObject;
+
+    private MeshRenderer NewUnit()
+    {
+        unitObject = new GameObject("TestUnit");
+        unitObject.AddComponent<Unit>();
+        var model = new GameObject("Model");
+        model.transform.SetParent(unitObject.transform);
+        return model.AddComponent<MeshRenderer>();
+    }
+
+    [TearDown]
+    public void DestroyUnit()
+    {
+        if (unitObject != null) Object.DestroyImmediate(unitObject);
+    }
+
+    [Test]
+    public void AddUnit_OnHiddenTile_HidesUnit()
+    {
+        var tile = NewTile();
+        var renderer = NewUnit();
+
+        tile.AddUnit(unitObject);
+
+        Assert.IsFalse(renderer.enabled);
+    }
+
+    [Test]
+    public void AddUnit_OnDiscoveredTile_ShowsUnit()
+    {
+        var tile = NewTile();
+        tile.Discover();
+        var renderer = NewUnit();
+        renderer.enabled = false;
+
+        tile.AddUnit(unitObject);
+
+        Assert.IsTrue(renderer.enabled);
+    }
+
+    [Test]
+    public void Discover_ShowsUnitsAlreadyOnTile()
+    {
+        var tile = NewTile();
+        var renderer = NewUnit();
+        tile.AddUnit(unitObject);
+
+        tile.Discover();
+
+        Assert.IsTrue(renderer.enabled);
+    }
 }

@@ -34,6 +34,12 @@ public class Unit : MonoBehaviour
         if (player == Owner) ResetMovementPoints();
     }
 
+    // Affiche ou masque les modèles de l'unité (brouillard) ; l'objet reste actif.
+    public void SetVisible(bool visible)
+    {
+        foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+    }
+
     // Points de mouvement du type (appelé au début de chaque tour).
     public void ResetMovementPoints() => MovementPoints = type != null ? type.MovementPoints : 0;
 

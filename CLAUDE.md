@@ -27,7 +27,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - `UI/HUD` (UI Toolkit) : objet `HUD` de la scène (`UIDocument` + `HUD.cs`), fichiers dans `Assets/UI/HUD/` (`HUD.uxml`, `HUD.uss`, `HUDTheme.tss`, `HUDPanelSettings.asset`, 1920×1080 adapté à l'écran). Bandeau en haut : à gauche l'unité sélectionnée et ses points (« Warrior — Mouvement 1/2 », lu à chaque image dans `Update`, masqué sans sélection), à droite « Tour N — Player 1 » (nom de l'objet du joueur courant), mis à jour sur `TurnChange` et `PlayerTurnStart`. Bande verticale à droite envisagée plus tard (USS seulement).
 - `Grid/MapGenerator` : bruit -> `TerrainType[,]`, événement `OnTerrainMapGenerated`.
 - `Grid/HexGrid` : crée les `HexTile` en thread (`Task.Run`), voisins (`SetNeighbours`), instanciation par lots (coroutine), placement des joueurs par `DispatchPlayers`, qui délègue le choix à `StartPositionPicker` (fonction pure testée : 1er au hasard, puis un des 10 % de cases de terre les plus éloignées des joueurs déjà placés), `TryGetTile(x, y, out tile)` (coordonnées offset, remplace l'ancien `GetTile`) et `TryGetTileAxial(axial, out tile)`.
-- `Grid/HexTile` : plus de machine à états. Deux drapeaux indépendants : `IsDiscovered` (brouillard, `Discover()` révèle une seule fois) et `IsHovered` (survol, affiché par le marqueur blanc `HexGrid.HoverMarker`, masqué sur la case sélectionnée).
+- `Grid/HexTile` : plus de machine à états. Deux drapeaux indépendants : `IsDiscovered` (brouillard, `Discover()` révèle une seule fois) et `IsHovered` (survol, affiché par le marqueur blanc `HexGrid.HoverMarker`, masqué sur la case sélectionnée). Unités sous le brouillard : `AddUnit` et `Discover` appellent `Unit.SetVisible(IsDiscovered)` (renderers masqués, objet actif) ; testé dans `HexTileTests`.
 - `SelectionController` (Singleton créé par `GameManager`) : écoute les actions de `CameraController`. Clic gauche : sélectionne la première unité de la case survolée (case vide : désélection). Clic droit (`Interact`) : déplace l'unité sélectionnée par chemin (`PathFinder`, cases de terre découvertes), coupé à ses points de mouvement, seulement pour une unité du joueur courant (celles des autres se sélectionnent mais ne bougent pas) ; elle change de case (celle où elle s'arrête) dès le départ (`HexTile.RemoveUnit`/`AddUnit`) ; commande ignorée pendant le trajet. Échap / Retour arrière : désélection. `HexGrid.Selector` suit l'unité à chaque image (`Update`). Pas de recentrage de la caméra au clic.
 - `MouseController` : raycasts souris -> événements `OnMouseMoving`, `OnLeftMouseClick`, etc.
 - `CameraController` (Overhead / Focus) et `OrbitCameraWithTime`. Overhead : vue en perspective inclinée, nord en haut (`CinemachineFollow` en `WorldSpace`, décalage `(0, d·sin(pitch), −d·cos(pitch))` posé par `SetDistance`, `HardLookAt` sur `CameraTarget`). Réglages : `pitch` 55°, `fieldOfView` 30°, distance 40–250 (défaut 120), `distanceZoomSpeed` (A/E, continu), `scrollZoomStep` (molette : 15 % de la distance par cran, molette vers le haut = éloigner, choix de l'utilisateur). Le zoom change la distance, plus le FOV. Pan (flèches, axes monde) borné : `ClampTarget` garde `CameraTarget` dans `HexGrid.WorldBounds` (rectangle des centres des cases, calculé par `HexMetrics.GridBounds`, fonction pure testée).
@@ -36,6 +36,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 
 ## État du jeu
 - Fait : génération de carte, brouillard (`IsDiscovered`), placement des joueurs, caméras, survol et sélection d'unité (marqueurs), déplacement par chemin animé, points de mouvement, tour par joueur (ordre fixe, joueur local d'abord, joueurs sans IA passés automatiquement), HUD (numéro de tour, joueur courant, unité sélectionnée et points restants).
+- Ordre prévu : exploration (vision des unités, révélation des cases) avant la fondation des villes.
 - Pas branché : IA des autres joueurs, fin de partie (`MaxTurns` inutilisé), coût selon le terrain, aperçu du chemin, ressources.
 
 ## Points fragiles connus
@@ -46,7 +47,8 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 
 ## Révélation des zones de départ
 - `GameManager.LocalPlayer` (champ `localPlayer`, par défaut le premier de `Players`) et `RevealAllPlayers` (coché par défaut, débogage). Décoché, seule la zone du joueur local est révélée et la caméra démarre sur sa case.
-- À faire : les unités des autres joueurs sont créées même sur des cases cachées, leur modèle reste visible au-dessus du brouillard (à masquer plus tard).
+- Les unités posées sur des cases cachées sont masquées (voir `HexTile`).
+- À faire : vision des unités (révéler les cases autour d'elles en se déplaçant) ; distinguer case explorée et case vue en ce moment (une unité ennemie sur une case explorée reste visible pour l'instant).
 
 ## À faire (caméra)
 - Vue inclinée en perspective choisie (l'orthographique vu de dessus avait été essayé : le marqueur vertical n'y était vu que par sa tranche). À régler en jeu : `pitch`, distances.

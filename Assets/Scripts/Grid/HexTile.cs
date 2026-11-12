@@ -45,6 +45,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         if (IsDiscovered) return;   // déjà révélée : rien à refaire
         IsDiscovered = true;
         if (terrain != null) Reveal();
+        foreach (var go in units) UpdateUnitVisibility(go);
     }
 
     public void Reveal()
@@ -220,6 +221,13 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     public void AddUnit(GameObject unit)
     {
         units.Add(unit);
+        UpdateUnitVisibility(unit);
+    }
+
+    // Une unité n'est visible que sur une case découverte.
+    private void UpdateUnitVisibility(GameObject unitObject)
+    {
+        if (unitObject != null && unitObject.TryGetComponent(out Unit unit)) unit.SetVisible(IsDiscovered);
     }
 
     public void RemoveUnit(GameObject unit)
