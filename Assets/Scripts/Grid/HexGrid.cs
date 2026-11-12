@@ -111,6 +111,8 @@ public class HexGrid : MonoBehaviour
 
         return Tiles.TryGetValue(coordinates, out tile);
     }
+
+    public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(axial, out tile);
     
     [field: SerializeField] public GameObject HoverMarker { get; set; }
 

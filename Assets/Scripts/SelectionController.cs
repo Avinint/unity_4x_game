@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SelectionController : Singleton<SelectionController>
@@ -56,19 +57,38 @@ public class SelectionController : Singleton<SelectionController>
         Grid.UpdateHoverMarker();
     }
 
-    // Déplacement direct (téléportation) de l'unité sélectionnée vers une case de terre découverte.
+    // Déplacement par chemin (terre découverte) de l'unité sélectionnée.
     private void Command()
     {
         HexTile target = HoveredTile();
-        if (SelectedUnit == null || target == null || target == SelectedTile || target.IsNotLand()) return;
+        if (SelectedUnit == null || SelectedUnit.IsMoving || target == null || target == SelectedTile) return;
 
+        List<Vector2Int> path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable);
+        if (path == null) return;
+
+        var points = new List<Vector3>();
+        foreach (var axial in path)
+        {
+            Grid.TryGetTileAxial(axial, out HexTile step);
+            points.Add(step.CentrePosition);
+        }
+
+        // La case de l'unité change dès le départ.
         SelectedTile.RemoveUnit(SelectedUnit.gameObject);
         target.AddUnit(SelectedUnit.gameObject);
-        SelectedUnit.transform.position = target.CentrePosition;
         SelectedTile = target;
-
-        if (Grid.Selector != null) Grid.Selector.transform.position = target.CentrePosition;
+        SelectedUnit.MoveAlong(points);
         Grid.UpdateHoverMarker();
+    }
+
+    private bool IsWalkable(Vector2Int axial) =>
+        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsDiscovered && tile.IsLand();
+
+    // Le sélecteur suit l'unité, y compris pendant son déplacement.
+    private void Update()
+    {
+        if (SelectedUnit != null && Grid.Selector != null)
+            Grid.Selector.transform.position = SelectedUnit.transform.position;
     }
 
     private void Deselect()

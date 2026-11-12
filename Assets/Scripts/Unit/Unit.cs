@@ -36,4 +36,29 @@ public class Unit : MonoBehaviour
     {
         if (IsSelected) ChangeState(new IdleUnitState());
     }
+
+    [SerializeField] private float moveSpeed = 8f; // unités monde par seconde
+
+    public bool IsMoving { get; private set; }
+
+    // Suit les points dans l'ordre, à vitesse constante.
+    public void MoveAlong(List<Vector3> points)
+    {
+        if (IsMoving || points == null || points.Count == 0) return;
+        StartCoroutine(MoveRoutine(points));
+    }
+
+    private IEnumerator MoveRoutine(List<Vector3> points)
+    {
+        IsMoving = true;
+        foreach (var point in points)
+        {
+            while (transform.position != point)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, point, moveSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
+        IsMoving = false;
+    }
 }
