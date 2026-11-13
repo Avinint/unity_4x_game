@@ -8,6 +8,14 @@ public class SelectionController : Singleton<SelectionController>
 
     private HexGrid Grid => GameManager.Instance.HexGrid;
 
+    private PathPreview preview;
+
+    protected override void Init()
+    {
+        preview = new GameObject("PathPreview").AddComponent<PathPreview>();
+        preview.transform.SetParent(transform, false);
+    }
+
     private void OnEnable()
     {
         var cam = CameraController.Instance;
@@ -60,13 +68,9 @@ public class SelectionController : Singleton<SelectionController>
     // Déplacement par chemin (terre découverte) de l'unité sélectionnée.
     private void Command()
     {
-        HexTile target = HoveredTile();
-        if (SelectedUnit == null || SelectedUnit.Owner != GameManager.Instance.CurrentPlayer
-            || SelectedUnit.IsMoving || SelectedUnit.MovementPoints <= 0
-            || target == null || target == SelectedTile) return;
-
-        List<Vector2Int> path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable);
-        if (path == null || path.Count == 0) return;
+        if (!CanCommand() || SelectedUnit.MovementPoints <= 0) return;
+        List<Vector2Int> path = PathTo(HoveredTile());
+        if (path == null) return;
 
         // On s'arrête là où les points s'épuisent.
         if (path.Count > SelectedUnit.MovementPoints) path.RemoveRange(SelectedUnit.MovementPoints, path.Count - SelectedUnit.MovementPoints);
@@ -90,11 +94,58 @@ public class SelectionController : Singleton<SelectionController>
     private bool IsWalkable(Vector2Int axial) =>
         Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsDiscovered && tile.IsLand();
 
+    // Seule une unité du joueur courant, à l'arrêt, reçoit des ordres.
+    private bool CanCommand() =>
+        SelectedUnit != null && SelectedUnit.Owner == GameManager.Instance.CurrentPlayer && !SelectedUnit.IsMoving;
+
+    // Chemin complet (non coupé aux points) vers une case de terre découverte ; null si impossible.
+    private List<Vector2Int> PathTo(HexTile target)
+    {
+        if (SelectedTile == null || target == null || target == SelectedTile) return null;
+        var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable);
+        return path != null && path.Count > 0 ? path : null;
+    }
+
     // Le sélecteur suit l'unité, y compris pendant son déplacement.
     private void Update()
     {
         if (SelectedUnit != null && Grid.Selector != null)
             Grid.Selector.transform.position = SelectedUnit.transform.position;
+        UpdatePreview();
+    }
+
+    private HexTile previewTarget, previewOrigin;
+    private int previewPoints = -1;
+
+    // Aperçu du trajet vers la case survolée ; recalculé seulement si la cible, l'origine ou les points changent.
+    private void UpdatePreview()
+    {
+        HexTile target = CanCommand() ? HoveredTile() : null;
+        int points = SelectedUnit != null ? SelectedUnit.MovementPoints : 0;
+        if (target == previewTarget && SelectedTile == previewOrigin && points == previewPoints) return;
+        previewTarget = target;
+        previewOrigin = SelectedTile;
+        previewPoints = points;
+
+        List<Vector2Int> path = target != null ? PathTo(target) : null;
+        bool forbidden = false;
+        if (path == null && target != null && target != SelectedTile)
+        {
+            // Case interdite (eau, montagne) : chemin jusqu'à elle, affiché en rouge.
+            path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates,
+                a => a == target.AxialCoordinates || IsWalkable(a));
+            forbidden = path != null && path.Count > 0;
+            if (!forbidden) path = null;
+        }
+        if (path == null) { preview.Hide(); return; }
+        var steps = new List<Vector3>();
+        foreach (var axial in path)
+        {
+            Grid.TryGetTileAxial(axial, out HexTile step);
+            steps.Add(step.CentrePosition);
+        }
+        if (forbidden) preview.ShowForbidden(SelectedTile.CentrePosition, steps);
+        else preview.Show(SelectedTile.CentrePosition, steps, points);
     }
 
     private void Deselect()
