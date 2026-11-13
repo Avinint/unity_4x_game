@@ -95,8 +95,8 @@ public class Unit : MonoBehaviour
         IsMoving = false;
     }
 
-    // Seul le joueur local découvre la carte (le brouillard est le sien).
-    private void RevealAround(HexTile tile)
+    // Révèle ce que l'unité voit depuis `tile`. Seul le joueur local découvre la carte (le brouillard est le sien).
+    public void RevealAround(HexTile tile)
     {
         if (Owner == null || Owner != GameManager.Instance.LocalPlayer || type == null) return;
         tile.Grid.RevealAround(tile.AxialCoordinates, type.SightRadius);

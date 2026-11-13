@@ -135,10 +135,13 @@ public class GameManager : Singleton<GameManager>
         } while (CurrentPlayer != LocalPlayer);
     }
 
-    private static void SetOwner(GameObject unitObject, Player player)
+    // Unité de départ : propriétaire, liste du joueur, puis ce qu'elle voit depuis sa case.
+    private static void SetupStartingUnit(GameObject unitObject, Player player, HexTile tile)
     {
-        if (unitObject.TryGetComponent(out Unit unit)) unit.Owner = player;
         player.units.Add(unitObject);
+        if (!unitObject.TryGetComponent(out Unit unit)) return;
+        unit.Owner = player;
+        unit.RevealAround(tile);
     }
 
     private void Start()
@@ -180,7 +183,7 @@ public class GameManager : Singleton<GameManager>
           
           Units[tile.AxialCoordinates] .gameObject.layer = LayerMask.NameToLayer("Grid");
           tile.AddUnit(Units[tile.AxialCoordinates] );
-          SetOwner(Units[tile.AxialCoordinates], player);
+          SetupStartingUnit(Units[tile.AxialCoordinates], player, tile);
         var otherUnits = units.Skip(1).ToList();
 
         if (otherUnits.Count == 0) return;
@@ -223,7 +226,7 @@ public class GameManager : Singleton<GameManager>
                     HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity,
                     HexGrid.transform);
                 tile.AddUnit(instance);
-                SetOwner(instance, player);
+                SetupStartingUnit(instance, player, tile);
             }
         }
 
