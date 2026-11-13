@@ -193,6 +193,8 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         }
     }
 
+    public int MovementCost => TerrainType != null ? TerrainType.MovementCost : 1;
+
     public bool IsNotLand()
     {
         return TerrainType.Name == "Ocean" || TerrainType.Name == "Coast" || TerrainType.Name == "Mountain";

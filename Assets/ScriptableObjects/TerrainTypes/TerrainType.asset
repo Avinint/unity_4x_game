@@ -18,3 +18,4 @@ MonoBehaviour:
   <Colour>k__BackingField: {r: 1, g: 1, b: 1, a: 0}
   <Prefab>k__BackingField: {fileID: 0}
   <Icon>k__BackingField: {fileID: 0}
+  <MovementCost>k__BackingField: 2

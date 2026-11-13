@@ -72,8 +72,9 @@ public class SelectionController : Singleton<SelectionController>
         List<Vector2Int> path = PathTo(HoveredTile());
         if (path == null) return;
 
-        // On s'arrête là où les points s'épuisent.
-        if (path.Count > SelectedUnit.MovementPoints) path.RemoveRange(SelectedUnit.MovementPoints, path.Count - SelectedUnit.MovementPoints);
+        // On s'arrête là où les points s'épuisent (coût du terrain).
+        int reachable = PathFinder.ReachableCount(StepCosts(path), SelectedUnit.MovementPoints);
+        if (path.Count > reachable) path.RemoveRange(reachable, path.Count - reachable);
         Grid.TryGetTileAxial(path[path.Count - 1], out HexTile end);
 
         var steps = new List<HexTile>();
@@ -103,8 +104,18 @@ public class SelectionController : Singleton<SelectionController>
     private List<Vector2Int> PathTo(HexTile target)
     {
         if (SelectedTile == null || target == null || target == SelectedTile) return null;
-        var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable);
+        var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable, StepCost);
         return path != null && path.Count > 0 ? path : null;
+    }
+
+    private int StepCost(Vector2Int axial) =>
+        Grid.TryGetTileAxial(axial, out HexTile tile) ? tile.MovementCost : 1;
+
+    private List<int> StepCosts(List<Vector2Int> path)
+    {
+        var costs = new List<int>(path.Count);
+        foreach (var axial in path) costs.Add(StepCost(axial));
+        return costs;
     }
 
     // Le sélecteur suit l'unité, y compris pendant son déplacement.
@@ -146,7 +157,7 @@ public class SelectionController : Singleton<SelectionController>
             steps.Add(step.CentrePosition);
         }
         if (forbidden) preview.ShowForbidden(SelectedTile.CentrePosition, steps);
-        else preview.Show(SelectedTile.CentrePosition, steps, points);
+        else preview.Show(SelectedTile.CentrePosition, steps, PathFinder.ReachableCount(StepCosts(path), points));
     }
 
     private void Deselect()

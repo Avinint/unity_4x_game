@@ -16,6 +16,6 @@ MonoBehaviour:
   <Name>k__BackingField: Forest
   <Description>k__BackingField: 
   <Colour>k__BackingField: {r: 0, g: 0.38679248, b: 0.12147963, a: 0}
-  <Prefab>k__BackingField: {fileID: -8679921383154817045, guid: f9bb931d0dd7369448ee8983b3ad54be,
-    type: 3}
+  <Prefab>k__BackingField: {fileID: -8679921383154817045, guid: f9bb931d0dd7369448ee8983b3ad54be, type: 3}
   <Icon>k__BackingField: {fileID: 0}
+  <MovementCost>k__BackingField: 2

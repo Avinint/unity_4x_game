@@ -16,6 +16,6 @@ MonoBehaviour:
   <Name>k__BackingField: Jungle
   <Description>k__BackingField: 
   <Colour>k__BackingField: {r: 0.20237334, g: 0.31132078, b: 0.17768781, a: 0}
-  <Prefab>k__BackingField: {fileID: -8679921383154817045, guid: 2a53f26fb86351443a57c336cd28ab56,
-    type: 3}
+  <Prefab>k__BackingField: {fileID: -8679921383154817045, guid: 2a53f26fb86351443a57c336cd28ab56, type: 3}
   <Icon>k__BackingField: {fileID: 0}
+  <MovementCost>k__BackingField: 2

@@ -90,4 +90,47 @@ public class PathFinderTests
         AssertContiguous(origin, path);
         Assert.AreEqual(destination, path[path.Count - 1]);
     }
+
+    [Test]
+    public void FindPath_PrefersCheaperDetour()
+    {
+        // Direct : (1,0) coûte 5 puis (2,0) → 6. Détour par (0,1), (1,1), (2,0) → 3.
+        var forest = new Vector2Int(1, 0);
+        var origin = new Vector2Int(0, 0);
+        var path = PathFinder.FindPath(origin, new Vector2Int(2, 0), Grid(5, 2), c => c == forest ? 5 : 1);
+
+        CollectionAssert.DoesNotContain(path, forest);
+        Assert.AreEqual(3, path.Count);
+        AssertContiguous(origin, path);
+    }
+
+    [Test]
+    public void FindPath_DefaultCostUnchanged()
+    {
+        var origin = new Vector2Int(1, 8);
+        var destination = new Vector2Int(8, 1);
+
+        var withDefault = PathFinder.FindPath(origin, destination, Grid(10, 10));
+        var withOnes = PathFinder.FindPath(origin, destination, Grid(10, 10), _ => 1);
+
+        CollectionAssert.AreEqual(withOnes, withDefault);
+    }
+
+    [Test]
+    public void ReachableCount_StopsWhenPointsRunOut()
+    {
+        Assert.AreEqual(2, PathFinder.ReachableCount(new[] { 1, 1, 1 }, 2));
+    }
+
+    [Test]
+    public void ReachableCount_ExpensiveTileUsesLastPoints()
+    {
+        Assert.AreEqual(2, PathFinder.ReachableCount(new[] { 1, 2, 1 }, 2));
+    }
+
+    [Test]
+    public void ReachableCount_NoPoints_IsZero()
+    {
+        Assert.AreEqual(0, PathFinder.ReachableCount(new[] { 1, 1 }, 0));
+    }
 }

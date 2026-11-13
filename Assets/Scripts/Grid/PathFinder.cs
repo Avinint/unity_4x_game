@@ -12,7 +12,13 @@ public static class PathFinder
 
     // Chemin de origin (exclue) à destination (incluse). Liste vide si origin == destination,
     // null si destination inaccessible. isPassable dit si une case existe et peut être traversée.
+    // Coût 1 par case.
     public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination, Func<Vector2Int, bool> isPassable)
+        => FindPath(origin, destination, isPassable, _ => 1);
+
+    // stepCost(case) : coût pour entrer dans la case (≥ 1). Renvoie le chemin le moins coûteux.
+    public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination,
+        Func<Vector2Int, bool> isPassable, Func<Vector2Int, int> stepCost)
     {
         if (origin == destination) return new List<Vector2Int>();
         if (!isPassable(destination)) return null;
@@ -35,7 +41,7 @@ public static class PathFinder
                 Vector2Int next = current + dir;
                 if (closed.Contains(next) || !isPassable(next)) continue;
 
-                int cost = costFromOrigin[current] + 1;
+                int cost = costFromOrigin[current] + stepCost(next);
                 if (costFromOrigin.TryGetValue(next, out int known) && cost >= known) continue;
 
                 costFromOrigin[next] = cost;
@@ -44,6 +50,20 @@ public static class PathFinder
             }
         }
         return null;
+    }
+
+    // Nombre de cases du chemin parcourues avec `points` : on peut entrer dans une case
+    // tant qu'il reste au moins un point ; une case plus chère que les points restants les consomme tous.
+    public static int ReachableCount(IReadOnlyList<int> stepCosts, int points)
+    {
+        int count = 0;
+        foreach (int cost in stepCosts)
+        {
+            if (points <= 0) break;
+            points -= cost;
+            count++;
+        }
+        return count;
     }
 
     // Plus petit coût estimé ; à égalité, la case la plus proche de la destination.

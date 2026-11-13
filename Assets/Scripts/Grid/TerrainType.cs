@@ -13,6 +13,7 @@ public class TerrainType : ScriptableObject
     [field:SerializeField] public Color Colour { get; private set; }
     [field:SerializeField] public Transform Prefab { get; private set; }
     [field:SerializeField] public Sprite Icon { get; private set; }
+    [field:SerializeField, Min(1)] public int MovementCost { get; private set; } = 1;   // coût pour entrer dans une case
     
     
 }

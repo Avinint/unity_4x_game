@@ -110,7 +110,9 @@ public class Unit : MonoBehaviour
     public void MoveAlong(List<HexTile> path)
     {
         if (IsMoving || path == null || path.Count == 0) return;
-        MovementPoints -= path.Count;
+        int cost = 0;
+        foreach (var tile in path) cost += tile.MovementCost;
+        MovementPoints = Mathf.Max(0, MovementPoints - cost);
         StartCoroutine(MoveRoutine(path));
     }
 
