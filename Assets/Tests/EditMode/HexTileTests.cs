@@ -155,4 +155,35 @@ public class HexTileTests
 
         Assert.AreSame(firstUnit, tile.GetFirstUnit(me));
     }
+
+    [Test]
+    public void HasUnitOfOtherPlayer_OwnUnitOnly_IsFalse()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        NewUnit();
+        unitObject.GetComponent<Unit>().Owner = me;
+        tile.AddUnit(unitObject);
+
+        Assert.IsFalse(tile.HasUnitOfOtherPlayer(me));
+    }
+
+    [Test]
+    public void HasUnitOfOtherPlayer_ForeignUnit_IsTrue()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        var other = NewPlayer();
+        NewUnit();
+        unitObject.GetComponent<Unit>().Owner = other;
+        tile.AddUnit(unitObject);
+
+        Assert.IsTrue(tile.HasUnitOfOtherPlayer(me));
+    }
+
+    [Test]
+    public void HasUnitOfOtherPlayer_EmptyTile_IsFalse()
+    {
+        Assert.IsFalse(NewTile().HasUnitOfOtherPlayer(NewPlayer()));
+    }
 }

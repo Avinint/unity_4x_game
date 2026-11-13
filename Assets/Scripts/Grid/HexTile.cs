@@ -235,6 +235,15 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         units.Remove(unit);
     }
 
+    // Vrai si la case porte une unité d'un autre joueur que `player`.
+    public bool HasUnitOfOtherPlayer(Player player)
+    {
+        foreach (var go in units)
+            if (go != null && go.TryGetComponent(out Unit unit) && unit.Owner != null && unit.Owner != player)
+                return true;
+        return false;
+    }
+
     // Première unité de la case, en priorité celle de `owner` (null s'il n'y en a pas).
     public Unit GetFirstUnit(Player owner = null)
     {

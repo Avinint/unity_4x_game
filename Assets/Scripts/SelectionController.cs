@@ -92,7 +92,8 @@ public class SelectionController : Singleton<SelectionController>
     }
 
     private bool IsWalkable(Vector2Int axial) =>
-        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsDiscovered && tile.IsLand();
+        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsDiscovered && tile.IsLand()
+        && !tile.HasUnitOfOtherPlayer(SelectedUnit.Owner);
 
     // Seule une unité du joueur courant, à l'arrêt, reçoit des ordres.
     private bool CanCommand() =>

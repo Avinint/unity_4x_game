@@ -40,8 +40,9 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - Pas branché : IA des autres joueurs, fin de partie (`MaxTurns` inutilisé), coût selon le terrain, ressources.
 
 ## Règles de jeu décidées
-- Une unité ne peut pas entrer sur la case d'une unité d'un autre joueur, sauf si un événement change la règle (alliance).
-- À décider : limite d'empilement (piste : une unité civile et une unité militaire max par case) ; passage « par-dessus » une case occupée par un autre joueur pour atterrir derrière.
+- Une unité ne peut ni s'arrêter sur la case d'une unité d'un autre joueur, ni la traverser, sauf si un événement change la règle (alliance). Code : `IsWalkable` exclut `HexTile.HasUnitOfOtherPlayer(owner)` (testé) ; l'aperçu montre ces cases en rouge.
+- Ordre vers la case d'une unité d'un autre joueur = attaque (à concevoir avec le combat : unité civile / militaire, dégâts, riposte). En attendant, refusé.
+- À décider : limite d'empilement (piste : une unité civile et une unité militaire max par case) ; zones de contrôle (plus tard).
 
 ## Points fragiles connus
 - `BaseUnitState` : classe simple (plus de `Singleton`/`MonoBehaviour`), états créés avec `new`. `Unit` a un `State` et un `ChangeState` (Idle / Selected utilisés, les autres états sont vides).
