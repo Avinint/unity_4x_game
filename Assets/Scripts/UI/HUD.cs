@@ -7,6 +7,7 @@ public class HUD : MonoBehaviour
 {
     private Label turnLabel;
     private Label unitLabel;
+    private VisualElement playerSwatch;
     private string lastUnitText;
 
     private void OnEnable()
@@ -14,6 +15,7 @@ public class HUD : MonoBehaviour
         var root = GetComponent<UIDocument>().rootVisualElement;
         turnLabel = root.Q<Label>("turnLabel");
         unitLabel = root.Q<Label>("unitLabel");
+        playerSwatch = root.Q("playerSwatch");
         lastUnitText = null;
         GameManager.Instance.TurnChange += Refresh;
         GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
@@ -33,6 +35,8 @@ public class HUD : MonoBehaviour
     {
         if (turnLabel == null) return;
         Player player = GameManager.Instance.CurrentPlayer;
+        // Couleur du joueur : donnée du jeu, posée par le code (pas de classe USS possible).
+        if (playerSwatch != null && player != null) playerSwatch.style.backgroundColor = player.Color;
         turnLabel.text = player != null
             ? $"Tour {GameManager.Instance.CurrentTurn} — {player.name}"
             : $"Tour {GameManager.Instance.CurrentTurn}";

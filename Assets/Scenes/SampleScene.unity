@@ -1059,6 +1059,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Leader: {fileID: 0}
   Civilisation: {fileID: 0}
+  <Color>k__BackingField: {r: 0.08, g: 0.08, b: 0.08, a: 1}
 --- !u!4 &656893680
 Transform:
   m_ObjectHideFlags: 0
@@ -1105,6 +1106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Leader: {fileID: 0}
   Civilisation: {fileID: 0}
+  <Color>k__BackingField: {r: 0.45, g: 0.2, b: 0.65, a: 1}
 --- !u!4 &762387168
 Transform:
   m_ObjectHideFlags: 0
@@ -1515,6 +1517,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Leader: {fileID: 0}
   Civilisation: {fileID: 0}
+  <Color>k__BackingField: {r: 0.1, g: 0.75, b: 0.8, a: 1}
 --- !u!4 &1437649290
 Transform:
   m_ObjectHideFlags: 0
@@ -1835,6 +1838,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Leader: {fileID: 0}
   Civilisation: {fileID: 0}
+  <Color>k__BackingField: {r: 0.75, g: 0.1, b: 0.12, a: 1}
 --- !u!4 &1554858946
 Transform:
   m_ObjectHideFlags: 0
@@ -2135,6 +2139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Leader: {fileID: 0}
   Civilisation: {fileID: 0}
+  <Color>k__BackingField: {r: 0.95, g: 0.95, b: 0.95, a: 1}
 --- !u!4 &2137814021
 Transform:
   m_ObjectHideFlags: 0

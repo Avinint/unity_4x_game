@@ -5,7 +5,42 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public UnitType type;
-    public Player Owner { get; set; }
+    [SerializeField] private float ownerBaseDiameter = 4.5f;
+
+    private Player owner;
+    private Renderer ownerBase;
+    private bool isVisible = true;
+
+    // Changer de propriétaire met à jour le socle de couleur sous l'unité.
+    public Player Owner
+    {
+        get => owner;
+        set { owner = value; UpdateOwnerBase(); }
+    }
+
+    // Disque plat à la couleur du propriétaire (en attendant une bannière).
+    private void UpdateOwnerBase()
+    {
+        if (owner == null)
+        {
+            if (ownerBase != null) ownerBase.enabled = false;
+            return;
+        }
+        if (ownerBase == null)
+        {
+            var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            disc.name = "OwnerBase";
+            var col = disc.GetComponent<Collider>();
+            if (Application.isPlaying) Destroy(col); else DestroyImmediate(col);
+            disc.transform.SetParent(transform, false);
+            disc.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            disc.transform.localScale = new Vector3(ownerBaseDiameter, 0.05f, ownerBaseDiameter);
+            ownerBase = disc.GetComponent<Renderer>();
+            ownerBase.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+        ownerBase.sharedMaterial = owner.PlayerColorMaterial;
+        ownerBase.enabled = isVisible;
+    }
 
     public IUnitState State { get; private set; }
     public bool IsSelected => State != null && State.State == UnitState.Selected;
@@ -37,6 +72,7 @@ public class Unit : MonoBehaviour
     // Affiche ou masque les modèles de l'unité (brouillard) ; l'objet reste actif.
     public void SetVisible(bool visible)
     {
+        isVisible = visible;
         foreach (var r in GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
     }
 

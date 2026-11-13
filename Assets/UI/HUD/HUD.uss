@@ -16,6 +16,15 @@
   visibility: hidden;
 }
 
+.player-swatch {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  align-self: center;
+  border-width: 1px;
+  border-color: rgb(150, 120, 70);
+}
+
 .turn-label {
   font-size: 22px;
   color: rgb(235, 220, 190);
