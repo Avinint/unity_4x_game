@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -57,21 +58,31 @@ public class HexTileTests
     }
 
     // Unité de test : un objet avec Unit et un enfant avec un MeshRenderer.
-    private GameObject unitObject;
+    private readonly List<GameObject> created = new List<GameObject>();
+    private GameObject unitObject;   // dernière unité créée
 
     private MeshRenderer NewUnit()
     {
         unitObject = new GameObject("TestUnit");
+        created.Add(unitObject);
         unitObject.AddComponent<Unit>();
         var model = new GameObject("Model");
         model.transform.SetParent(unitObject.transform);
         return model.AddComponent<MeshRenderer>();
     }
 
+    private Player NewPlayer()
+    {
+        var go = new GameObject("TestPlayer");
+        created.Add(go);
+        return go.AddComponent<Player>();
+    }
+
     [TearDown]
     public void DestroyUnit()
     {
-        if (unitObject != null) Object.DestroyImmediate(unitObject);
+        foreach (var go in created) if (go != null) Object.DestroyImmediate(go);
+        created.Clear();
     }
 
     [Test]
@@ -108,5 +119,40 @@ public class HexTileTests
         tile.Discover();
 
         Assert.IsTrue(renderer.enabled);
+    }
+
+    [Test]
+    public void GetFirstUnit_PrefersOwnersUnit()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        var other = NewPlayer();
+        NewUnit();
+        var otherUnit = unitObject.GetComponent<Unit>();
+        otherUnit.Owner = other;
+        tile.AddUnit(unitObject);
+        NewUnit();
+        var myUnit = unitObject.GetComponent<Unit>();
+        myUnit.Owner = me;
+        tile.AddUnit(unitObject);
+
+        Assert.AreSame(myUnit, tile.GetFirstUnit(me));
+    }
+
+    [Test]
+    public void GetFirstUnit_NoOwnUnit_ReturnsFirst()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        var other = NewPlayer();
+        NewUnit();
+        var firstUnit = unitObject.GetComponent<Unit>();
+        firstUnit.Owner = other;
+        tile.AddUnit(unitObject);
+        NewUnit();
+        unitObject.GetComponent<Unit>().Owner = other;
+        tile.AddUnit(unitObject);
+
+        Assert.AreSame(firstUnit, tile.GetFirstUnit(me));
     }
 }

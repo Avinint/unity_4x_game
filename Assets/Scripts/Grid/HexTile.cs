@@ -235,14 +235,17 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         units.Remove(unit);
     }
 
-    // Première unité de la case (null s'il n'y en a pas).
-    public Unit GetFirstUnit()
+    // Première unité de la case, en priorité celle de `owner` (null s'il n'y en a pas).
+    public Unit GetFirstUnit(Player owner = null)
     {
+        Unit first = null;
         foreach (var go in units)
         {
-            if (go != null && go.TryGetComponent(out Unit unit)) return unit;
+            if (go == null || !go.TryGetComponent(out Unit unit)) continue;
+            if (owner != null && unit.Owner == owner) return unit;
+            if (first == null) first = unit;
         }
-        return null;
+        return first;
     }
     
     
