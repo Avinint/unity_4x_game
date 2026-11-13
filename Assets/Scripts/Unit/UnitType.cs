@@ -11,4 +11,5 @@ public class UnitType : ScriptableObject
     public string Name { get; private set; }
     [field:SerializeField] public Transform Prefab { get; private set; }
     [field:SerializeField, Min(1)] public int MovementPoints { get; private set; } = 2;
+    [field:SerializeField, Min(0)] public int SightRadius { get; private set; } = 2;
 }

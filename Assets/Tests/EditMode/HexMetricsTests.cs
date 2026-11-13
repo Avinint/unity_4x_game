@@ -115,6 +115,33 @@ public class HexMetricsTests
     }
 
     [Test]
+    public void AxialRange_RadiusZero_IsCenterOnly()
+    {
+        var center = new Vector2Int(4, -2);
+
+        CollectionAssert.AreEqual(new[] { center }, HexMetrics.AxialRange(center, 0));
+    }
+
+    [TestCase(1, 7)]
+    [TestCase(2, 19)]
+    [TestCase(3, 37)]
+    public void AxialRange_HasExpectedCount(int radius, int expected)
+    {
+        Assert.AreEqual(expected, HexMetrics.AxialRange(new Vector2Int(3, 4), radius).Count);
+    }
+
+    [Test]
+    public void AxialRange_AllWithinRadius_NoDuplicates()
+    {
+        var center = new Vector2Int(3, 4);
+        var range = HexMetrics.AxialRange(center, 3);
+
+        CollectionAssert.AllItemsAreUnique(range);
+        foreach (var c in range)
+            Assert.LessOrEqual(HexMetrics.AxialDistance(center, c), 3, $"{c}");
+    }
+
+    [Test]
     public void GridBounds_EmptyGrid_IsZero()
     {
         Assert.AreEqual(Rect.zero, HexMetrics.GridBounds(0, 5, HexSize, HexOrientation.PointyTop));

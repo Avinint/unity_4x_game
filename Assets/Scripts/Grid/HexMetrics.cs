@@ -59,6 +59,20 @@ public static class HexMetrics
         return centrePosition;
     }
 
+    // Coordonnées axiales à une distance ≤ radius de center (center compris) : 1 + 3·r·(r+1) cases.
+    public static List<Vector2Int> AxialRange(Vector2Int center, int radius)
+    {
+        var result = new List<Vector2Int>();
+        for (int q = -radius; q <= radius; q++)
+        {
+            int rMin = Mathf.Max(-radius, -q - radius);
+            int rMax = Mathf.Min(radius, -q + radius);
+            for (int r = rMin; r <= rMax; r++)
+                result.Add(center + new Vector2Int(q, r));
+        }
+        return result;
+    }
+
     // Rectangle (x, z) couvrant les centres de toutes les cases d'une grille width × height (coordonnées locales).
     public static Rect GridBounds(int width, int height, float hexSize, HexOrientation orientation)
     {

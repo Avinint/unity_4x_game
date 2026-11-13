@@ -71,24 +71,34 @@ public class Unit : MonoBehaviour
     public bool IsMoving { get; private set; }
 
     // Suit les points dans l'ordre, à vitesse constante.
-    public void MoveAlong(List<Vector3> points)
+    public void MoveAlong(List<HexTile> path)
     {
-        if (IsMoving || points == null || points.Count == 0) return;
-        MovementPoints -= points.Count;
-        StartCoroutine(MoveRoutine(points));
+        if (IsMoving || path == null || path.Count == 0) return;
+        MovementPoints -= path.Count;
+        StartCoroutine(MoveRoutine(path));
     }
 
-    private IEnumerator MoveRoutine(List<Vector3> points)
+    // Avance case par case ; à chaque case atteinte, l'unité révèle ce qu'elle voit.
+    private IEnumerator MoveRoutine(List<HexTile> path)
     {
         IsMoving = true;
-        foreach (var point in points)
+        foreach (var tile in path)
         {
+            Vector3 point = tile.CentrePosition;
             while (transform.position != point)
             {
                 transform.position = Vector3.MoveTowards(transform.position, point, moveSpeed * Time.deltaTime);
                 yield return null;
             }
+            RevealAround(tile);
         }
         IsMoving = false;
+    }
+
+    // Seul le joueur local découvre la carte (le brouillard est le sien).
+    private void RevealAround(HexTile tile)
+    {
+        if (Owner == null || Owner != GameManager.Instance.LocalPlayer || type == null) return;
+        tile.Grid.RevealAround(tile.AxialCoordinates, type.SightRadius);
     }
 }

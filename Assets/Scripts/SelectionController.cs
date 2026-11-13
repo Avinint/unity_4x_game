@@ -72,18 +72,18 @@ public class SelectionController : Singleton<SelectionController>
         if (path.Count > SelectedUnit.MovementPoints) path.RemoveRange(SelectedUnit.MovementPoints, path.Count - SelectedUnit.MovementPoints);
         Grid.TryGetTileAxial(path[path.Count - 1], out HexTile end);
 
-        var points = new List<Vector3>();
+        var steps = new List<HexTile>();
         foreach (var axial in path)
         {
             Grid.TryGetTileAxial(axial, out HexTile step);
-            points.Add(step.CentrePosition);
+            steps.Add(step);
         }
 
         // La case de l'unité change dès le départ.
         SelectedTile.RemoveUnit(SelectedUnit.gameObject);
         end.AddUnit(SelectedUnit.gameObject);
         SelectedTile = end;
-        SelectedUnit.MoveAlong(points);
+        SelectedUnit.MoveAlong(steps);
         Grid.UpdateHoverMarker();
     }
 
