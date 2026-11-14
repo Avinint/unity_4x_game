@@ -48,7 +48,7 @@ public class HUD : MonoBehaviour
         if (unitLabel == null) return;
         Unit unit = SelectionController.Instance.SelectedUnit;
         string text = unit == null ? "" :
-            $"{UnitName(unit)} — Mouvement {unit.MovementPoints}/{(unit.type != null ? unit.type.MovementPoints : 0)}";
+            $"{UnitName(unit)}{(unit.type != null ? $" ({unit.type.Category.DisplayName()})" : "")} — Mouvement {unit.MovementPoints}/{(unit.type != null ? unit.type.MovementPoints : 0)}";
         if (text == lastUnitText) return;
         lastUnitText = text;
         unitLabel.text = text;

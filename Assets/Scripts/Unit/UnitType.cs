@@ -10,6 +10,8 @@ public class UnitType : ScriptableObject
     [field:SerializeField]
     public string Name { get; private set; }
     [field:SerializeField] public Transform Prefab { get; private set; }
+    [field:SerializeField] public UnitCategory Category { get; private set; } = UnitCategory.Melee;
+    public bool IsMilitary => Category != UnitCategory.Civilian;
     [field:SerializeField, Min(1)] public int MovementPoints { get; private set; } = 2;
     [field:SerializeField, Min(0)] public int SightRadius { get; private set; } = 2;
 }

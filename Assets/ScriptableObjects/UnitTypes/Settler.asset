@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: 0
   <Name>k__BackingField: Settler
-  <Prefab>k__BackingField: {fileID: 8344743660317655403, guid: 49e68a55c1c13ac42999a92b06b7b873,
-    type: 3}
+  <Prefab>k__BackingField: {fileID: 8344743660317655403, guid: 49e68a55c1c13ac42999a92b06b7b873, type: 3}
+  <Category>k__BackingField: 0
+  <MovementPoints>k__BackingField: 2
+  <SightRadius>k__BackingField: 2
