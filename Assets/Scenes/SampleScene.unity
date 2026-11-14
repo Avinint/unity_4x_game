@@ -1267,6 +1267,8 @@ MonoBehaviour:
   unknownPrefab: {fileID: 6944534303261143973, guid: d9daf753b065e30439ccc588df9fa389, type: 3}
   debugPrefab: {fileID: -8679921383154817045, guid: 87e9dfbb746657e4e8c4e19b69c88dfd, type: 3}
   <PlayerSpawningMinDistance>k__BackingField: 10
+  fogColor: {r: 0.5176471, g: 0.5176471, b: 0.5176471, a: 1}
+  fogAmount: 0.5
   <Selector>k__BackingField: {fileID: 2116262286}
   <HoverMarker>k__BackingField: {fileID: 1716819127}
 --- !u!4 &1001322750
