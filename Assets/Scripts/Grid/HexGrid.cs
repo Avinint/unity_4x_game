@@ -114,11 +114,13 @@ public class HexGrid : MonoBehaviour
 
     public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(axial, out tile);
 
-    // Révèle les cases existantes à une distance ≤ radius de center.
-    public void RevealAround(Vector2Int center, int radius)
+    // Cases existantes à une distance ≤ radius de center.
+    public List<Vector2Int> CellsInRange(Vector2Int center, int radius)
     {
+        var cells = new List<Vector2Int>();
         foreach (var axial in HexMetrics.AxialRange(center, radius))
-            if (Tiles.TryGetValue(axial, out HexTile tile)) tile.Discover();
+            if (Tiles.ContainsKey(axial)) cells.Add(axial);
+        return cells;
     }
 
     // Rectangle (x, z) couvrant les centres des cases, en coordonnées monde.

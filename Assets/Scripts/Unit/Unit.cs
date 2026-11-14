@@ -128,15 +128,20 @@ public class Unit : MonoBehaviour
                 transform.position = Vector3.MoveTowards(transform.position, point, moveSpeed * Time.deltaTime);
                 yield return null;
             }
-            RevealAround(tile);
+            UpdateVision(tile);
         }
         IsMoving = false;
     }
 
-    // Révèle ce que l'unité voit depuis `tile`. Seul le joueur local découvre la carte (le brouillard est le sien).
-    public void RevealAround(HexTile tile)
+    private List<Vector2Int> seenCells;   // cases vues depuis la dernière position
+
+    // L'unité voit désormais depuis `tile` : met à jour la connaissance de son propriétaire.
+    public void UpdateVision(HexTile tile)
     {
-        if (Owner == null || Owner != GameManager.Instance.LocalPlayer || type == null) return;
-        tile.Grid.RevealAround(tile.AxialCoordinates, type.SightRadius);
+        if (Owner == null || type == null) return;
+        var fog = GameManager.Instance.Fog;
+        if (seenCells != null) fog.RemoveWatcher(Owner, seenCells);
+        seenCells = tile.Grid.CellsInRange(tile.AxialCoordinates, type.SightRadius);
+        fog.AddWatcher(Owner, seenCells);
     }
 }

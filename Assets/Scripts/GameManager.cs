@@ -23,6 +23,8 @@ public class GameManager : Singleton<GameManager>
     public Dictionary<Vector2, GameObject> Units { get; private set; } = new Dictionary<Vector2, GameObject>();
 
     public int MaxTurns = 500;
+
+    public FogOfWar<Player> Fog { get; } = new FogOfWar<Player>();
     private TurnCycle<Player> turns = new TurnCycle<Player>(new List<Player>(), null);
     public int CurrentTurn => turns.Round;
     public IReadOnlyList<Player> TurnOrder => turns.Order;
@@ -46,6 +48,7 @@ public class GameManager : Singleton<GameManager>
         HexGrid.DefaultVisibleTiles = DefaultVisibleTiles;
         HexGrid.DefaultVisibleRadius = DefaultVisibleRadius;
         HexGrid.OnTileInstancesGenerated += InitPlayers;
+        Fog.TileExplored += OnTileExplored;
         // Le Singleton crée le contrôleur de sélection au premier accès.
         SelectionController.Instance.name = "SelectionController";
     }
@@ -54,6 +57,7 @@ public class GameManager : Singleton<GameManager>
     {
 
         HexGrid.OnTileInstancesGenerated -= InitPlayers;
+        Fog.TileExplored -= OnTileExplored;
     }
 
 
@@ -91,7 +95,8 @@ public class GameManager : Singleton<GameManager>
             player.StartingTile = tile;
             HexGrid.StartTiles.RemoveAt(index);
             player.StartingArea = HexGrid.GetStartingArea( player.StartingTile);
-            if (RevealAllPlayers || player == LocalPlayer) SetVisibleTiles(player.StartingArea);
+            Fog.Explore(player, player.StartingArea.Keys);
+            if (RevealAllPlayers && player != LocalPlayer) SetVisibleTiles(player.StartingArea);   // débogage
             AddStartingUnits(player);
         }
 
@@ -109,6 +114,12 @@ public class GameManager : Singleton<GameManager>
         PlayerTurnStart?.Invoke(CurrentPlayer);   // début de partie : tour du premier joueur
     }
     
+    // L'affichage suit la connaissance du joueur local.
+    private void OnTileExplored(Player player, Vector2Int cell)
+    {
+        if (player == LocalPlayer && HexGrid.TryGetTileAxial(cell, out HexTile tile)) tile.Discover();
+    }
+
     private void SetVisibleTiles(Dictionary<Vector2Int, HexTile> tiles)
     {
         foreach (var ( coordinates, tile) in tiles)
@@ -141,7 +152,7 @@ public class GameManager : Singleton<GameManager>
         player.units.Add(unitObject);
         if (!unitObject.TryGetComponent(out Unit unit)) return;
         unit.Owner = player;
-        unit.RevealAround(tile);
+        unit.UpdateVision(tile);
     }
 
     private void Start()
