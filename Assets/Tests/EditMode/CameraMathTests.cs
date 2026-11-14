@@ -27,6 +27,38 @@ public class CameraMathTests
         Assert.AreEqual(distance, CameraMath.TiltedOffset(distance, Min, Max, Near, Far).magnitude, 0.001f);
     }
 
+    private static readonly Vector2 Screen = new Vector2(1000f, 600f);
+    private const float Margin = 15f;
+
+    [Test]
+    public void EdgeScroll_Center_IsZero()
+    {
+        Assert.AreEqual(Vector2.zero, CameraMath.EdgeScrollDirection(new Vector2(500f, 300f), Screen, Margin));
+    }
+
+    [Test]
+    public void EdgeScroll_LeftEdge_PointsLeft()
+    {
+        Assert.AreEqual(new Vector2(-1f, 0f), CameraMath.EdgeScrollDirection(new Vector2(5f, 300f), Screen, Margin));
+    }
+
+    [Test]
+    public void EdgeScroll_TopRightCorner_IsNormalizedDiagonal()
+    {
+        Vector2 direction = CameraMath.EdgeScrollDirection(new Vector2(995f, 595f), Screen, Margin);
+
+        Assert.AreEqual(1f, direction.magnitude, 0.0001f);
+        Assert.Greater(direction.x, 0f);
+        Assert.Greater(direction.y, 0f);
+    }
+
+    [Test]
+    public void EdgeScroll_OutsideWindow_IsZero()
+    {
+        Assert.AreEqual(Vector2.zero, CameraMath.EdgeScrollDirection(new Vector2(-10f, 300f), Screen, Margin));
+        Assert.AreEqual(Vector2.zero, CameraMath.EdgeScrollDirection(new Vector2(500f, 700f), Screen, Margin));
+    }
+
     [Test]
     public void TiltedOffset_IsSouthAndAbove()
     {

@@ -1729,13 +1729,16 @@ MonoBehaviour:
   OverheadCamera: {fileID: 1811976905}
   focusCamera: {fileID: 636859190}
   cameraSpeed: 10
-  pitch: 55
+  pitchNear: 40
+  pitchFar: 70
   fieldOfView: 30
   distanceMin: 40
   distanceMax: 250
   distanceDefault: 120
   distanceZoomSpeed: 2.5
   scrollZoomStep: 0.15
+  edgeScroll: 1
+  edgeScrollMargin: 15
   defaultMode: 0
   currentMode: 0
   isLocked: 0

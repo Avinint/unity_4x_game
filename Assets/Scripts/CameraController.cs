@@ -29,8 +29,26 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private float distanceZoomSpeed = 2.5f;
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
 
+    [Header("Défilement par les bords")]
+    [SerializeField] private bool edgeScroll = true;
+    [SerializeField] private float edgeScrollMargin = 15f;   // pixels
+
     private float distance;
     private Unity.Cinemachine.CinemachineFollow overheadFollow;
+
+    // Vitesse de défilement proportionnelle au zoom : cameraSpeed à la distance par défaut.
+    private float PanSpeed => cameraSpeed * distance / distanceDefault;
+
+    // Souris près d'un bord de la fenêtre : la vue glisse dans cette direction.
+    private void Update()
+    {
+        if (!edgeScroll || isLocked || !Application.isFocused || Mouse.current == null) return;
+        Vector2 direction = CameraMath.EdgeScrollDirection(
+            Mouse.current.position.ReadValue(), new Vector2(Screen.width, Screen.height), edgeScrollMargin);
+        if (direction == Vector2.zero) return;
+        cameraTarget.transform.position += new Vector3(direction.x, 0f, direction.y) * PanSpeed * Time.deltaTime;
+        ClampTarget();
+    }
 
     [SerializeField] private CameraMode defaultMode = CameraMode.Overhead;
 
@@ -191,7 +209,7 @@ public class CameraController : Singleton<CameraController>
 
             // move the camera in the direction of the input vector (3D)
             Vector3 moveVector = new Vector3(inputVector.x, 0, inputVector.y);
-            cameraTarget.transform.position += moveVector * cameraSpeed * Time.deltaTime;
+            cameraTarget.transform.position += moveVector * PanSpeed * Time.deltaTime;
             ClampTarget();
 
             yield return null;
