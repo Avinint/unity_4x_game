@@ -34,7 +34,6 @@ public class HexGrid : MonoBehaviour
 
     private Vector3 gridOrigin;
 
-    public event System.Action OnMapInfoGenerated;
     public event System.Action<float> OnTileBatchGenerated;
     public event System.Action OnTileInstancesGenerated;
     
@@ -186,7 +185,6 @@ public class HexGrid : MonoBehaviour
 
         hexGenerationTask.ContinueWith(task =>
         {
-            Debug.Log(" Setting tiles");
             Tiles = task.Result;
             MainThreadDispatcher.Instance.Enqueue(() => StartCoroutine(InstantiateTiles(Tiles, Orientation)));
         });
@@ -231,8 +229,6 @@ public class HexGrid : MonoBehaviour
         }
 
         SetNeighbours(hexTiles);
-
-        Debug.Log("GenerateHexTileData");
         
         return hexTiles;
     }
@@ -276,7 +272,6 @@ public class HexGrid : MonoBehaviour
     //Handled by coroutine and currently the most expensive operation
     private IEnumerator InstantiateTiles(Dictionary<Vector2Int, HexTile> hexTiles, HexOrientation orientation)
     {
-        Debug.Log("Instantiating Hex Tiles");
         int batchCount = 0;
         int totalBatches = Mathf.CeilToInt((float)hexTiles.Count / BatchSize);
 
@@ -311,7 +306,6 @@ public class HexGrid : MonoBehaviour
         //     }
         // }
         
-        Debug.Log("Grid generated");
 
         OnTileInstancesGenerated?.Invoke();
     }
@@ -376,7 +370,8 @@ public class HexGrid : MonoBehaviour
         for (int p = 0; p < picks.Count; p++)
         {
             if (p > 0 && picks[p].DistanceToNearest < PlayerSpawningMinDistance)
-                Debug.LogWarning($"Joueur {p} : distance minimale non respectée ({picks[p].DistanceToNearest} < {PlayerSpawningMinDistance}).");
+                // Placement au mieux : simple information (distance minimale à revoir avec la refonte de la génération).
+                Debug.Log($"Joueur {p} : distance minimale non respectée ({picks[p].DistanceToNearest} < {PlayerSpawningMinDistance}).");
 
             StartTiles.Add(candidates[picks[p].Index]);
         }

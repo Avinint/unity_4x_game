@@ -63,7 +63,6 @@ public class CameraController : Singleton<CameraController>
     public event Action onSelectAction;
     public event Action onCommandAction;
     public event Action onDeselectAction;
-    public event Action onFocusAction;
 
     [SerializeField] private bool isLocked = false;
     public bool IsLocked
@@ -143,15 +142,11 @@ public class CameraController : Singleton<CameraController>
     {
         if (context.started)
         {
-            // Debug.Log("Focus button pressed...");
         } else if (context.performed)
         {
             onSelectAction?.Invoke();
-           // Debug.Log("Double tapped - Focus...");
-            //onFocusAction?.Invoke();
         } else if (context.canceled)
         {
-           // Debug.Log("Double tapped - Select...");
             //onSelectAction?.Invoke();
         }
     }
@@ -191,7 +186,6 @@ public class CameraController : Singleton<CameraController>
         {
             case CameraMode.Overhead:
                 return OverheadCamera;
-                break;
             case CameraMode.Focus:
                 return focusCamera;
             default:

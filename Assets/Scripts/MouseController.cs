@@ -25,32 +25,19 @@ public class MouseController : Singleton<MouseController>
     // Update is called once per frame
     void Update()
     {
-        Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-        
-        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
-        {
-            CheckMouseMove(ray);
-        }
-        
-        if (Input.GetMouseButtonDown(0))
-        {
-            CheckMouseClick(ray, 0);
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
-            CheckMouseClick(ray, 1);
-        }
-        if (Input.GetMouseButtonDown(2))
-        {
-            CheckMouseClick(ray, 2);
-        }
+        Mouse mouse = Mouse.current;
+        if (mouse == null) return;   // pas de souris branchée
+        Ray ray = _mainCamera.ScreenPointToRay(mouse.position.ReadValue());
+
+        if (mouse.delta.ReadValue() != Vector2.zero) CheckMouseMove(ray);
+        if (mouse.leftButton.wasPressedThisFrame) CheckMouseClick(ray, 0);
+        if (mouse.rightButton.wasPressedThisFrame) CheckMouseClick(ray, 1);
+        if (mouse.middleButton.wasPressedThisFrame) CheckMouseClick(ray, 2);
     }
 
     void CheckMouseMove(Ray ray)
     {
         RaycastHit hitInfo;
-        // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        // RaycastHit hit;
 
         bool overUI = UnityEngine.EventSystems.EventSystem.current != null
                       && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();

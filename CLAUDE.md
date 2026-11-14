@@ -12,7 +12,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 ## Environnement
 - Unity 6000.6.4f1, Windows. Rendu : URP (`Assets/Settings/URP-HighFidelity.asset`).
 - Cinemachine 3 (`Unity.Cinemachine`) : `CinemachineCamera`, `CinemachineOrbitalFollow`, `Lens`.
-- Input : ancien `Input` (MouseController) + Input System (`PlayerControls.inputactions`).
+- Input : Input System seulement (`PlayerControls.inputactions` pour les actions, `Mouse.current` dans `MouseController` et pour le défilement par les bords). Active Input Handling à régler sur « Input System Package (New) » (Project Settings → Player).
 - MCP Unity (Editor ouvert sur le projet, package `com.unity.pipeline`), selon l'ordinateur :
   - `M:\Unity_Projects\Fantasy Fiefdoms` : `unity mcp configure claude-code --project-path "M:\Unity_Projects\Fantasy Fiefdoms"`.
   - `C:\Users\avini\UnityProject\unity_4x_game` : entrée locale `claude mcp add --scope local --transport stdio unity-editor-mcp -- unity mcp --project-path "C:\Users\avini\UnityProject\unity_4x_game"` (ne pas utiliser `unity mcp configure` ici : il écrase l'entrée utilisateur du projet FPS).
@@ -44,7 +44,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - Fait : génération de carte, brouillard (`IsDiscovered`), placement des joueurs, caméras, survol et sélection d'unité (marqueurs), déplacement par chemin animé, points de mouvement, tour par joueur (ordre fixe, joueur local d'abord, joueurs sans IA passés automatiquement), HUD (numéro de tour, joueur courant, unité sélectionnée et points restants), exploration (vision des unités), aperçu du chemin au survol.
 - Ordre prévu : exploration avant la fondation des villes.
 - Pas branché : IA des autres joueurs, fin de partie (`MaxTurns` inutilisé), ressources.
-- À refaire : génération de carte. Aujourd'hui un seul bruit (hauteur) choisit le terrain par tranches (`MapGenerator.Biomes`) : Coast jamais atteint (hauteur 0), Snow absent de la liste, désert toujours en bord de mer, toundra au-dessus des montagnes. Cible : relief (eau, plat, colline, montagne) tiré de la hauteur + biome (prairie, plaine, désert, forêt, toundra, neige) tiré d'un second bruit (humidité/température) ; coûts cumulés (colline +1, forêt +1) ; base pour la ligne de vue.
+- À refaire : génération de carte. Aujourd'hui un seul bruit (hauteur) choisit le terrain par tranches (`MapGenerator.Biomes`) : Coast jamais atteint (hauteur 0), Snow absent de la liste, désert toujours en bord de mer, toundra au-dessus des montagnes. Cible : relief (eau, plat, colline, montagne) tiré de la hauteur + biome (prairie, plaine, désert, forêt, toundra, neige) tiré d'un second bruit (humidité/température) ; coûts cumulés (colline +1, forêt +1) ; base pour la ligne de vue. Avec la refonte : distance minimale entre joueurs (`HexGrid.PlayerSpawningMinDistance`, calculée à 0 par (Width+Height)/2 / (joueurs/2), irréaliste sur 20×20 à 5 joueurs) à calculer d'après la surface de terre.
 
 ## Règles de jeu décidées
 - Une unité ne peut ni s'arrêter sur la case d'une unité d'un autre joueur, ni la traverser, sauf si un événement change la règle (alliance). Code : `IsWalkable` exclut `HexTile.HasUnitOfOtherPlayer(owner)` (testé) ; l'aperçu montre ces cases en rouge.
@@ -55,7 +55,9 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - `BaseUnitState` : classe simple (plus de `Singleton`/`MonoBehaviour`), états créés avec `new`. `Unit` a un `State` et un `ChangeState` (Idle / Selected utilisés, les autres états sont vides).
 - `GameManager.Units` (dictionnaire par case) n'est rempli qu'au placement de départ et n'est lu nulle part : ne pas s'y fier.
 - `Player` n'est jamais déplacé sur sa case de départ (sa `transform` n'est pas utilisée) : seules les unités le sont. Optionnel : `player.transform.position = tile.CentrePosition` dans `InitPlayers`.
-- Avertissements restants : `Player` (`HexTile` non sérialisable), `StartingArea` dictionnaire sans `[SerializeField]`.
+- `Player.StartingTile` / `StartingArea` : données calculées au lancement, `[NonSerialized]` (ni enregistrées ni visibles dans l'Inspector).
+- Avertissement restant hors de notre code : « No script asset for BurstPlatformAotSettings » (package Burst).
+- Survol (`MouseController.CheckMouseMove`) recalculé seulement quand la souris bouge : quand la vue défile souris immobile, le marqueur reste sur l'ancienne case jusqu'au prochain mouvement.
 
 ## Révélation des zones de départ
 - `GameManager.LocalPlayer` (champ `localPlayer`, par défaut le premier de `Players`) et `RevealAllPlayers` (coché par défaut, débogage). Décoché, seule la zone du joueur local est révélée et la caméra démarre sur sa case.

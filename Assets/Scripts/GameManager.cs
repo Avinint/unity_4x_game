@@ -75,8 +75,6 @@ public class GameManager : Singleton<GameManager>
         //     HexGrid.StartTiles.Add(player.StartingTile );
         // }
 
-        // int i = 0;
-        Debug.Log("Starting tiles count " + HexGrid.StartTiles.Count);
         // foreach (HexTile tile in HexGrid.StartTiles)
         // {
         //     Players[i++].StartingTile = tile;
@@ -166,7 +164,6 @@ public class GameManager : Singleton<GameManager>
     {
        
         var units = StartingUnits;
-        GameObject firstUnit = null;
         var coordinates = new Vector3Int(player.StartingTile.OffsetCoordinates.x, 0, player.StartingTile.OffsetCoordinates.y); 
 
         Vector3 centrePosition = HexMetrics.Center(
@@ -189,9 +186,6 @@ public class GameManager : Singleton<GameManager>
             HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
             HexGrid.transform);
 
-          Debug.Log("my test " + Units[tile.AxialCoordinates]);
-          Debug.Log("my test2 " + tile);
-          
           Units[tile.AxialCoordinates] .gameObject.layer = LayerMask.NameToLayer("Grid");
           tile.AddUnit(Units[tile.AxialCoordinates] );
           SetupStartingUnit(Units[tile.AxialCoordinates], player, tile);
