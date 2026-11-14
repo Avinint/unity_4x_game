@@ -95,6 +95,9 @@ public static class MapRules
         return r;
     }
 
+    public static float Elevation(Relief relief, float hillHeight, float mountainHeight) =>
+        relief == Relief.Hill ? hillHeight : relief == Relief.Mountain ? mountainHeight : 0f;
+
     public static Biome WaterBiome(bool touchesLand) => touchesLand ? Biome.Coast : Biome.Ocean;
 
     // Cases d'eau qui touchent au moins une terre (voisins fournis par l'appelant, hors carte ignorés).

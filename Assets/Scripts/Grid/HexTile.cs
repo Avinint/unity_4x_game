@@ -70,7 +70,25 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
         AddGizmo();
         gizmo.Unlock();
+        AddPlinth();
         ApplyDim();
+    }
+
+    public float Elevation { get; private set; }
+
+    // Socle sous une case surélevée : même matériau que le terrain, du sol jusqu'à la case.
+    private void AddPlinth()
+    {
+        if (Elevation <= 0f) return;
+        var topRenderer = terrain.GetComponentInChildren<Renderer>();
+        var plinth = new GameObject("Plinth");
+        plinth.layer = terrain.gameObject.layer;
+        plinth.transform.SetParent(terrain, false);
+        plinth.transform.localPosition = Vector3.down * Elevation;
+        plinth.transform.localScale = new Vector3(1f, Elevation, 1f);
+        plinth.AddComponent<MeshFilter>().sharedMesh = Grid.PlinthMesh;
+        var r = plinth.AddComponent<MeshRenderer>();
+        r.sharedMaterial = topRenderer != null ? topRenderer.sharedMaterial : null;
     }
 
     // Vue en ce moment par le joueur affiché (sinon assombrie si découverte).
@@ -142,7 +160,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     {
         gizmo = terrain.gameObject.AddComponent<HexTileGizmo>();
         gizmo.Neighbours = Neighbours;
-        gizmo.transform.position = CentrePosition;
     }
 
     public void CreateTerrain(HexOrientation orientation, Transform unknownPrefab)
@@ -168,15 +185,17 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
             return;
         }
 
+        Elevation = Grid.ElevationOf(Relief);
         CentrePosition = HexMetrics.Center(
-            HexSize, 
-            (int)OffsetCoordinates.x, 
+            HexSize,
+            (int)OffsetCoordinates.x,
             (int)OffsetCoordinates.y, orientation
-        ) + Grid.transform.position;
+        ) + Grid.transform.position
+          + Vector3.up * Elevation;
 
         terrain = UnityEngine.Object.Instantiate(
             unknownPrefab,
-            CentrePosition, 
+            CentrePosition - Vector3.up * Elevation,   // brouillard : à plat, sans trahir le relief
             orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
             Grid.transform
         );

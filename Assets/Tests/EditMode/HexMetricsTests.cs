@@ -142,6 +142,18 @@ public class HexMetricsTests
     }
 
     [Test]
+    public void PlinthMesh_SixSidesFromZeroToOne()
+    {
+        Mesh mesh = HexMetrics.BuildPlinthMesh(HexSize);
+
+        Assert.AreEqual(24, mesh.vertexCount);
+        Assert.AreEqual(36, mesh.triangles.Length);
+        Assert.AreEqual(0f, mesh.bounds.min.y, 0.0001f);
+        Assert.AreEqual(1f, mesh.bounds.max.y, 0.0001f);
+        Object.DestroyImmediate(mesh);
+    }
+
+    [Test]
     public void GridBounds_EmptyGrid_IsZero()
     {
         Assert.AreEqual(Rect.zero, HexMetrics.GridBounds(0, 5, HexSize, HexOrientation.PointyTop));

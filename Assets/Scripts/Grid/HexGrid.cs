@@ -41,6 +41,14 @@ public class HexGrid : MonoBehaviour
 
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
 
+    [Header("Relief")]
+    [SerializeField] private float hillHeight = 1.5f;
+    [SerializeField] private float mountainHeight = 4f;
+    public float ElevationOf(Relief relief) => MapRules.Elevation(relief, hillHeight, mountainHeight);
+
+    private Mesh plinthMesh;
+    public Mesh PlinthMesh => plinthMesh != null ? plinthMesh : (plinthMesh = HexMetrics.BuildPlinthMesh(HexSize));
+
     [Header("Brouillard")]
     [SerializeField] private Color fogColor = new Color(0.85f, 0.85f, 0.85f);   // brume (gris clair)
     [SerializeField, Range(0f, 1f)] private float fogAmount = 0.5f;             // 0 = couleur d'origine, 1 = brume pleine

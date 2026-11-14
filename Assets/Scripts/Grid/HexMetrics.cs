@@ -74,6 +74,30 @@ public static class HexMetrics
     }
 
     // Rectangle (x, z) couvrant les centres de toutes les cases d'une grille width × height (coordonnées locales).
+    // Prisme hexagonal sans couvercle, de y = 0 à y = 1 (mis à l'échelle par case). Pointe en haut, comme les modèles.
+    public static Mesh BuildPlinthMesh(float hexSize)
+    {
+        Vector3[] c = Corners(hexSize, HexOrientation.PointyTop);
+        var vertices = new List<Vector3>();
+        var triangles = new List<int>();
+        var normals = new List<Vector3>();
+        for (int i = 0; i < 6; i++)
+        {
+            Vector3 a = c[i], b = c[(i + 1) % 6];
+            Vector3 n = ((a + b) * 0.5f).normalized;           // vers l'extérieur
+            int v = vertices.Count;
+            vertices.Add(a); vertices.Add(b); vertices.Add(b + Vector3.up); vertices.Add(a + Vector3.up);
+            for (int k = 0; k < 4; k++) normals.Add(n);
+            triangles.AddRange(new[] { v, v + 2, v + 1, v, v + 3, v + 2 });
+        }
+        var mesh = new Mesh { name = "HexPlinth" };
+        mesh.SetVertices(vertices);
+        mesh.SetNormals(normals);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
     public static Rect GridBounds(int width, int height, float hexSize, HexOrientation orientation)
     {
         if (width <= 0 || height <= 0) return Rect.zero;

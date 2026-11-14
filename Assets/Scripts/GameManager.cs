@@ -159,25 +159,18 @@ public class GameManager : Singleton<GameManager>
     {
        
         var units = StartingUnits;
-        var coordinates = new Vector3Int(player.StartingTile.OffsetCoordinates.x, 0, player.StartingTile.OffsetCoordinates.y); 
 
-        Vector3 centrePosition = HexMetrics.Center(
-            HexGrid.HexSize, 
-            coordinates.x, 
-            coordinates.z, HexGrid.Orientation
-        ) + HexGrid.transform.position;
-
-        // Le Vector3Int a y = 0 : la case de départ est déjà connue, pas besoin de la rechercher.
         HexTile tile = player.StartingTile;
         if (tile == null)
         {
             Debug.LogError("Le joueur n'a pas de case de départ");
             return;
         }
-        
+
+          // CentrePosition inclut la hauteur de la case (colline).
           GameObject firstUnit = Instantiate(
             units[0],
-            centrePosition,
+            tile.CentrePosition,
             HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity,
             HexGrid.transform);
 
@@ -212,17 +205,10 @@ public class GameManager : Singleton<GameManager>
             if (tile.IsLand())
             {
                 startingArea.Remove(tile.AxialCoordinates);
-                coordinates = new Vector3Int(tile.OffsetCoordinates.x, 0, tile.OffsetCoordinates.y); 
-            
-                centrePosition = HexMetrics.Center(
-                    HexGrid.HexSize, 
-                    (int)coordinates.x, 
-                    (int)coordinates.z, HexGrid.Orientation
-                ) + HexGrid.transform.position;
 
                 GameObject instance = Instantiate(
                     unit,
-                    centrePosition,
+                    tile.CentrePosition,
                     HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity,
                     HexGrid.transform);
                 tile.AddUnit(instance);

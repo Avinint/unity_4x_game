@@ -162,6 +162,15 @@ public class MapRulesTests
     }
 
     [Test]
+    public void Elevation_ByRelief()
+    {
+        Assert.AreEqual(0f, MapRules.Elevation(Relief.Water, 1.5f, 4f));
+        Assert.AreEqual(0f, MapRules.Elevation(Relief.Flat, 1.5f, 4f));
+        Assert.AreEqual(1.5f, MapRules.Elevation(Relief.Hill, 1.5f, 4f));
+        Assert.AreEqual(4f, MapRules.Elevation(Relief.Mountain, 1.5f, 4f));
+    }
+
+    [Test]
     public void WaterBiome_CoastWhenTouchingLand()
     {
         Assert.AreEqual(Biome.Coast, MapRules.WaterBiome(true));
