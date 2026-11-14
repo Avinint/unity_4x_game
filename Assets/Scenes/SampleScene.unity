@@ -1394,8 +1394,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HexGrid: {fileID: 0}
-  Width: 84
-  Height: 54
+  Width: 20
+  Height: 20
   NoiseScale: 12
   Octaves: 4
   Persistence: 0.6
@@ -1406,25 +1406,43 @@ MonoBehaviour:
   UseHexGrid: 1
   GenerateMapOnStart: 1
   UseThreadedGeneration: 1
-  Biomes:
-  - Height: 0.5
-    TerrainType: {fileID: 11400000, guid: 176646758c181274caa30aa60a96db14, type: 2}
-  - Height: 0
-    TerrainType: {fileID: 11400000, guid: 7b2f4ddb8b85c09469131d7af56f6804, type: 2}
-  - Height: 0.54
-    TerrainType: {fileID: 11400000, guid: 402e624d78840b54b9dd225c3b77845d, type: 2}
-  - Height: 0.56
-    TerrainType: {fileID: 11400000, guid: 3e8d895fc2b6d934ca5f36288103152f, type: 2}
-  - Height: 0.65
-    TerrainType: {fileID: 11400000, guid: 9f1f12d435e08cf49bcfc7bf38d53b9c, type: 2}
-  - Height: 0.75
-    TerrainType: {fileID: 11400000, guid: 281ef413810d11f498884b8aabdcfd2c, type: 2}
-  - Height: 0.8
-    TerrainType: {fileID: 11400000, guid: 5c2e40d1ce278b346a9cb1624fbbf1be, type: 2}
-  - Height: 0.95
-    TerrainType: {fileID: 11400000, guid: c2cd1b213f826614ca761d8ab454d63a, type: 2}
-  - Height: 1
-    TerrainType: {fileID: 11400000, guid: 3fb88077f07634348aeb417fb4856a1a, type: 2}
+  Rules:
+    WaterFraction: 0.65
+    HillFraction: 0.25
+    MountainFraction: 0.1
+    LatitudeWeight: 0.8
+    AltitudeCooling: 0.5
+    FrozenBelow: 0.15
+    ColdBelow: 0.35
+    HotAbove: 0.7
+    DryBelow: 0.33
+    WetAbove: 0.66
+    MarshAbove: 0.8
+    LowlandFraction: 0.2
+  BiomeTerrains:
+  - Biome: 0
+    Terrain: {fileID: 11400000, guid: 176646758c181274caa30aa60a96db14, type: 2}
+  - Biome: 1
+    Terrain: {fileID: 11400000, guid: 7b2f4ddb8b85c09469131d7af56f6804, type: 2}
+  - Biome: 2
+    Terrain: {fileID: 11400000, guid: 281ef413810d11f498884b8aabdcfd2c, type: 2}
+  - Biome: 3
+    Terrain: {fileID: 11400000, guid: 9f1f12d435e08cf49bcfc7bf38d53b9c, type: 2}
+  - Biome: 4
+    Terrain: {fileID: 11400000, guid: 402e624d78840b54b9dd225c3b77845d, type: 2}
+  - Biome: 5
+    Terrain: {fileID: 11400000, guid: 5c2e40d1ce278b346a9cb1624fbbf1be, type: 2}
+  - Biome: 6
+    Terrain: {fileID: 11400000, guid: a5cd5a41028f8f94fb98ee32456b39dc, type: 2}
+  - Biome: 7
+    Terrain: {fileID: 11400000, guid: 3e8d895fc2b6d934ca5f36288103152f, type: 2}
+  - Biome: 8
+    Terrain: {fileID: 11400000, guid: 3fb88077f07634348aeb417fb4856a1a, type: 2}
+  - Biome: 9
+    Terrain: {fileID: 11400000, guid: 3c7556386b0ba224cae610f0a05cd41b, type: 2}
+  - Biome: 10
+    Terrain: {fileID: 11400000, guid: 7c7e6c8dcb69fd246af471ae3993888b, type: 2}
+  MountainTerrain: {fileID: 11400000, guid: c2cd1b213f826614ca761d8ab454d63a, type: 2}
 --- !u!1001 &1406913779
 PrefabInstance:
   m_ObjectHideFlags: 0

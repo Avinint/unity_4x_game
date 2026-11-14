@@ -84,6 +84,39 @@ public class MapRulesTests
     }
 
     [Test]
+    public void Percentile_List_SameAsArray()
+    {
+        var array = new float[4, 5];
+        var list = new System.Collections.Generic.List<float>();
+        for (int i = 0; i < 20; i++) { array[i % 4, i / 4] = (i * 7) % 20; list.Add((i * 7) % 20); }
+
+        Assert.AreEqual(MapRules.Percentile(array, 0.3f), MapRules.Percentile(list, 0.3f));
+    }
+
+    [Test]
+    public void CoastMask_WaterNextToLandIsCoast()
+    {
+        // 3 × 3 d'eau, une terre au centre-gauche ; voisins : haut, bas, gauche, droite.
+        var relief = new Relief[3, 3];
+        relief[0, 1] = Relief.Flat;
+        System.Collections.Generic.IEnumerable<UnityEngine.Vector2Int> Four(int x, int y)
+        {
+            yield return new UnityEngine.Vector2Int(x + 1, y);
+            yield return new UnityEngine.Vector2Int(x - 1, y);
+            yield return new UnityEngine.Vector2Int(x, y + 1);
+            yield return new UnityEngine.Vector2Int(x, y - 1);
+        }
+
+        bool[,] coast = MapRules.CoastMask(relief, Four);
+
+        Assert.IsTrue(coast[1, 1]);    // à droite de la terre
+        Assert.IsTrue(coast[0, 0]);    // en dessous
+        Assert.IsTrue(coast[0, 2]);    // au-dessus
+        Assert.IsFalse(coast[2, 1]);   // trop loin
+        Assert.IsFalse(coast[0, 1]);   // la terre n'est pas une côte
+    }
+
+    [Test]
     public void WaterBiome_CoastWhenTouchingLand()
     {
         Assert.AreEqual(Biome.Coast, MapRules.WaterBiome(true));

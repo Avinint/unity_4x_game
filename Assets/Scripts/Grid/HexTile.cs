@@ -204,11 +204,15 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         }
     }
 
-    public int MovementCost => TerrainType != null ? TerrainType.MovementCost : 1;
+    public Relief Relief { get; set; }
+    public Biome Biome { get; set; }
+
+    // Coût du biome, +1 en colline.
+    public int MovementCost => (TerrainType != null ? TerrainType.MovementCost : 1) + (Relief == Relief.Hill ? 1 : 0);
 
     public bool IsNotLand()
     {
-        return TerrainType.Name == "Ocean" || TerrainType.Name == "Coast" || TerrainType.Name == "Mountain";
+        return Relief == Relief.Water || Relief == Relief.Mountain;   // plus de dépendance au nom des assets
     }
 
     public bool IsLand()

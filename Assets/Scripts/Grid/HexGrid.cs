@@ -187,10 +187,10 @@ public class HexGrid : MonoBehaviour
         UpdateHoverMarker();
     }
 
-    private void SetHexTileTerrainTypes(TerrainType[,] terrainMap)
+    private void SetHexTileTerrainTypes(MapCell[,] cells)
     {
         ClearHexTiles();
-        hexGenerationTask = Task.Run(() => GenerateHexTileData(terrainMap));
+        hexGenerationTask = Task.Run(() => GenerateHexTileData(cells));
 
         hexGenerationTask.ContinueWith(task =>
         {
@@ -212,7 +212,7 @@ public class HexGrid : MonoBehaviour
     
     //This will become map generation
     //No Unity API allowed - including lloking up transform data, Instantiation, etc.
-    private Dictionary<Vector2Int, HexTile> GenerateHexTileData(TerrainType[,] terrainMap)
+    private Dictionary<Vector2Int, HexTile> GenerateHexTileData(MapCell[,] cells)
     {
         Dictionary<Vector2Int, HexTile> hexTiles = new Dictionary<Vector2Int, HexTile>();
 
@@ -220,13 +220,12 @@ public class HexGrid : MonoBehaviour
         {
             for (int x = 0; x < Width; x++)
             {
-                int flippedX = Width - x - 1;
-                int flippedY = Height - y - 1;
-
                 HexTile tile = new HexTile(new Vector2Int(x, y), Orientation);
                 tile.Grid = this;
                 tile.HexSize = HexSize;
-                tile.SetTerrainType(terrainMap[flippedX, flippedY]);
+                tile.SetTerrainType(cells[x, y].Terrain);
+                tile.Relief = cells[x, y].Relief;
+                tile.Biome = cells[x, y].Biome;
                 hexTiles.Add(tile.AxialCoordinates, tile);
             }
         }

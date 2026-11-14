@@ -57,6 +57,33 @@ public class HexTileTests
         Assert.IsFalse(tile.IsHovered);
     }
 
+    [Test]
+    public void MovementCost_HillAddsOne()
+    {
+        var tile = NewTile();
+        tile.Relief = Relief.Flat;
+        int flat = tile.MovementCost;
+
+        tile.Relief = Relief.Hill;
+
+        Assert.AreEqual(flat + 1, tile.MovementCost);
+    }
+
+    [Test]
+    public void IsLand_UsesRelief()
+    {
+        var tile = NewTile();
+
+        tile.Relief = Relief.Flat;
+        Assert.IsTrue(tile.IsLand());
+        tile.Relief = Relief.Hill;
+        Assert.IsTrue(tile.IsLand());
+        tile.Relief = Relief.Water;
+        Assert.IsFalse(tile.IsLand());
+        tile.Relief = Relief.Mountain;
+        Assert.IsFalse(tile.IsLand());
+    }
+
     // Unité de test : un objet avec Unit et un enfant avec un MeshRenderer.
     private readonly List<GameObject> created = new List<GameObject>();
     private GameObject unitObject;   // dernière unité créée

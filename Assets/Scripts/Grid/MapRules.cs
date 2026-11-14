@@ -27,8 +27,14 @@ public static class MapRules
     // Valeur sous laquelle se trouve `fraction` des valeurs (ex. 0.65 → niveau de la mer pour 65 % d'eau).
     public static float Percentile(float[,] values, float fraction)
     {
-        var sorted = new List<float>(values.Length);
-        foreach (float v in values) sorted.Add(v);
+        var list = new List<float>(values.Length);
+        foreach (float v in values) list.Add(v);
+        return Percentile(list, fraction);
+    }
+
+    public static float Percentile(List<float> values, float fraction)
+    {
+        var sorted = new List<float>(values);
         if (sorted.Count == 0) return 0f;
         sorted.Sort();
         int index = Mathf.Clamp(Mathf.FloorToInt(fraction * sorted.Count), 0, sorted.Count - 1);
@@ -62,4 +68,23 @@ public static class MapRules
     }
 
     public static Biome WaterBiome(bool touchesLand) => touchesLand ? Biome.Coast : Biome.Ocean;
+
+    // Cases d'eau qui touchent au moins une terre (voisins fournis par l'appelant, hors carte ignorés).
+    public static bool[,] CoastMask(Relief[,] relief, Func<int, int, IEnumerable<Vector2Int>> neighbours)
+    {
+        int w = relief.GetLength(0), h = relief.GetLength(1);
+        var coast = new bool[w, h];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                if (relief[x, y] != Relief.Water) continue;
+                foreach (var n in neighbours(x, y))
+                    if (n.x >= 0 && n.x < w && n.y >= 0 && n.y < h && relief[n.x, n.y] != Relief.Water)
+                    {
+                        coast[x, y] = true;
+                        break;
+                    }
+            }
+        return coast;
+    }
 }

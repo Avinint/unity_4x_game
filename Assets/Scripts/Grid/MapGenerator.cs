@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -31,28 +32,31 @@ public class MapGenerator : MonoBehaviour
 
     [Tooltip("Whether or not to update the noise map when a value is changed")]
     public bool AutoUpdate = true;
-   
+
     [Tooltip("Whether or not to use the hex grid size information to generate the noise map")]
     public bool UseHexGrid = true;
 
 
     public bool GenerateMapOnStart = true;
-    
+
     public bool UseThreadedGeneration = true;
 
-    public List<TerrainHeight> Biomes = new List<TerrainHeight>();
-    
+    [Header("Règles de génération")]
+    public MapRulesSettings Rules = new MapRulesSettings();
+    public List<BiomeTerrain> BiomeTerrains = new List<BiomeTerrain>();   // Biome → TerrainType affiché
+    public TerrainType MountainTerrain;
+
     public float [,] ReliefMap { get; private set; }
-    
-    public TerrainType[,] TerrainMap { get; private set; }
-    
+
+    public MapCell[,] Cells { get; private set; }
+
     public Color[] ColorMap { get; private set; }
-    
+
     public event Action<float[,]> OnNoiseMapGenerated;
-    public event Action<TerrainType[,]> OnTerrainMapGenerated;
+    public event Action<MapCell[,]> OnTerrainMapGenerated;
     public event Action onTerrainMapCleared;
     public event Action<Color[], int, int> OnColorMapGenerated;
-    
+
     private void Awake()
     {
         HexGrid = GetComponent<HexGrid>();
@@ -65,7 +69,7 @@ public class MapGenerator : MonoBehaviour
             GenerateMap();
         }
     }
-    
+
     public void GenerateMap()
     {
         if (UseHexGrid && (HexGrid != null))
@@ -98,22 +102,24 @@ public class MapGenerator : MonoBehaviour
         Width = Mathf.Max(Width, 1);
         Height = Mathf.Max(Height, 1);
     }
-    
+
     private IEnumerator GenerateMapCoroutine()
     {
         // Clear the current maps
         ReliefMap = null;
-        TerrainMap = null;
+        Cells = null;
         ColorMap = null;
+
+        // Lue sur le thread principal : le calcul des voisins en a besoin.
+        HexOrientation orientation = HexGrid != null ? HexGrid.Orientation : HexOrientation.PointyTop;
 
         // If we are in play mode, we generate the noise map on a separate thread
         if(Application.isPlaying && UseThreadedGeneration)
         {
             Task task =  Task.Run(() =>
             {
-                ReliefMap = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
-                TerrainMap = AssignTerrainTypes(ReliefMap);
-                ColorMap = GenerateColorsFromTerrain(TerrainMap);
+                Cells = BuildCells(orientation);
+                ColorMap = GenerateColorsFromCells(Cells);
 
             }).ContinueWith(task =>
             {
@@ -123,57 +129,85 @@ public class MapGenerator : MonoBehaviour
                     Debug.LogError(task.Exception);
                 }
             });
-            
+
             while (!task.IsCompleted)
             {
                 yield return null;
             }
-            
-          
         }
         // If we are not in play mode, we generate the noise map on the main thread
         // In testing I found that threading is much slower in the editor than in a build or play mode
         else
         {
-            ReliefMap = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
-            TerrainMap = AssignTerrainTypes(ReliefMap);
-            ColorMap = GenerateColorsFromTerrain(TerrainMap);
+            Cells = BuildCells(orientation);
+            ColorMap = GenerateColorsFromCells(Cells);
         }
         //We invoke separate events for each map generated so that the parts of code that interested only in one map can subscribe to that event
         OnNoiseMapGenerated?.Invoke(ReliefMap);
         OnColorMapGenerated?.Invoke(ColorMap, Width, Height);
-        OnTerrainMapGenerated?.Invoke(TerrainMap);
+        OnTerrainMapGenerated?.Invoke(Cells);
 
 
         yield return null;
     }
-    
-    // Assigns a terrain type to each point on the noise map based on the height of the point as compared to the height of the biomes
-    private TerrainType[,] AssignTerrainTypes(float[,] reliefMap)
-    {
-        TerrainType[,] terrainMap = new TerrainType[Width, Height];
 
+    // Altitude → relief ; latitude + bruit + altitude → température ; bruit → humidité ; puis biome.
+    private MapCell[,] BuildCells(HexOrientation orientation)
+    {
+        float[,] altitude = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
+        float[,] humidity = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 1, Octaves, Persistence, Lacunarity, Offset);
+        float[,] heat = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 2, Octaves, Persistence, Lacunarity, Offset);
+        ReliefMap = altitude;
+
+        float sea = MapRules.Percentile(altitude, Rules.WaterFraction);
+        var land = new List<float>();
+        foreach (float a in altitude) if (a >= sea) land.Add(a);
+        float hill = MapRules.Percentile(land, 1f - Rules.HillFraction - Rules.MountainFraction);
+        float mountain = MapRules.Percentile(land, 1f - Rules.MountainFraction);
+        float lowland = MapRules.Percentile(land, Rules.LowlandFraction);
+        float top = land.Count > 0 ? land.Max() : 1f;
+
+        var relief = new Relief[Width, Height];
         for (int y = 0; y < Height; y++)
-        {
+            for (int x = 0; x < Width; x++)
+                relief[x, y] = MapRules.ReliefAt(altitude[x, y], sea, hill, mountain);
+        bool[,] coast = MapRules.CoastMask(relief, (x, y) => Neighbours(x, y, orientation));
+
+        var cells = new MapCell[Width, Height];
+        for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
-                float currentHeight = reliefMap[x, y];
-                for (int i = 0; i < Biomes.Count; i++)
+                Biome biome;
+                if (relief[x, y] == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
+                else
                 {
-                    if (currentHeight <= Biomes[i].Height)
-                    {
-                        terrainMap[x,y] = Biomes[i].TerrainType;
-                        break;
-                    }
+                    float latitude = Height > 1 ? (float)y / (Height - 1) : 0.5f;   // 0 = sud, 1 = nord
+                    float aboveSea = Mathf.InverseLerp(sea, top, altitude[x, y]);
+                    float temperature = MapRules.Temperature(latitude, heat[x, y], aboveSea, Rules);
+                    biome = MapRules.LandBiome(temperature, humidity[x, y], relief[x, y], altitude[x, y] < lowland, Rules);
                 }
+                TerrainType terrain = relief[x, y] == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
+                cells[x, y] = new MapCell { Relief = relief[x, y], Biome = biome, Terrain = terrain };
             }
-        }
-
-        return terrainMap;
+        return cells;
     }
-    
-    // Generates a color map from the terrain map by getting the color of each terrain type
-    private Color[] GenerateColorsFromTerrain(TerrainType[,] terrainMap)
+
+    // Voisins hexagonaux d'une case en coordonnées offset.
+    private static IEnumerable<Vector2Int> Neighbours(int x, int y, HexOrientation orientation)
+    {
+        foreach (var n in HexMetrics.GetNeighbourCoordinatesList(HexMetrics.OffsetToAxial(x, y, orientation)))
+            yield return HexMetrics.CubeToOffset(HexMetrics.AxialToCube(n), orientation);
+    }
+
+    private TerrainType TerrainFor(Biome biome)
+    {
+        foreach (var bt in BiomeTerrains) if (bt.Biome == biome) return bt.Terrain;
+        Debug.LogWarning($"MapGenerator : aucun TerrainType pour le biome {biome}.");
+        return null;
+    }
+
+    // Generates a color map from the cells by getting the color of each terrain type
+    private Color[] GenerateColorsFromCells(MapCell[,] cells)
     {
         Color[] colorMap = new Color[Width * Height];
 
@@ -181,7 +215,8 @@ public class MapGenerator : MonoBehaviour
         {
             for (int x = 0; x < Width; x++)
             {
-                colorMap[y * Width + x] = terrainMap[x,y].Colour;
+                TerrainType terrain = cells[x, y].Terrain;
+                colorMap[y * Width + x] = terrain != null ? terrain.Colour : Color.magenta;
             }
         }
         return colorMap;
@@ -194,11 +229,17 @@ public class MapGenerator : MonoBehaviour
 
 }
 
-
-
-[System.Serializable]
-public struct TerrainHeight
+[Serializable]
+public struct BiomeTerrain
 {
-    public float Height;
-    public TerrainType TerrainType;
+    public Biome Biome;
+    public TerrainType Terrain;
+}
+
+// Ce que la génération produit pour chaque case.
+public struct MapCell
+{
+    public Relief Relief;
+    public Biome Biome;
+    public TerrainType Terrain;
 }
