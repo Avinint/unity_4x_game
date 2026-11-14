@@ -83,6 +83,7 @@ public class HexTileTests
     {
         foreach (var go in created) if (go != null) Object.DestroyImmediate(go);
         created.Clear();
+        HexTile.Viewer = null;
     }
 
     [Test]
@@ -101,6 +102,7 @@ public class HexTileTests
     {
         var tile = NewTile();
         tile.Discover();
+        tile.SetVisibleNow(true);
         var renderer = NewUnit();
         renderer.enabled = false;
 
@@ -115,10 +117,58 @@ public class HexTileTests
         var tile = NewTile();
         var renderer = NewUnit();
         tile.AddUnit(unitObject);
+        tile.SetVisibleNow(true);   // vue mais pas encore découverte : toujours cachée
+        Assert.IsFalse(renderer.enabled);
 
         tile.Discover();
 
         Assert.IsTrue(renderer.enabled);
+    }
+
+    [Test]
+    public void ForeignUnit_OnExploredNotVisibleTile_IsHidden()
+    {
+        var tile = NewTile();
+        tile.Discover();
+        HexTile.Viewer = NewPlayer();
+        var renderer = NewUnit();
+        unitObject.GetComponent<Unit>().Owner = NewPlayer();
+
+        tile.AddUnit(unitObject);
+
+        Assert.IsFalse(renderer.enabled);
+    }
+
+    [Test]
+    public void OwnUnit_OnExploredNotVisibleTile_IsShown()
+    {
+        var tile = NewTile();
+        tile.Discover();
+        var me = NewPlayer();
+        HexTile.Viewer = me;
+        var renderer = NewUnit();
+        unitObject.GetComponent<Unit>().Owner = me;
+
+        tile.AddUnit(unitObject);
+
+        Assert.IsTrue(renderer.enabled);
+    }
+
+    [Test]
+    public void SetVisibleNow_False_HidesForeignUnit()
+    {
+        var tile = NewTile();
+        tile.Discover();
+        tile.SetVisibleNow(true);
+        HexTile.Viewer = NewPlayer();
+        var renderer = NewUnit();
+        unitObject.GetComponent<Unit>().Owner = NewPlayer();
+        tile.AddUnit(unitObject);
+        Assert.IsTrue(renderer.enabled);
+
+        tile.SetVisibleNow(false);
+
+        Assert.IsFalse(renderer.enabled);
     }
 
     [Test]

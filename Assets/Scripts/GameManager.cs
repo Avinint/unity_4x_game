@@ -48,6 +48,7 @@ public class GameManager : Singleton<GameManager>
         HexGrid.DefaultVisibleRadius = DefaultVisibleRadius;
         HexGrid.OnTileInstancesGenerated += InitPlayers;
         Fog.TileExplored += OnTileExplored;
+        Fog.VisibilityChanged += OnVisibilityChanged;
         // Le Singleton crée le contrôleur de sélection au premier accès.
         SelectionController.Instance.name = "SelectionController";
     }
@@ -57,12 +58,14 @@ public class GameManager : Singleton<GameManager>
 
         HexGrid.OnTileInstancesGenerated -= InitPlayers;
         Fog.TileExplored -= OnTileExplored;
+        Fog.VisibilityChanged -= OnVisibilityChanged;
     }
 
 
 
     private void InitPlayers()
     {
+        HexTile.Viewer = LocalPlayer;
         HexGrid.PlayerCount = Players.Count;
 
         HexGrid.DispatchPlayers();
@@ -104,11 +107,18 @@ public class GameManager : Singleton<GameManager>
         if (player == LocalPlayer && HexGrid.TryGetTileAxial(cell, out HexTile tile)) tile.Discover();
     }
 
+    // Cases vues / plus vues par le joueur local : terrain normal ou assombri, unités des autres affichées ou non.
+    private void OnVisibilityChanged(Player player, Vector2Int cell, bool visible)
+    {
+        if (player == LocalPlayer && HexGrid.TryGetTileAxial(cell, out HexTile tile)) tile.SetVisibleNow(visible);
+    }
+
     private void SetVisibleTiles(Dictionary<Vector2Int, HexTile> tiles)
     {
         foreach (var ( coordinates, tile) in tiles)
         {
             tile.Discover();
+            tile.SetVisibleNow(true);   // débogage : zones des autres joueurs affichées en clair
         }
     }
 

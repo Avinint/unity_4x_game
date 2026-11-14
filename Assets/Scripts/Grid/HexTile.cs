@@ -70,6 +70,45 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
         AddGizmo();
         gizmo.Unlock();
+        ApplyDim();
+    }
+
+    // Vue en ce moment par le joueur affiché (sinon assombrie si découverte).
+    public bool IsVisible { get; private set; }
+
+    // Joueur dont on affiche le brouillard (le joueur local) ; ses unités restent toujours visibles.
+    public static Player Viewer { get; set; }
+
+    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
+    public void SetVisibleNow(bool visible)
+    {
+        if (IsVisible == visible) return;
+        IsVisible = visible;
+        ApplyDim();
+        foreach (var go in units) UpdateUnitVisibility(go);
+    }
+
+    public void RefreshDim() => ApplyDim();
+
+    // Terrain découvert mais pas vu : couleur mêlée de brume claire (MaterialPropertyBlock, matériaux intacts).
+    private void ApplyDim()
+    {
+        if (terrain == null || !IsDiscovered) return;
+        var block = new MaterialPropertyBlock();
+        foreach (var r in terrain.GetComponentsInChildren<Renderer>())
+        {
+            if (IsVisible || r.sharedMaterial == null || !r.sharedMaterial.HasProperty(BaseColorId))
+            {
+                r.SetPropertyBlock(null);
+                continue;
+            }
+            Color baseColor = r.sharedMaterial.GetColor(BaseColorId);
+            Color c = Grid != null ? Color.Lerp(baseColor, Grid.FogColor, Grid.FogAmount) : baseColor;
+            c.a = 1f;
+            block.SetColor(BaseColorId, c);
+            r.SetPropertyBlock(block);
+        }
     }
 
     public bool IsHovered { get; private set; }
@@ -198,10 +237,13 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         UpdateUnitVisibility(unit);
     }
 
-    // Une unité n'est visible que sur une case découverte.
+    // Visibilité d'une unité selon l'état de la case pour le joueur affiché (Viewer).
     private void UpdateUnitVisibility(GameObject unitObject)
     {
-        if (unitObject != null && unitObject.TryGetComponent(out Unit unit)) unit.SetVisible(IsDiscovered);
+        if (unitObject == null || !unitObject.TryGetComponent(out Unit unit)) return;
+        // Ses propres unités toujours ; les autres seulement sur une case vue en ce moment.
+        bool own = unit.Owner != null && unit.Owner == Viewer;
+        unit.SetVisible(IsDiscovered && (own || IsVisible));
     }
 
     public void RemoveUnit(GameObject unit)

@@ -41,6 +41,19 @@ public class HexGrid : MonoBehaviour
 
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
 
+    [Header("Brouillard")]
+    [SerializeField] private Color fogColor = new Color(0.85f, 0.85f, 0.85f);   // brume (gris clair)
+    [SerializeField, Range(0f, 1f)] private float fogAmount = 0.5f;             // 0 = couleur d'origine, 1 = brume pleine
+    public Color FogColor => fogColor;
+    public float FogAmount => fogAmount;
+
+    // Modifié dans l'Inspector pendant le jeu : réapplique l'assombrissement à toutes les cases.
+    private void OnValidate()
+    {
+        if (!UnityEngine.Application.isPlaying || Tiles == null) return;
+        foreach (var tile in Tiles.Values) tile.RefreshDim();
+    }
+
     private bool displayGizmo = true;
 
     private List<HexTile> path = new List<HexTile>();
