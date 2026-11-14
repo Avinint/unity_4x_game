@@ -57,6 +57,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - `Player.StartingTile` / `StartingArea` : données calculées au lancement, `[NonSerialized]` (ni enregistrées ni visibles dans l'Inspector).
 - Avertissement restant hors de notre code : « No script asset for BurstPlatformAotSettings » (package Burst).
 - Intégrations d'éditeur : `com.unity.ide.visualstudio` (Visual Studio 2026, et VS Code via l'extension Unity) et `com.unity.ide.rider` ; `com.unity.ide.vscode`, déprécié, retiré.
+- Nettoyage fait : packages `com.unity.visualscripting`, `com.unity.collab-proxy`, `com.unity.multiplayer.center` retirés ; assets `LeanTween`, `Ciconia Studio` (shaders Built-in), `DoubleSidedUnlitShader`, `Readme.asset` / `TutorialInfo` (modèle URP) et `ResourceManager` (script et objet de scène, liste jamais lue) supprimés. Les ressources du jeu seront conçues avec les villes.
 - Survol (`MouseController.CheckMouseMove`) recalculé seulement quand la souris bouge : quand la vue défile souris immobile, le marqueur reste sur l'ancienne case jusqu'au prochain mouvement.
 
 ## Révélation des zones de départ
