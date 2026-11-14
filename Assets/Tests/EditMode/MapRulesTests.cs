@@ -5,7 +5,7 @@ public class MapRulesTests
     private static readonly MapRulesSettings S = new MapRulesSettings();
 
     // Températures et humidités choisies au milieu de chaque tranche des réglages par défaut.
-    private const float Frozen = 0.05f, Cold = 0.25f, Temperate = 0.5f, Hot = 0.85f;
+    private const float Frozen = 0.05f, VeryCold = 0.2f, Cold = 0.3f, Temperate = 0.5f, Hot = 0.85f;
     private const float Dry = 0.1f, Medium = 0.5f, Wet = 0.75f, Soaked = 0.95f;
 
     [Test]
@@ -54,6 +54,9 @@ public class MapRulesTests
     [TestCase(Frozen, Dry, Biome.Snow)]
     [TestCase(Frozen, Medium, Biome.Snow)]
     [TestCase(Frozen, Wet, Biome.Snow)]
+    [TestCase(VeryCold, Dry, Biome.Tundra)]
+    [TestCase(VeryCold, Medium, Biome.Tundra)]
+    [TestCase(VeryCold, Wet, Biome.Tundra)]
     [TestCase(Cold, Dry, Biome.Tundra)]
     [TestCase(Cold, Wet, Biome.Taiga)]
     [TestCase(Temperate, Dry, Biome.Plain)]
@@ -114,6 +117,48 @@ public class MapRulesTests
         Assert.IsTrue(coast[0, 2]);    // au-dessus
         Assert.IsFalse(coast[2, 1]);   // trop loin
         Assert.IsFalse(coast[0, 1]);   // la terre n'est pas une côte
+    }
+
+    private static System.Collections.Generic.List<float> Uniform100()
+    {
+        var list = new System.Collections.Generic.List<float>();
+        for (int i = 0; i < 100; i++) list.Add(i / 100f);
+        return list;
+    }
+
+    private static int CountBelow(System.Collections.Generic.List<float> values, float level)
+    {
+        int n = 0;
+        foreach (float v in values) if (v < level) n++;
+        return n;
+    }
+
+    [Test]
+    public void WithClimateThresholds_SplitsByFractions()
+    {
+        var values = Uniform100();
+
+        var r = MapRules.WithClimateThresholds(S, values, values);
+
+        Assert.AreEqual(8, CountBelow(values, r.FrozenBelow));
+        Assert.AreEqual(20, CountBelow(values, r.TundraBelow));
+        Assert.AreEqual(35, CountBelow(values, r.ColdBelow));
+        Assert.AreEqual(75, CountBelow(values, r.HotAbove));    // 25 % au-dessus
+        Assert.AreEqual(25, CountBelow(values, r.DryBelow));
+        Assert.AreEqual(75, CountBelow(values, r.WetAbove));
+        Assert.AreEqual(92, CountBelow(values, r.MarshAbove));
+    }
+
+    [Test]
+    public void WithClimateThresholds_DoesNotModifyOriginal()
+    {
+        var original = new MapRulesSettings();
+        float frozen = original.FrozenBelow;
+
+        var r = MapRules.WithClimateThresholds(original, Uniform100(), Uniform100());
+
+        Assert.AreNotSame(original, r);
+        Assert.AreEqual(frozen, original.FrozenBelow);
     }
 
     [Test]

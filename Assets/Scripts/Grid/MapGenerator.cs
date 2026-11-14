@@ -173,6 +173,22 @@ public class MapGenerator : MonoBehaviour
                 relief[x, y] = MapRules.ReliefAt(altitude[x, y], sea, hill, mountain);
         bool[,] coast = MapRules.CoastMask(relief, (x, y) => Neighbours(x, y, orientation));
 
+        // Températures des terres, puis seuils de climat en proportions.
+        var temperature = new float[Width, Height];
+        var landTemps = new List<float>();
+        var landHums = new List<float>();
+        for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                if (relief[x, y] == Relief.Water) continue;
+                float latitude = Height > 1 ? (float)y / (Height - 1) : 0.5f;   // 0 = sud, 1 = nord
+                float aboveSea = Mathf.InverseLerp(sea, top, altitude[x, y]);
+                temperature[x, y] = MapRules.Temperature(latitude, heat[x, y], aboveSea, Rules);
+                landTemps.Add(temperature[x, y]);
+                landHums.Add(humidity[x, y]);
+            }
+        MapRulesSettings climate = MapRules.WithClimateThresholds(Rules, landTemps, landHums);
+
         var cells = new MapCell[Width, Height];
         for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
@@ -180,12 +196,7 @@ public class MapGenerator : MonoBehaviour
                 Biome biome;
                 if (relief[x, y] == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
                 else
-                {
-                    float latitude = Height > 1 ? (float)y / (Height - 1) : 0.5f;   // 0 = sud, 1 = nord
-                    float aboveSea = Mathf.InverseLerp(sea, top, altitude[x, y]);
-                    float temperature = MapRules.Temperature(latitude, heat[x, y], aboveSea, Rules);
-                    biome = MapRules.LandBiome(temperature, humidity[x, y], relief[x, y], altitude[x, y] < lowland, Rules);
-                }
+                    biome = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
                 TerrainType terrain = relief[x, y] == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
                 cells[x, y] = new MapCell { Relief = relief[x, y], Biome = biome, Terrain = terrain };
             }

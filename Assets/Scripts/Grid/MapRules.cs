@@ -14,11 +14,23 @@ public class MapRulesSettings
     [Range(0f, 1f)] public float HillFraction = 0.25f;        // part des terres en colline
     [Range(0f, 1f)] public float MountainFraction = 0.10f;    // part des terres en montagne
     [Range(0f, 1f)] public float LatitudeWeight = 0.8f;       // part de la latitude dans la température (le reste : bruit)
-    [Range(0f, 1f)] public float AltitudeCooling = 0.5f;      // refroidissement au sommet des terres
-    public float FrozenBelow = 0.15f, ColdBelow = 0.35f, HotAbove = 0.7f;   // seuils de température
-    public float DryBelow = 0.33f, WetAbove = 0.66f;                        // seuils d'humidité
-    public float MarshAbove = 0.8f;                                         // humidité d'un marais
+    [Range(0f, 1f)] public float AltitudeCooling = 0.2f;      // refroidissement au sommet des terres
+
+    [Header("Climat (proportions des terres)")]
+    [Range(0f, 1f)] public float FrozenFraction = 0.08f;      // les plus froides : neige
+    [Range(0f, 1f)] public float TundraFraction = 0.12f;      // ensuite : toundra
+    [Range(0f, 1f)] public float ColdFraction = 0.15f;        // ensuite : taïga (toundra si sec)
+    [Range(0f, 1f)] public float HotFraction = 0.25f;         // les plus chaudes : désert / plaine / jungle
+    [Range(0f, 1f)] public float DryFraction = 0.25f;         // les plus sèches
+    [Range(0f, 1f)] public float WetFraction = 0.25f;         // les plus humides
+    [Range(0f, 1f)] public float MarshFraction = 0.08f;       // les plus humides de toutes : marais possible
+
+    // Seuils absolus, calculés à chaque génération par MapRules.WithClimateThresholds.
+    [HideInInspector] public float FrozenBelow = 0.15f, TundraBelow = 0.25f, ColdBelow = 0.35f, HotAbove = 0.7f;
+    [HideInInspector] public float DryBelow = 0.33f, WetAbove = 0.66f, MarshAbove = 0.8f;
     [Range(0f, 1f)] public float LowlandFraction = 0.2f;     // terres plates les plus basses où un marais est possible
+
+    public MapRulesSettings Clone() => (MapRulesSettings)MemberwiseClone();
 }
 
 // Règles pures : altitude, température, humidité → relief et biome.
@@ -37,7 +49,8 @@ public static class MapRules
         var sorted = new List<float>(values);
         if (sorted.Count == 0) return 0f;
         sorted.Sort();
-        int index = Mathf.Clamp(Mathf.FloorToInt(fraction * sorted.Count), 0, sorted.Count - 1);
+        // Petite tolérance : 0.08 + 0.12 vaut 0.19999… en flottant, il ne faut pas perdre une case à l'arrondi.
+        int index = Mathf.Clamp(Mathf.FloorToInt(fraction * sorted.Count + 1e-4f), 0, sorted.Count - 1);
         return sorted[index];
     }
 
@@ -60,11 +73,26 @@ public static class MapRules
     {
         bool cold = temperature < s.ColdBelow;
         if (temperature < s.FrozenBelow) return Biome.Snow;
+        if (temperature < s.TundraBelow) return Biome.Tundra;
         if (relief == Relief.Flat && lowland && humidity > s.MarshAbove && !cold) return Biome.Marsh;
         bool dry = humidity < s.DryBelow, wet = humidity > s.WetAbove;
         if (cold) return dry ? Biome.Tundra : Biome.Taiga;
         if (temperature > s.HotAbove) return dry ? Biome.Desert : wet ? Biome.Jungle : Biome.Plain;
         return dry ? Biome.Plain : wet ? Biome.Forest : Biome.Grassland;
+    }
+
+    // Seuils absolus tirés des proportions, sur les températures et humidités des terres. Ne modifie pas `s`.
+    public static MapRulesSettings WithClimateThresholds(MapRulesSettings s, List<float> temperatures, List<float> humidities)
+    {
+        var r = s.Clone();
+        r.FrozenBelow = Percentile(temperatures, s.FrozenFraction);
+        r.TundraBelow = Percentile(temperatures, s.FrozenFraction + s.TundraFraction);
+        r.ColdBelow = Percentile(temperatures, s.FrozenFraction + s.TundraFraction + s.ColdFraction);
+        r.HotAbove = Percentile(temperatures, 1f - s.HotFraction);
+        r.DryBelow = Percentile(humidities, s.DryFraction);
+        r.WetAbove = Percentile(humidities, 1f - s.WetFraction);
+        r.MarshAbove = Percentile(humidities, 1f - s.MarshFraction);
+        return r;
     }
 
     public static Biome WaterBiome(bool touchesLand) => touchesLand ? Biome.Coast : Biome.Ocean;

@@ -1411,8 +1411,16 @@ MonoBehaviour:
     HillFraction: 0.25
     MountainFraction: 0.1
     LatitudeWeight: 0.8
-    AltitudeCooling: 0.5
+    AltitudeCooling: 0.2
+    FrozenFraction: 0.08
+    TundraFraction: 0.12
+    ColdFraction: 0.15
+    HotFraction: 0.25
+    DryFraction: 0.25
+    WetFraction: 0.25
+    MarshFraction: 0.08
     FrozenBelow: 0.15
+    TundraBelow: 0.25
     ColdBelow: 0.35
     HotAbove: 0.7
     DryBelow: 0.33
