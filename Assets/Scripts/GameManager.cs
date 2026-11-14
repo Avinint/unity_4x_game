@@ -20,7 +20,6 @@ public class GameManager : Singleton<GameManager>
     public int DefaultVisibleRadius = 2;
     public List<GameObject> StartingUnits = new List<GameObject>();
 
-    public Dictionary<Vector2, GameObject> Units { get; private set; } = new Dictionary<Vector2, GameObject>();
 
     public int MaxTurns = 500;
 
@@ -67,19 +66,6 @@ public class GameManager : Singleton<GameManager>
         HexGrid.PlayerCount = Players.Count;
 
         HexGrid.DispatchPlayers();
-        
-
-        // foreach (var player in Players)
-        // {
-        //     player.StartingTile = HexGrid.GetStartingTile(i++);
-        //     HexGrid.StartTiles.Add(player.StartingTile );
-        // }
-
-        // foreach (HexTile tile in HexGrid.StartTiles)
-        // {
-        //     Players[i++].StartingTile = tile;
-        // }
-        //
 
         if (Players.Count > HexGrid.StartTiles.Count)
         {
@@ -158,7 +144,6 @@ public class GameManager : Singleton<GameManager>
         GameStart?.Invoke();
     }
     
-    // chaque unité appartient à un joueur mais la liste sur la grille 
 
     public void AddStartingUnits(Player player)
     {
@@ -180,15 +165,15 @@ public class GameManager : Singleton<GameManager>
             return;
         }
         
-          Units[tile.AxialCoordinates]  = Instantiate(
+          GameObject firstUnit = Instantiate(
             units[0],
-            centrePosition, 
-            HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
+            centrePosition,
+            HexGrid.Orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity,
             HexGrid.transform);
 
-          Units[tile.AxialCoordinates] .gameObject.layer = LayerMask.NameToLayer("Grid");
-          tile.AddUnit(Units[tile.AxialCoordinates] );
-          SetupStartingUnit(Units[tile.AxialCoordinates], player, tile);
+          firstUnit.layer = LayerMask.NameToLayer("Grid");
+          tile.AddUnit(firstUnit);
+          SetupStartingUnit(firstUnit, player, tile);
         var otherUnits = units.Skip(1).ToList();
 
         if (otherUnits.Count == 0) return;

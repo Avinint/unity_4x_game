@@ -53,7 +53,6 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 
 ## Points fragiles connus
 - `BaseUnitState` : classe simple (plus de `Singleton`/`MonoBehaviour`), états créés avec `new`. `Unit` a un `State` et un `ChangeState` (Idle / Selected utilisés, les autres états sont vides).
-- `GameManager.Units` (dictionnaire par case) n'est rempli qu'au placement de départ et n'est lu nulle part : ne pas s'y fier.
 - `Player` n'est jamais déplacé sur sa case de départ (sa `transform` n'est pas utilisée) : seules les unités le sont. Optionnel : `player.transform.position = tile.CentrePosition` dans `InitPlayers`.
 - `Player.StartingTile` / `StartingArea` : données calculées au lancement, `[NonSerialized]` (ni enregistrées ni visibles dans l'Inspector).
 - Avertissement restant hors de notre code : « No script asset for BurstPlatformAotSettings » (package Burst).

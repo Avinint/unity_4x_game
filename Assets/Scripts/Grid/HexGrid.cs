@@ -44,14 +44,10 @@ public class HexGrid : MonoBehaviour
     private bool displayGizmo = true;
 
     private List<HexTile> path = new List<HexTile>();
-    
-    // [field:SerializeField] public Player Player { get; set; }
-    
+
     [field: SerializeField]
     public GameObject Selector { get; set; }
-    
-    // public List<GameObject> StartingUnits = new List<GameObject>();
-    
+
     private void Awake()
     {
         if (BatchSize == 0)
@@ -193,12 +189,6 @@ public class HexGrid : MonoBehaviour
 
     private void ClearHexTiles() 
     {
-        // TODO remove
-        // for (int i = 0; i < Tiles.Keys.Count; i++)
-        // {
-        //     Tiles[i].ClearTerrain();
-        // }
-
         foreach (var (axial, tile) in Tiles)
         {
             tile.ClearTerrain();
@@ -237,7 +227,6 @@ public class HexGrid : MonoBehaviour
     {
         foreach (var (axial, tile)  in tiles)
         {
-            // Debug.Log("tile : " + tile.AxialCoordinates);
             List<HexTile> neighbours = new List<HexTile>();
             // Get the axial coordinates of the current tile
             Vector2Int currentAxialCoordinates = axial;
@@ -249,11 +238,6 @@ public class HexGrid : MonoBehaviour
 
             foreach (var neighbourCoordinate in neighborCoordinates)
             {
-                // foreach (var c in tiles)
-                // {
-                //     if (c.AxialCoordinates == neighbourCoordinate) 
-                //         Debug.Log("FOREACH TILES : " + c.AxialCoordinates + " " + neighbourCoordinate +" " +  (c.AxialCoordinates == neighbourCoordinate));
-                // }
                 // Find the neighbor tile based on the direction
                 HexTile neighbor;
                 if (tiles.ContainsKey(neighbourCoordinate))
@@ -265,7 +249,6 @@ public class HexGrid : MonoBehaviour
             }
 
             tile.SetNeighbours(neighbours);
-            // Debug.Log($"Tile {tile.AxialCoordinates} has {neighborsFound} neighbours found");
         }
     }
 
@@ -291,21 +274,6 @@ public class HexGrid : MonoBehaviour
 
             i++;
         }
-        
-        
-        // for (int i = 0; i < Tiles.Count; i++)
-        // {
-        //     
-        //     Tiles[i].CreateTerrain(orientation, unknownPrefab);
-        //     // Yield every batchSize hex tiles
-        //     if (i % BatchSize == 0 && i != 0)
-        //     {
-        //         batchCount++;
-        //         OnTileBatchGenerated?.Invoke((float)batchCount / totalBatches);
-        //         yield return null;
-        //     }
-        // }
-        
 
         OnTileInstancesGenerated?.Invoke();
     }
@@ -327,7 +295,6 @@ public class HexGrid : MonoBehaviour
                 UnityEngine.Random.Range(0, Width),
                 UnityEngine.Random.Range(0, Height), 
                 Orientation);
-           // startCoordinates = new Vector2(UnityEngine.Random.Range(0, Width), UnityEngine.Random.Range(0, Height));
         } while (!Tiles.TryGetValue(axialCoordinates, out startTile) || startTile.IsNotLand());
         
         
@@ -426,12 +393,6 @@ public class HexGrid : MonoBehaviour
                 }
             }
         }
-
-        // List<Vector2Int> coordinates = new List<Vector2Int>();
-        // foreach (var tile in outerRing)
-        // {
-        //     coordinates.Add(tile.AxialCoordinates);
-        // }
 
         return outerRing;
     }

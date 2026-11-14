@@ -125,8 +125,6 @@ public class CameraController : Singleton<CameraController>
                 StopCoroutine(panCoroutine);
             }
         }
-        
-        Debug.Log("PAN CHANGE");
     }
 
 

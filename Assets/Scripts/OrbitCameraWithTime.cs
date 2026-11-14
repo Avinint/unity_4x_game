@@ -54,16 +54,13 @@ public class OrbitCameraWithTime : MonoBehaviour
          {
              if (rotationCoroutine != null)
              {
-                 Debug.Log("Stop rotation");
                  StopCoroutine(rotationCoroutine);
              }
 
-             Debug.Log("Start rotation");
              rotationCoroutine = StartCoroutine(Rotate());
          }
          else
          {
-             Debug.Log("Stop rotation");
              StopCoroutine(rotationCoroutine);
          }
      }

@@ -27,13 +27,11 @@ public class HexTerrain : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        Debug.Log("Mouse enter");
         OnMouseEnterAction?.Invoke();
     }
 
     private void OnMouseExit()
     {
-        Debug.Log("Mouse exit");
         OnMouseExitAction?.Invoke();
     }
 }

@@ -94,12 +94,10 @@ public class HexGridMeshGenerator : MonoBehaviour
     private int GetLayerIndex(LayerMask layerMask)
     {
         int layerMaskValue = layerMask.value;
-        Debug.Log("Layer mask value : " + layerMaskValue);
         for (int i = 0; i < 32; i++)
         {
             if ((( 1 << i ) & layerMaskValue) != 0)
             {
-                Debug.Log("Layer Index Loop: " + i);
                 return i;
             }
         }
@@ -112,20 +110,9 @@ public class HexGridMeshGenerator : MonoBehaviour
     
     private void OnLeftMouseClick(RaycastHit hit)
     {
-        // Debug.Log("Hit object: " + hit .transform.name + " at position "+ hit.point);
-        // float localX = hit.point.x - hit.transform.position.x;
-        // float localZ = hit.point.z - hit.transform.position.z;
-        
-        // Debug.Log("Offset position: " +  HexMetrics.CoordinateToOffset(localX, localZ, HexGrid.HexSize, HexGrid.Orientation));
     }
 
     private void OnRightMouseClick(RaycastHit hit)
     {
-        // float localX = hit.point.x - hit.transform.position.x;
-        // float localZ = hit.point.z - hit.transform.position.z;
-        // Vector2 location = HexMetrics.CoordinateToOffset(localX, localZ, HexGrid.HexSize, HexGrid.Orientation);
-        // Vector2 center = HexMetrics.Center(HexGrid.HexSize, (int)location.x, (int)location.y, HexGrid.Orientation);
-        // Debug.Log("Right clicked on Hex:  " + location);
-        // Instantiate(UnGameObject), center, Quaternion.identity);
     }
 }

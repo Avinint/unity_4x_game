@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
@@ -102,7 +101,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     private void AddGizmo()
     {
-        gizmo = terrain.AddComponent<HexTileGizmo>();
+        gizmo = terrain.gameObject.AddComponent<HexTileGizmo>();
         gizmo.Neighbours = Neighbours;
         gizmo.transform.position = CentrePosition;
     }
@@ -144,14 +143,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         );
 
        AddGizmo();
-       // terrain = UnityEngine.Object.Instantiate(
-        //     TerrainType.Prefab,
-        //     centrePosition, 
-        //     orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
-        //     Grid.transform
-        // );
-
-        //terrain.gameObject.layer = LayerMask.NameToLayer("Grid");
 
         //TODO: Adjust the size of the prefab to the size of the grid tile
         
@@ -159,22 +150,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         {
             terrain.Rotate(new Vector3(0, 30, 0));
         }
-
-        //Temporary random rotation to make the terrain look more natural
-        //int randomRotation = UnityEngine.Random.Range(0, 6);
-        //terrain.Rotate(new Vector3(0, randomRotation*60, 0));
-        // HexTerrain hexTerrain = terrain.GetComponentInChildren<HexTerrain>();
-        // if (hexTerrain == null)
-        // {
-        //     Debug.Log(terrain.gameObject.GetComponent<HexTerrain>());
-        //     Debug.LogError("Transform " + terrain.position);
-        //     Debug.LogError("Hex terrain manquant sur la prefab de " + TerrainType.Name);
-        // }
-        // hexTerrain.OnMouseEnterAction += OnMouseEnter;
-        // hexTerrain.OnMouseExitAction += OnMouseExit;
- 
-        // Debug.Log( terrain.gameObject);
-      
     }
 
     public void SetNeighbours(List<HexTile> neighbours)
@@ -186,9 +161,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     {
         if(terrain != null)
         {
-            // HexTerrain hexTerrain = terrain.GetComponentInChildren<HexTerrain>();
-            // hexTerrain.OnMouseEnterAction -= OnMouseEnter;
-            // hexTerrain.OnMouseExitAction -= OnMouseExit;
             UnityEngine.Object.Destroy(terrain.gameObject);
         }
     }
@@ -269,14 +241,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         if (ReferenceEquals(this, other)) return true;
         return OffsetCoordinates.Equals(other.OffsetCoordinates);
     }
-
-    // public override bool Equals(object obj)
-    // {
-    //     if (ReferenceEquals(null, obj)) return false;
-    //     if (ReferenceEquals(this, obj)) return true;
-    //     if (obj.GetType() != this.GetType()) return false;
-    //     return Equals((HexTile)obj);
-    // }
 
     
     public int CompareTo(HexTile other)
