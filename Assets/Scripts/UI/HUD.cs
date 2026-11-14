@@ -6,7 +6,9 @@ using UnityEngine.UIElements;
 public class HUD : MonoBehaviour
 {
     private Label turnLabel;
-    private Label unitLabel;
+    private VisualElement unitPanel;
+    private Label unitNameLabel;
+    private Label unitMoveLabel;
     private VisualElement playerSwatch;
     private string lastUnitText;
 
@@ -14,7 +16,9 @@ public class HUD : MonoBehaviour
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
         turnLabel = root.Q<Label>("turnLabel");
-        unitLabel = root.Q<Label>("unitLabel");
+        unitPanel = root.Q("unitPanel");
+        unitNameLabel = root.Q<Label>("unitNameLabel");
+        unitMoveLabel = root.Q<Label>("unitMoveLabel");
         playerSwatch = root.Q("playerSwatch");
         lastUnitText = null;
         GameManager.Instance.TurnChange += Refresh;
@@ -45,14 +49,18 @@ public class HUD : MonoBehaviour
     // Unité sélectionnée et points restants ; texte réécrit seulement s'il change.
     private void Update()
     {
-        if (unitLabel == null) return;
+        if (unitPanel == null) return;
         Unit unit = SelectionController.Instance.SelectedUnit;
-        string text = unit == null ? "" :
-            $"{UnitName(unit)}{(unit.type != null ? $" ({unit.type.Category.DisplayName()})" : "")} — Mouvement {unit.MovementPoints}/{(unit.type != null ? unit.type.MovementPoints : 0)}";
+        string name = unit == null ? "" :
+            $"{UnitName(unit)}{(unit.type != null ? $" ({unit.type.Category.DisplayName()})" : "")}";
+        string move = unit == null ? "" :
+            $"Mouvement {unit.MovementPoints}/{(unit.type != null ? unit.type.MovementPoints : 0)}";
+        string text = name + "|" + move;
         if (text == lastUnitText) return;
         lastUnitText = text;
-        unitLabel.text = text;
-        unitLabel.EnableInClassList("hidden", unit == null);
+        unitNameLabel.text = name;
+        unitMoveLabel.text = move;
+        unitPanel.EnableInClassList("hidden", unit == null);
     }
 
     private static string UnitName(Unit unit) =>

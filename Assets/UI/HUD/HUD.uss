@@ -1,26 +1,44 @@
-.top-bar {
+.hud-root {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
   flex-direction: row;
-  padding: 6px 16px;
+  justify-content: flex-end;
+}
+
+.right-band {
+  width: 320px;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.panel {
   background-color: rgba(20, 16, 12, 0.75);
-  border-bottom-width: 1px;
-  border-bottom-color: rgb(150, 120, 70);
+  border-width: 1px;
+  border-color: rgb(150, 120, 70);
+  padding: 6px 16px;
 }
 
-.unit-label {
-  flex-grow: 1;
-  font-size: 20px;
-  color: rgb(235, 220, 190);
+.turn-panel {
+  flex-direction: row;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  margin-left: 16px;
 }
 
-.hidden {
-  visibility: hidden;
+.unit-panel {
+  align-self: stretch;
+  align-items: center;
+  margin-left: 16px;
 }
 
 .player-swatch {
   width: 16px;
   height: 16px;
   margin-right: 8px;
-  align-self: center;
   border-width: 1px;
   border-color: rgb(150, 120, 70);
 }
@@ -29,4 +47,19 @@
   font-size: 22px;
   color: rgb(235, 220, 190);
   -unity-font-style: bold;
+}
+
+.unit-name {
+  font-size: 20px;
+  color: rgb(235, 220, 190);
+  -unity-font-style: bold;
+}
+
+.unit-move {
+  font-size: 18px;
+  color: rgb(235, 220, 190);
+}
+
+.hidden {
+  visibility: hidden;
 }

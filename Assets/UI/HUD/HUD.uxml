@@ -1,8 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <ui:Style src="HUD.uss" />
-  <ui:VisualElement name="topBar" class="top-bar" picking-mode="Ignore">
-    <ui:Label name="unitLabel" class="unit-label hidden" picking-mode="Ignore" />
-    <ui:VisualElement name="playerSwatch" class="player-swatch" picking-mode="Ignore" />
-    <ui:Label name="turnLabel" class="turn-label" text="Tour 1" picking-mode="Ignore" />
+  <ui:VisualElement name="hudRoot" class="hud-root" picking-mode="Ignore">
+    <ui:VisualElement name="rightBand" class="right-band" picking-mode="Ignore">
+      <ui:VisualElement name="turnPanel" class="panel turn-panel" picking-mode="Ignore">
+        <ui:VisualElement name="playerSwatch" class="player-swatch" picking-mode="Ignore" />
+        <ui:Label name="turnLabel" class="turn-label" text="Tour 1" picking-mode="Ignore" />
+      </ui:VisualElement>
+      <ui:VisualElement name="unitPanel" class="panel unit-panel hidden" picking-mode="Ignore">
+        <ui:Label name="unitNameLabel" class="unit-name" picking-mode="Ignore" />
+        <ui:Label name="unitMoveLabel" class="unit-move" picking-mode="Ignore" />
+      </ui:VisualElement>
+    </ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>

@@ -20,7 +20,8 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private float cameraSpeed = 10f;
 
     [Header("Vue inclinée (Overhead)")]
-    [SerializeField, Range(20f, 89f)] private float pitch = 55f;   // inclinaison ; 90 = vue de dessus
+    [SerializeField, Range(20f, 89f)] private float pitchNear = 40f;   // inclinaison à distanceMin (plus rasante)
+    [SerializeField, Range(20f, 89f)] private float pitchFar = 70f;    // inclinaison à distanceMax (plus plongeante)
     [SerializeField] private float fieldOfView = 30f;
     [SerializeField] private float distanceMin = 40f;
     [SerializeField] private float distanceMax = 250f;
@@ -61,6 +62,8 @@ public class CameraController : Singleton<CameraController>
         // Décalage exprimé en coordonnées monde : nord toujours en haut.
         var tracker = overheadFollow.TrackerSettings;
         tracker.BindingMode = Unity.Cinemachine.TargetTracking.BindingMode.WorldSpace;
+        // Pas d'amortissement : sinon la caméra traîne derrière la cible et le LookAt la fait pivoter.
+        tracker.PositionDamping = Vector3.zero;
         overheadFollow.TrackerSettings = tracker;
 
         OverheadCamera.Lens.FieldOfView = fieldOfView;
@@ -68,12 +71,11 @@ public class CameraController : Singleton<CameraController>
         ChangeCamera(defaultMode);
     }
 
-    // Place la caméra à `distance` de la cible, inclinée de `pitch`, côté sud.
+    // Place la caméra à `distance` de la cible, côté sud ; l'inclinaison varie de pitchNear à pitchFar avec la distance.
     private void SetDistance(float value)
     {
         distance = Mathf.Clamp(value, distanceMin, distanceMax);
-        float rad = pitch * Mathf.Deg2Rad;
-        overheadFollow.FollowOffset = new Vector3(0f, distance * Mathf.Sin(rad), -distance * Mathf.Cos(rad));
+        overheadFollow.FollowOffset = CameraMath.TiltedOffset(distance, distanceMin, distanceMax, pitchNear, pitchFar);
     }
 
     public void ChangeCamera(CameraMode mode)
