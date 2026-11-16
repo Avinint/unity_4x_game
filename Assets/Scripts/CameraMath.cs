@@ -6,6 +6,17 @@ public static class CameraMath
     public static float Pitch(float distance, float minDistance, float maxDistance, float pitchNear, float pitchFar)
         => Mathf.Lerp(pitchNear, pitchFar, Mathf.InverseLerp(minDistance, maxDistance, distance));
 
+    // Distance pour que toute la carte (taille x, z) tienne à l'écran, la caméra visant son centre.
+    // Largeur : champ horizontal ; profondeur : raccourcie par l'inclinaison (≈ sin pitch). margin > 1 laisse un bord.
+    public static float FitDistance(Vector2 mapSize, float verticalFovDeg, float aspect, float pitchDeg, float margin = 1.1f)
+    {
+        float halfV = verticalFovDeg * 0.5f * Mathf.Deg2Rad;
+        float halfH = Mathf.Atan(Mathf.Tan(halfV) * aspect);
+        float dx = mapSize.x * 0.5f / Mathf.Tan(halfH);
+        float dz = mapSize.y * 0.5f * Mathf.Sin(pitchDeg * Mathf.Deg2Rad) / Mathf.Tan(halfV);
+        return Mathf.Max(dx, dz) * margin;
+    }
+
     // Direction de défilement quand la souris est à moins de `margin` pixels d'un bord de l'écran.
     // Zéro au centre ou si la souris est hors de la fenêtre ; normalisée dans les coins.
     public static Vector2 EdgeScrollDirection(Vector2 mouse, Vector2 screen, float margin)

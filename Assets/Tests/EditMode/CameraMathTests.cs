@@ -60,6 +60,31 @@ public class CameraMathTests
     }
 
     [Test]
+    public void FitDistance_GrowsWithMapSize()
+    {
+        float small = CameraMath.FitDistance(new Vector2(100f, 60f), 30f, 16f / 9f, 70f);
+        float large = CameraMath.FitDistance(new Vector2(200f, 120f), 30f, 16f / 9f, 70f);
+
+        Assert.AreEqual(2f * small, large, 0.01f);
+    }
+
+    [Test]
+    public void FitDistance_WideMapLimitedByWidth()
+    {
+        // Carte très large et peu profonde : seule la largeur compte, la profondeur ne change rien.
+        float a = CameraMath.FitDistance(new Vector2(400f, 10f), 30f, 16f / 9f, 70f);
+        float b = CameraMath.FitDistance(new Vector2(400f, 20f), 30f, 16f / 9f, 70f);
+
+        Assert.AreEqual(a, b, 0.0001f);
+    }
+
+    [Test]
+    public void FitDistance_ZeroSize_IsZero()
+    {
+        Assert.AreEqual(0f, CameraMath.FitDistance(Vector2.zero, 30f, 16f / 9f, 70f), 0.0001f);
+    }
+
+    [Test]
     public void TiltedOffset_IsSouthAndAbove()
     {
         Vector3 offset = CameraMath.TiltedOffset(120f, Min, Max, Near, Far);

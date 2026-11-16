@@ -24,7 +24,8 @@ public class CameraController : Singleton<CameraController>
     [SerializeField, Range(20f, 89f)] private float pitchFar = 70f;    // inclinaison à distanceMax (plus plongeante)
     [SerializeField] private float fieldOfView = 30f;
     [SerializeField] private float distanceMin = 40f;
-    [SerializeField] private float distanceMax = 250f;
+    [SerializeField] private float distanceMax = 250f;          // plancher du zoom maximal
+    [SerializeField] private bool fitMapOnMaxZoom = true;       // le zoom maximal montre toute la carte
     [SerializeField] private float distanceDefault = 120f;
     [SerializeField] private float distanceZoomSpeed = 2.5f;
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
@@ -91,8 +92,21 @@ public class CameraController : Singleton<CameraController>
     // Place la caméra à `distance` de la cible, côté sud ; l'inclinaison varie de pitchNear à pitchFar avec la distance.
     private void SetDistance(float value)
     {
-        distance = Mathf.Clamp(value, distanceMin, distanceMax);
-        overheadFollow.FollowOffset = CameraMath.TiltedOffset(distance, distanceMin, distanceMax, pitchNear, pitchFar);
+        float max = MaxDistance;
+        distance = Mathf.Clamp(value, distanceMin, max);
+        overheadFollow.FollowOffset = CameraMath.TiltedOffset(distance, distanceMin, max, pitchNear, pitchFar);
+    }
+
+    // Distance maximale : au moins de quoi voir toute la carte (recalculée, l'écran peut changer de taille).
+    private float MaxDistance
+    {
+        get
+        {
+            HexGrid grid = GameManager.Instance.HexGrid;
+            if (!fitMapOnMaxZoom || grid == null || Camera.main == null) return distanceMax;
+            Vector2 size = grid.WorldBounds.size + Vector2.one * 2f * grid.HexSize;   // cases entières, pas seulement leurs centres
+            return Mathf.Max(distanceMax, CameraMath.FitDistance(size, fieldOfView, Camera.main.aspect, pitchFar));
+        }
     }
 
     public void ChangeCamera(CameraMode mode)
