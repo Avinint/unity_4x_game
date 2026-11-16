@@ -162,7 +162,7 @@ public class HexGrid : MonoBehaviour
         HexTile selected = SelectionController.Instance != null ? SelectionController.Instance.SelectedTile : null;
         bool show = _activeTile != null && _activeTile.IsHovered && _activeTile != selected;
         HoverMarker.SetActive(show);
-        if (show) HoverMarker.transform.position = _activeTile.CentrePosition;
+        if (show) HoverMarker.transform.position = _activeTile.DisplayPosition;
     }
 
     // La souris quitte la grille : le survol s'efface.

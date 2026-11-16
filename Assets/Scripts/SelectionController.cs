@@ -36,17 +36,17 @@ public class SelectionController : Singleton<SelectionController>
         cam.onDeselectAction -= Deselect;
     }
 
-    // Seule une case découverte et survolée répond.
+    // Case survolée, explorée ou non.
     private HexTile HoveredTile()
     {
         HexTile tile = Grid.HoveredTile;
-        return tile != null && tile.IsDiscovered && tile.IsHovered ? tile : null;
+        return tile != null && tile.IsHovered ? tile : null;
     }
 
     private void Select()
     {
         HexTile tile = HoveredTile();
-        if (tile == null) return;
+        if (tile == null || !tile.IsDiscovered) return;   // on ne sélectionne rien sous le brouillard
 
         // Clic sur une case sans unité : désélection.
         Unit unit = tile.GetFirstUnit(GameManager.Instance.LocalPlayer);
@@ -92,9 +92,11 @@ public class SelectionController : Singleton<SelectionController>
         Grid.UpdateHoverMarker();
     }
 
+    // Selon la connaissance du propriétaire de l'unité, pas selon l'affichage.
+    private bool Knows(Vector2Int axial) => GameManager.Instance.Fog.IsExplored(SelectedUnit.Owner, axial);
+
     private bool IsWalkable(Vector2Int axial) =>
-        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsDiscovered && tile.IsLand()
-        && !tile.HasUnitOfOtherPlayer(SelectedUnit.Owner);
+        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsWalkableFor(SelectedUnit.Owner, Knows(axial));
 
     // Seule une unité du joueur courant, à l'arrêt, reçoit des ordres.
     private bool CanCommand() =>
@@ -109,7 +111,7 @@ public class SelectionController : Singleton<SelectionController>
     }
 
     private int StepCost(Vector2Int axial) =>
-        Grid.TryGetTileAxial(axial, out HexTile tile) ? tile.MovementCost : 1;
+        Grid.TryGetTileAxial(axial, out HexTile tile) ? tile.MovementCostFor(Knows(axial)) : 1;
 
     private List<int> StepCosts(List<Vector2Int> path)
     {
@@ -154,10 +156,10 @@ public class SelectionController : Singleton<SelectionController>
         foreach (var axial in path)
         {
             Grid.TryGetTileAxial(axial, out HexTile step);
-            steps.Add(step.CentrePosition);
+            steps.Add(step.DisplayPosition);
         }
-        if (forbidden) preview.ShowForbidden(SelectedTile.CentrePosition, steps);
-        else preview.Show(SelectedTile.CentrePosition, steps, PathFinder.ReachableCount(StepCosts(path), points));
+        if (forbidden) preview.ShowForbidden(SelectedTile.DisplayPosition, steps);
+        else preview.Show(SelectedTile.DisplayPosition, steps, PathFinder.ReachableCount(StepCosts(path), points));
     }
 
     private void Deselect()

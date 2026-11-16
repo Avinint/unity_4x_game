@@ -20,6 +20,9 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     private HexTileGizmo gizmo;
 
     public Vector3 CentrePosition { get; set; }
+
+    // Position affichée (marqueur de survol, aperçu) : à plat sous le brouillard, pour ne pas trahir le relief.
+    public Vector3 DisplayPosition => IsDiscovered ? CentrePosition : CentrePosition - Vector3.up * Elevation;
     
 
     private Transform terrain;
@@ -145,7 +148,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     public void OnMouseEnter()
     {
-        if (!IsDiscovered || IsHovered) return;
+        if (IsHovered) return;   // cases inexplorées comprises : on peut y envoyer une unité
         IsHovered = true;
     }
 
@@ -240,6 +243,12 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     // Coût du biome, +1 en colline.
     public int MovementCost => (TerrainType != null ? TerrainType.MovementCost : 1) + (Relief == Relief.Hill ? 1 : 0);
+
+    // Selon ce que sait le joueur : une case inexplorée est supposée praticable, au coût 1.
+    public bool IsWalkableFor(Player owner, bool explored) =>
+        !explored || (IsLand() && !HasUnitOfOtherPlayer(owner));
+
+    public int MovementCostFor(bool explored) => explored ? MovementCost : 1;
 
     public bool IsNotLand()
     {

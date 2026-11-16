@@ -35,13 +35,13 @@ public class HexTileTests
     }
 
     [Test]
-    public void Hover_IsIgnoredWhileHidden()
+    public void Hover_WorksOnHiddenTile()
     {
         var tile = NewTile();
 
         tile.OnMouseEnter();
 
-        Assert.IsFalse(tile.IsHovered);
+        Assert.IsTrue(tile.IsHovered);
     }
 
     [Test]
@@ -262,5 +262,45 @@ public class HexTileTests
     public void HasUnitOfOtherPlayer_EmptyTile_IsFalse()
     {
         Assert.IsFalse(NewTile().HasUnitOfOtherPlayer(NewPlayer()));
+    }
+
+    [Test]
+    public void IsWalkableFor_Unexplored_IsTrueEvenOnWater()
+    {
+        var tile = NewTile();
+        tile.Relief = Relief.Water;
+
+        Assert.IsTrue(tile.IsWalkableFor(NewPlayer(), explored: false));
+    }
+
+    [Test]
+    public void IsWalkableFor_ExploredWater_IsFalse()
+    {
+        var tile = NewTile();
+        tile.Relief = Relief.Water;
+
+        Assert.IsFalse(tile.IsWalkableFor(NewPlayer(), explored: true));
+    }
+
+    [Test]
+    public void IsWalkableFor_ExploredForeignUnit_IsFalse()
+    {
+        var tile = NewTile();
+        tile.Relief = Relief.Flat;
+        NewUnit();
+        unitObject.GetComponent<Unit>().Owner = NewPlayer();
+        tile.AddUnit(unitObject);
+
+        Assert.IsFalse(tile.IsWalkableFor(NewPlayer(), explored: true));
+    }
+
+    [Test]
+    public void MovementCostFor_Unexplored_IsOne()
+    {
+        var tile = NewTile();
+        tile.Relief = Relief.Hill;
+
+        Assert.AreEqual(1, tile.MovementCostFor(explored: false));
+        Assert.AreEqual(tile.MovementCost, tile.MovementCostFor(explored: true));
     }
 }
