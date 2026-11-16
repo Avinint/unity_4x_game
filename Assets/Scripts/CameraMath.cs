@@ -17,6 +17,18 @@ public static class CameraMath
         return Mathf.Max(dx, dz) * margin;
     }
 
+    // Rectangle réduit autour de son centre : factor 1 = inchangé, 0 = réduit au centre.
+    public static Rect ShrinkRect(Rect rect, float factor)
+    {
+        factor = Mathf.Clamp01(factor);
+        Vector2 size = rect.size * factor;
+        return new Rect(rect.center - size * 0.5f, size);
+    }
+
+    // Part de la carte où la vue peut aller : 1 jusqu'à startFraction × max, puis jusqu'à 0 à la distance max.
+    public static float PanFreedom(float distance, float maxDistance, float startFraction) =>
+        1f - Mathf.InverseLerp(startFraction * maxDistance, maxDistance, distance);
+
     // Direction de défilement quand la souris est à moins de `margin` pixels d'un bord de l'écran.
     // Zéro au centre ou si la souris est hors de la fenêtre ; normalisée dans les coins.
     public static Vector2 EdgeScrollDirection(Vector2 mouse, Vector2 screen, float margin)

@@ -26,6 +26,7 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private float distanceMin = 40f;
     [SerializeField] private float distanceMax = 250f;          // plancher du zoom maximal
     [SerializeField] private bool fitMapOnMaxZoom = true;       // le zoom maximal montre toute la carte
+    [SerializeField, Range(0f, 1f)] private float recenterFrom = 0.6f;   // à partir de cette part du zoom max, la vue se recentre
     [SerializeField] private float distanceDefault = 120f;
     [SerializeField] private float distanceZoomSpeed = 2.5f;
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
@@ -95,6 +96,7 @@ public class CameraController : Singleton<CameraController>
         float max = MaxDistance;
         distance = Mathf.Clamp(value, distanceMin, max);
         overheadFollow.FollowOffset = CameraMath.TiltedOffset(distance, distanceMin, max, pitchNear, pitchFar);
+        ClampTarget();   // en dézoomant, la zone autorisée se resserre vers le centre
     }
 
     // Distance maximale : au moins de quoi voir toute la carte (recalculée, l'écran peut changer de taille).
@@ -227,7 +229,7 @@ public class CameraController : Singleton<CameraController>
     {
         HexGrid grid = GameManager.Instance.HexGrid;
         if (grid == null) return;
-        Rect bounds = grid.WorldBounds;
+        Rect bounds = CameraMath.ShrinkRect(grid.WorldBounds, CameraMath.PanFreedom(distance, MaxDistance, recenterFrom));
         Vector3 p = cameraTarget.transform.position;
         p.x = Mathf.Clamp(p.x, bounds.xMin, bounds.xMax);
         p.z = Mathf.Clamp(p.z, bounds.yMin, bounds.yMax);

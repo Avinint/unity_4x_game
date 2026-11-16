@@ -84,6 +84,40 @@ public class CameraMathTests
         Assert.AreEqual(0f, CameraMath.FitDistance(Vector2.zero, 30f, 16f / 9f, 70f), 0.0001f);
     }
 
+    private static readonly Rect Map = new Rect(10f, 20f, 100f, 60f);
+
+    [Test]
+    public void ShrinkRect_FactorOne_Unchanged()
+    {
+        Assert.AreEqual(Map, CameraMath.ShrinkRect(Map, 1f));
+    }
+
+    [Test]
+    public void ShrinkRect_FactorZero_IsCenterPoint()
+    {
+        Rect r = CameraMath.ShrinkRect(Map, 0f);
+
+        Assert.AreEqual(Vector2.zero, r.size);
+        Assert.AreEqual(Map.center, r.center);
+    }
+
+    [Test]
+    public void ShrinkRect_Half_KeepsCenter()
+    {
+        Rect r = CameraMath.ShrinkRect(Map, 0.5f);
+
+        Assert.AreEqual(Map.size * 0.5f, r.size);
+        Assert.AreEqual(Map.center, r.center);
+    }
+
+    [Test]
+    public void PanFreedom_FullBelowStart_ZeroAtMax()
+    {
+        Assert.AreEqual(1f, CameraMath.PanFreedom(100f, 400f, 0.6f), 0.0001f);   // 100 < 240
+        Assert.AreEqual(0.5f, CameraMath.PanFreedom(320f, 400f, 0.6f), 0.0001f); // à mi-chemin entre 240 et 400
+        Assert.AreEqual(0f, CameraMath.PanFreedom(400f, 400f, 0.6f), 0.0001f);
+    }
+
     [Test]
     public void TiltedOffset_IsSouthAndAbove()
     {

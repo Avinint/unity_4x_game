@@ -15,6 +15,8 @@ public class MouseController : Singleton<MouseController>
 
     private Camera _mainCamera;
     private bool _isOverGrid;
+    private Vector3 _lastCameraPosition;
+    private Quaternion _lastCameraRotation;
     
     // Start is called before the first frame update
     void Start()
@@ -29,7 +31,12 @@ public class MouseController : Singleton<MouseController>
         if (mouse == null) return;   // pas de souris branchée
         Ray ray = _mainCamera.ScreenPointToRay(mouse.position.ReadValue());
 
-        if (mouse.delta.ReadValue() != Vector2.zero) CheckMouseMove(ray);
+        // La case sous la souris change aussi quand la vue bouge (défilement, zoom), souris immobile.
+        Transform cam = _mainCamera.transform;
+        bool cameraMoved = cam.position != _lastCameraPosition || cam.rotation != _lastCameraRotation;
+        _lastCameraPosition = cam.position;
+        _lastCameraRotation = cam.rotation;
+        if (mouse.delta.ReadValue() != Vector2.zero || cameraMoved) CheckMouseMove(ray);
         if (mouse.leftButton.wasPressedThisFrame) CheckMouseClick(ray, 0);
         if (mouse.rightButton.wasPressedThisFrame) CheckMouseClick(ray, 1);
         if (mouse.middleButton.wasPressedThisFrame) CheckMouseClick(ray, 2);
