@@ -1397,16 +1397,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HexGrid: {fileID: 0}
-  Width: 40
-  Height: 25
   NoiseScale: 12
   Octaves: 4
   Persistence: 0.6
   Lacunarity: 2.3
   Seed: 5
+  RandomSeed: 1
   Offset: {x: 0, y: 0}
   AutoUpdate: 0
-  UseHexGrid: 1
   GenerateMapOnStart: 1
   UseThreadedGeneration: 1
   Rules:
@@ -1755,10 +1753,12 @@ MonoBehaviour:
   focusCamera: {fileID: 636859190}
   cameraSpeed: 10
   pitchNear: 40
-  pitchFar: 70
+  pitchFar: 85
   fieldOfView: 30
   distanceMin: 40
   distanceMax: 250
+  fitMapOnMaxZoom: 1
+  recenterFrom: 0.6
   distanceDefault: 120
   distanceZoomSpeed: 2.5
   scrollZoomStep: 0.15
