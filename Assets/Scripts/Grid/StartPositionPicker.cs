@@ -17,6 +17,15 @@ public readonly struct StartPick
 
 public static class StartPositionPicker
 {
+    // Distance conseillée entre joueurs : chacun dispose d'environ landCount / playerCount cases,
+    // soit un disque hexagonal de rayon r ≈ √(cases / 3) ; deux joueurs sont à environ 2r.
+    public static int SuggestedMinDistance(int landCount, int playerCount)
+    {
+        if (playerCount <= 1 || landCount <= 0) return 0;
+        float radius = Mathf.Sqrt(landCount / (3f * playerCount));
+        return Mathf.Max(1, Mathf.FloorToInt(2f * radius));
+    }
+
     // 1er joueur au hasard, puis chacun parmi les 10 % de candidats les plus éloignés des joueurs déjà placés.
     public static List<StartPick> Pick(IReadOnlyList<Vector2Int> candidates, int playerCount, System.Random rng)
     {

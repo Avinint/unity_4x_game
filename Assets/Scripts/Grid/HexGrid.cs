@@ -332,12 +332,6 @@ public class HexGrid : MonoBehaviour
     {
         StartTiles.Clear();
 
-        if (PlayerSpawningMinDistance == 0)
-        {
-            int avg = (Width + Height) / 2;
-            PlayerSpawningMinDistance = avg / Mathf.Max(1, PlayerCount / 2);
-        }
-
         List<HexTile> candidates = Tiles.Values
             .Where(t => t.IsLand() && !t.IsCloseToGridEdge(DefaultVisibleRadius, Width, Height))
             .ToList();
@@ -348,6 +342,11 @@ public class HexGrid : MonoBehaviour
             return;
         }
 
+        // 0 = automatique : d'après la surface de terre disponible.
+        int minDistance = PlayerSpawningMinDistance > 0
+            ? PlayerSpawningMinDistance
+            : StartPositionPicker.SuggestedMinDistance(candidates.Count, PlayerCount);
+
         var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
         var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random());
 
@@ -356,9 +355,9 @@ public class HexGrid : MonoBehaviour
 
         for (int p = 0; p < picks.Count; p++)
         {
-            if (p > 0 && picks[p].DistanceToNearest < PlayerSpawningMinDistance)
-                // Placement au mieux : simple information (distance minimale à revoir avec la refonte de la génération).
-                Debug.Log($"Joueur {p} : distance minimale non respectée ({picks[p].DistanceToNearest} < {PlayerSpawningMinDistance}).");
+            if (p > 0 && picks[p].DistanceToNearest < minDistance)
+                // Placement au mieux : simple information.
+                Debug.Log($"Joueur {p} : distance minimale non respectée ({picks[p].DistanceToNearest} < {minDistance}).");
 
             StartTiles.Add(candidates[picks[p].Index]);
         }

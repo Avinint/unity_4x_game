@@ -96,4 +96,25 @@ public class StartPositionPickerTests
             Assert.AreEqual(expected, picks[p].DistanceToNearest, $"joueur {p}");
         }
     }
+
+    [Test]
+    public void SuggestedMinDistance_140LandFor5Players_Is6()
+    {
+        Assert.AreEqual(6, StartPositionPicker.SuggestedMinDistance(140, 5));
+    }
+
+    [Test]
+    public void SuggestedMinDistance_SinglePlayer_IsZero()
+    {
+        Assert.AreEqual(0, StartPositionPicker.SuggestedMinDistance(140, 1));
+    }
+
+    [Test]
+    public void SuggestedMinDistance_GrowsWithLand()
+    {
+        int small = StartPositionPicker.SuggestedMinDistance(300, 3);
+        int large = StartPositionPicker.SuggestedMinDistance(1200, 3);
+
+        Assert.That(large, Is.InRange(2 * small - 1, 2 * small + 1));
+    }
 }
