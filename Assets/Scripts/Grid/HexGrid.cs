@@ -305,27 +305,6 @@ public class HexGrid : MonoBehaviour
         Tiles.Clear();
     }
 
-    public HexTile GetStartingTile(int playerIndex)
-    {
-        Vector2Int axialCoordinates;
-        HexTile startTile;
-        
-        
-        do
-        {
-            axialCoordinates = HexMetrics.OffsetToAxial(
-                UnityEngine.Random.Range(0, Width),
-                UnityEngine.Random.Range(0, Height), 
-                Orientation);
-        } while (!Tiles.TryGetValue(axialCoordinates, out startTile) || startTile.IsNotLand());
-        
-        
-
-        CameraController.Instance.CameraTarget.transform.position = startTile.Terrain.transform.position;
-
-        return startTile;
-    }
- 
     /// <summary>
     /// Place les joueurs par échantillonnage du point le plus éloigné :
     /// le 1er au hasard, puis chacun sur une des cases de terre les plus éloignées des joueurs déjà placés.
@@ -365,58 +344,6 @@ public class HexGrid : MonoBehaviour
         }
     }
 
-    private bool TileNotViable(HexTile tile, bool isCloseToStartingPoint)
-    {
-        return isCloseToStartingPoint || tile.IsNotLand() ||  tile.IsCloseToGridEdge(DefaultVisibleRadius, Width, Height);
-    }
-
-    private HexTile PickTileRandomly(List<HexTile> area, ref bool isCloseToStartingPoint)
-    {
-        HexTile newTile;
-        var randomIndex = UnityEngine.Random.Range(0, area.Count);
-        newTile = area[randomIndex];
-        newTile.Discover();
-        foreach (var tile in StartTiles)
-        {
-            if (HexMetrics.AxialDistance(newTile.AxialCoordinates, tile.AxialCoordinates) <
-                PlayerSpawningMinDistance)
-            {
-                isCloseToStartingPoint = true;
-                break;
-            }
-        }
-
-        return newTile;
-    }
-
-
-    private List<HexTile> CreateDistanceRing(HexTile startTile, int distance = 0)
-    {
-        Dictionary<Vector2Int, HexTile> ringCenter = new Dictionary<Vector2Int, HexTile>();
-        ringCenter.Add(startTile.AxialCoordinates, startTile);
-        int ringNumber = 0;
-        List<HexTile> outerRing = new List<HexTile>(startTile.Neighbours);
-
-        while (ringNumber++ < distance)
-        {
-            List<HexTile> prevOuterRing = new List<HexTile>(outerRing);
-            outerRing.Clear();
-            foreach (var tile in prevOuterRing)
-            {
-                List<HexTile> neighbours = tile.Neighbours;
-                foreach (HexTile neighbour in neighbours)
-                {
-                    if (!ringCenter.ContainsKey(neighbour.AxialCoordinates))
-                    {
-                        ringCenter.Add(neighbour.AxialCoordinates, tile);
-                        outerRing.Add(neighbour);
-                    }
-                }
-            }
-        }
-
-        return outerRing;
-    }
 
     public Dictionary<Vector2Int, HexTile> GetStartingArea(HexTile startingTile)
     {
