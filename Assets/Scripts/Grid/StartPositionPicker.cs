@@ -19,11 +19,12 @@ public static class StartPositionPicker
 {
     // Distance conseillée entre joueurs : chacun dispose d'environ landCount / playerCount cases,
     // soit un disque hexagonal de rayon r ≈ √(cases / 3) ; deux joueurs sont à environ 2r.
-    public static int SuggestedMinDistance(int landCount, int playerCount)
+    // Plancher : 2 × startRadius + 2, pour que les zones de départ ne se touchent pas (une case libre entre elles).
+    public static int SuggestedMinDistance(int landCount, int playerCount, int startRadius = 0)
     {
         if (playerCount <= 1 || landCount <= 0) return 0;
         float radius = Mathf.Sqrt(landCount / (3f * playerCount));
-        return Mathf.Max(1, Mathf.FloorToInt(2f * radius));
+        return Mathf.Max(Mathf.Max(1, Mathf.FloorToInt(2f * radius)), 2 * startRadius + 2);
     }
 
     // 1er joueur au hasard, puis chacun au hasard parmi les candidats à au moins `minDistance` des joueurs déjà placés ;

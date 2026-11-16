@@ -10,6 +10,7 @@ public class GameManager : Singleton<GameManager>
     public List<Player> Players = new List<Player>();
     [SerializeField] private Player localPlayer;       // joueur local (par défaut : le premier de la liste)
     public bool RevealAllPlayers = true;               // débogage : révéler les zones de tous les joueurs
+    public bool RevealWholeMap = false;                // débogage : toute la carte découverte et visible, toutes les unités affichées
 
     public Player LocalPlayer => localPlayer != null ? localPlayer : (Players.Count > 0 ? Players[0] : null);
     [field:SerializeField] public HexGrid HexGrid { get; private set; }
@@ -92,6 +93,13 @@ public class GameManager : Singleton<GameManager>
             CameraController.Instance.CameraTarget.transform.position = LocalPlayer.StartingTile.CentrePosition;
 
         BuildTurnOrder();
+
+        if (RevealWholeMap)
+            foreach (var tile in HexGrid.AllTiles)
+            {
+                tile.Discover();
+                tile.SetVisibleNow(true);
+            }
     }
 
     // Ordre de jeu : le joueur local d'abord, puis les autres dans l'ordre de Players.
@@ -110,6 +118,7 @@ public class GameManager : Singleton<GameManager>
     // Cases vues / plus vues par le joueur local : terrain normal ou assombri, unités des autres affichées ou non.
     private void OnVisibilityChanged(Player player, Vector2Int cell, bool visible)
     {
+        if (RevealWholeMap) return;   // débogage : tout reste visible
         if (player == LocalPlayer && HexGrid.TryGetTileAxial(cell, out HexTile tile)) tile.SetVisibleNow(visible);
     }
 

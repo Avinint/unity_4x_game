@@ -147,6 +147,13 @@ public class StartPositionPickerTests
     }
 
     [Test]
+    public void SuggestedMinDistance_FloorKeepsStartAreasApart()
+    {
+        Assert.AreEqual(4, StartPositionPicker.SuggestedMinDistance(72, 5));      // sans rayon : 2 √(72 / 15) ≈ 4
+        Assert.AreEqual(6, StartPositionPicker.SuggestedMinDistance(72, 5, 2));   // plancher 2 × 2 + 2
+    }
+
+    [Test]
     public void SuggestedMinDistance_GrowsWithLand()
     {
         int small = StartPositionPicker.SuggestedMinDistance(300, 3);

@@ -130,6 +130,8 @@ public class HexGrid : MonoBehaviour
 
     public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(axial, out tile);
 
+    public IEnumerable<HexTile> AllTiles => Tiles.Values;
+
     // Cases existantes à une distance ≤ radius de center.
     public List<Vector2Int> CellsInRange(Vector2Int center, int radius)
     {
@@ -345,7 +347,7 @@ public class HexGrid : MonoBehaviour
         // 0 = automatique : d'après la surface de terre disponible.
         int minDistance = PlayerSpawningMinDistance > 0
             ? PlayerSpawningMinDistance
-            : StartPositionPicker.SuggestedMinDistance(candidates.Count, PlayerCount);
+            : StartPositionPicker.SuggestedMinDistance(candidates.Count, PlayerCount, DefaultVisibleRadius);
 
         var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
         var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random(), minDistance);

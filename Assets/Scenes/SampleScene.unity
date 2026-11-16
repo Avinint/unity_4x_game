@@ -1202,6 +1202,7 @@ MonoBehaviour:
   - {fileID: 1437649289}
   localPlayer: {fileID: 0}
   RevealAllPlayers: 0
+  RevealWholeMap: 0
   <HexGrid>k__BackingField: {fileID: 0}
   DefaultVisibleTiles:
   - {x: -1, y: -1}
