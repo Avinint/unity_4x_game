@@ -1202,7 +1202,7 @@ MonoBehaviour:
   - {fileID: 1437649289}
   localPlayer: {fileID: 0}
   RevealAllPlayers: 0
-  RevealWholeMap: 0
+  RevealWholeMap: 1
   <HexGrid>k__BackingField: {fileID: 0}
   DefaultVisibleTiles:
   - {x: -1, y: -1}
@@ -1261,8 +1261,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Orientation>k__BackingField: 1
-  <Width>k__BackingField: 20
-  <Height>k__BackingField: 20
+  <Width>k__BackingField: 40
+  <Height>k__BackingField: 25
   <HexSize>k__BackingField: 5
   <BatchSize>k__BackingField: 10
   unknownPrefab: {fileID: 6944534303261143973, guid: d9daf753b065e30439ccc588df9fa389, type: 3}
@@ -1397,8 +1397,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HexGrid: {fileID: 0}
-  Width: 20
-  Height: 20
+  Width: 40
+  Height: 25
   NoiseScale: 12
   Octaves: 4
   Persistence: 0.6

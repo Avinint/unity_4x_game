@@ -9,8 +9,9 @@ public class MapGenerator : MonoBehaviour
 {
     public HexGrid HexGrid;
 
-    public int Width = 256;
-    public int Height = 256;
+    // Taille de la carte : toujours celle de HexGrid (lue au lancement de la génération).
+    public int Width { get; private set; }
+    public int Height { get; private set; }
 
     [Tooltip("The scale of the noise map")] public float NoiseScale = .5f;
 
@@ -27,14 +28,14 @@ public class MapGenerator : MonoBehaviour
     [Tooltip("The seed used to generate the noise map")]
     public int Seed = 0;
 
+    [Tooltip("Nouvelle graine au hasard à chaque partie (décocher pour rejouer la graine ci-dessus)")]
+    public bool RandomSeed = true;
+
     [Tooltip("The offset of the noise map")]
     public Vector2 Offset = Vector2.zero;
 
     [Tooltip("Whether or not to update the noise map when a value is changed")]
     public bool AutoUpdate = true;
-
-    [Tooltip("Whether or not to use the hex grid size information to generate the noise map")]
-    public bool UseHexGrid = true;
 
 
     public bool GenerateMapOnStart = true;
@@ -72,10 +73,21 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateMap()
     {
-        if (UseHexGrid && (HexGrid != null))
+        // Awake n'est pas appelé quand l'Inspector régénère hors du mode Play.
+        if (HexGrid == null) HexGrid = GetComponent<HexGrid>();
+        if (HexGrid == null)
         {
-            Width = HexGrid.Width;
-            Height = HexGrid.Height;
+            Debug.LogError("MapGenerator : aucun HexGrid sur l'objet, taille de carte inconnue.");
+            return;
+        }
+        Width = HexGrid.Width;
+        Height = HexGrid.Height;
+
+        // En jeu : nouvelle carte à chaque partie ; la graine tirée est affichée pour pouvoir la rejouer.
+        if (RandomSeed && Application.isPlaying)
+        {
+            Seed = UnityEngine.Random.Range(0, 1000000);
+            Debug.Log($"MapGenerator : graine {Seed}");
         }
 
         ValidateSettings();
@@ -97,10 +109,6 @@ public class MapGenerator : MonoBehaviour
         Persistence = Mathf.Clamp01(Persistence);
         // We make sure the scale is not 0 because we will be dividing by it
         NoiseScale = Mathf.Max(NoiseScale, 0.0001f);
-        // Make sure the width and height are not less than 1
-
-        Width = Mathf.Max(Width, 1);
-        Height = Mathf.Max(Height, 1);
     }
 
     private IEnumerator GenerateMapCoroutine()
