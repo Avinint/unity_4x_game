@@ -75,7 +75,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 
 ## À faire (caméra)
 - Vue inclinée en perspective choisie (l'orthographique vu de dessus avait été essayé : le marqueur vertical n'y était vu que par sa tranche). `pitchFar` réglé à 85. Piste si la vue par défaut devient trop plongeante : ne monter l'inclinaison qu'au-delà de `recenterFrom`.
-- À faire : rotation de la vue par pas de 60° (deux touches, A/E déjà pris par le zoom ; `TiltedOffset` reçoit l'orientation ; flèches et défilement par les bords suivent l'orientation ; option : rotation animée, boussole dans le HUD).
+- Rotation de la vue : reportée (nord fixe, comme dans Civ : repérage plus simple ; vue assez haute et relief bas). À reconsidérer si le relief cache des unités, avec les modèles réalistes : montagne transparente devant une unité, icône au-dessus des unités, ou rotation. Plan prêt si besoin : pas de 60° (touches Q / D, action `World/Rotate` lue par le code), `TiltedOffset` reçoit l'orientation, flèches et bords suivent (`ScreenToGround`), zoom max sur la carte tournée (`RotatedSize`), rotation animée ; à choisir alors : orientation qui reste ou coup d'œil qui revient au nord au relâchement.
 - Revérifier la lisibilité de `Selector` et `hoverMarker`. Si besoin, les remplacer par un contour d'hexagone à plat (`LineRenderer` sur `HexMetrics.Corners`).
 
 ## Historique migration

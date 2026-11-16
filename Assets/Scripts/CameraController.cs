@@ -1,13 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using UnityEngine.InputSystem;
 
 public class CameraController : Singleton<CameraController>
 {
-    [SerializeField]
     private const int DEFAULT_PRIORITY = 10;
     [SerializeField]
     private GameObject cameraTarget;
@@ -154,15 +152,7 @@ public class CameraController : Singleton<CameraController>
 
     public void OnFocusChanged(InputAction.CallbackContext context)
     {
-        if (context.started)
-        {
-        } else if (context.performed)
-        {
-            onSelectAction?.Invoke();
-        } else if (context.canceled)
-        {
-            //onSelectAction?.Invoke();
-        }
+        if (context.performed) onSelectAction?.Invoke();
     }
     
     public void OnZoomChanged(InputAction.CallbackContext context)
@@ -238,13 +228,11 @@ public class CameraController : Singleton<CameraController>
 
     public IEnumerator processZoom(InputAction.CallbackContext context)
     {
-        //Change the FOV of the camera based on the input. If not keyboard, then adjust the value based on the scrollWheelZoomSpeed
+        // Touches A / E : zoom continu tant qu'on appuie.
         float zoomInput = context.ReadValue<float>();
 
-        //Debug.Log("Zooming: " + zoomInput);
         while (true)
         {
-            //Change the FOV of the camera based on the input. If not keyboard, then adjust the value based on the scrollWheelZoomSpeed
             SetDistance(distance + zoomInput * distanceZoomSpeed * Time.deltaTime);
 
             yield return null;
