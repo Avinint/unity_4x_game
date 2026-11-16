@@ -60,7 +60,7 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 - Avertissement restant hors de notre code : « No script asset for BurstPlatformAotSettings » (package Burst).
 - Intégrations d'éditeur : `com.unity.ide.visualstudio` (Visual Studio 2026, et VS Code via l'extension Unity) et `com.unity.ide.rider` ; `com.unity.ide.vscode`, déprécié, retiré.
 - Nettoyage fait : packages `com.unity.visualscripting`, `com.unity.collab-proxy`, `com.unity.multiplayer.center` retirés ; assets `LeanTween`, `Ciconia Studio` (shaders Built-in), `DoubleSidedUnlitShader`, `Readme.asset` / `TutorialInfo` (modèle URP) et `ResourceManager` (script et objet de scène, liste jamais lue) supprimés. Les ressources du jeu seront conçues avec les villes.
-- Case visée à la souris calculée sur le maillage plat de la grille (y = 0) : avec la caméra inclinée, viser le sommet d'une case surélevée désigne la case un peu plus au nord (≈ 1/3 de case pour une montagne). À revoir en visant les terrains eux-mêmes.
+- Case visée à la souris : les cases révélées ont des `MeshCollider` taggés « Grid » (dessus et socle, `HexTile.AddColliders` en fin de `Reveal`) ; `MouseController` garde le collider « Grid » le plus proche, donc le sommet d'une case surélevée est touché avant le sol ; `HexGrid.OnMouseMove` calcule la case depuis le point touché dans le repère de la grille (`transform.position` de `HexGrid`, plus celui de l'objet touché). Sous le brouillard, c'est le maillage plat de `Grid` (y = 0) qui est touché.
 - Survol (`MouseController.CheckMouseMove`) recalculé seulement quand la souris bouge : quand la vue défile souris immobile, le marqueur reste sur l'ancienne case jusqu'au prochain mouvement.
 
 ## Révélation des zones de départ

@@ -71,7 +71,19 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         AddGizmo();
         gizmo.Unlock();
         AddPlinth();
+        AddColliders();
         ApplyDim();
+    }
+
+    // Colliders sur le terrain révélé (dessus et socle) : la souris vise la case surélevée, pas le sol derrière.
+    private void AddColliders()
+    {
+        foreach (var mf in terrain.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mf.GetComponent<Collider>() != null) continue;
+            mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+            mf.gameObject.tag = "Grid";
+        }
     }
 
     public float Elevation { get; private set; }

@@ -180,7 +180,7 @@ public class HexGrid : MonoBehaviour
     {
         if (CameraController.Instance.IsLocked) return;
 
-        Vector3 position = hit.transform.position;
+        Vector3 position = transform.position;   // repère de la grille, quel que soit le collider touché
         float localX = hit.point.x - position.x;
         float localZ = hit.point.z - position.z;
         Vector2Int axial = HexMetrics.CoordinateToAxial(localX, localZ, HexSize, Orientation);
