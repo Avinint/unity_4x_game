@@ -98,6 +98,43 @@ public class StartPositionPickerTests
     }
 
     [Test]
+    public void Pick_WithMinDistance_AllPairsAtLeastThatFar()
+    {
+        var candidates = Grid10x10();
+        for (int seed = 0; seed < 20; seed++)
+        {
+            var picks = StartPositionPicker.Pick(candidates, 3, new System.Random(seed), 4);
+
+            Assert.AreEqual(3, picks.Count);
+            for (int a = 0; a < picks.Count; a++)
+                for (int b = a + 1; b < picks.Count; b++)
+                    Assert.GreaterOrEqual(
+                        HexMetrics.AxialDistance(candidates[picks[a].Index], candidates[picks[b].Index]), 4,
+                        $"graine {seed}, joueurs {a} et {b}");
+        }
+    }
+
+    [Test]
+    public void Pick_WithMinDistance_TooLarge_StillPlacesEveryone()
+    {
+        var picks = StartPositionPicker.Pick(Line30(), 3, new System.Random(4), 100);
+
+        Assert.AreEqual(3, picks.Count);
+        Assert.AreEqual(3, picks.Select(p => p.Index).Distinct().Count());
+    }
+
+    [Test]
+    public void Pick_WithMinDistance_VariesBetweenSeeds()
+    {
+        var candidates = Grid10x10();
+        var seconds = new HashSet<int>();
+        for (int seed = 0; seed < 20; seed++)
+            seconds.Add(StartPositionPicker.Pick(candidates, 2, new System.Random(seed), 4)[1].Index);
+
+        Assert.Greater(seconds.Count, 1);
+    }
+
+    [Test]
     public void SuggestedMinDistance_140LandFor5Players_Is6()
     {
         Assert.AreEqual(6, StartPositionPicker.SuggestedMinDistance(140, 5));

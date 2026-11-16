@@ -348,7 +348,7 @@ public class HexGrid : MonoBehaviour
             : StartPositionPicker.SuggestedMinDistance(candidates.Count, PlayerCount);
 
         var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
-        var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random());
+        var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random(), minDistance);
 
         if (picks.Count < PlayerCount)
             Debug.LogWarning($"DispatchPlayers : {PlayerCount} joueurs demandés, {picks.Count} cases disponibles.");
@@ -356,7 +356,7 @@ public class HexGrid : MonoBehaviour
         for (int p = 0; p < picks.Count; p++)
         {
             if (p > 0 && picks[p].DistanceToNearest < minDistance)
-                // Placement au mieux : simple information.
+                // Aucune case assez éloignée : placé parmi les plus éloignées.
                 Debug.Log($"Joueur {p} : distance minimale non respectée ({picks[p].DistanceToNearest} < {minDistance}).");
 
             StartTiles.Add(candidates[picks[p].Index]);

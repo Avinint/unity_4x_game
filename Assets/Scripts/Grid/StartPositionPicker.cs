@@ -26,31 +26,41 @@ public static class StartPositionPicker
         return Mathf.Max(1, Mathf.FloorToInt(2f * radius));
     }
 
-    // 1er joueur au hasard, puis chacun parmi les 10 % de candidats les plus éloignés des joueurs déjà placés.
-    public static List<StartPick> Pick(IReadOnlyList<Vector2Int> candidates, int playerCount, System.Random rng)
+    // 1er joueur au hasard, puis chacun au hasard parmi les candidats à au moins `minDistance` des joueurs déjà placés ;
+    // s'il n'y en a aucun (ou si minDistance ≤ 0), parmi les 10 % de candidats les plus éloignés.
+    public static List<StartPick> Pick(IReadOnlyList<Vector2Int> candidates, int playerCount, System.Random rng, int minDistance = 0)
     {
         var result = new List<StartPick>();
         int count = Math.Min(playerCount, candidates.Count);
         if (count <= 0) return result;
 
-        int[] minDistance = Enumerable.Repeat(int.MaxValue, candidates.Count).ToArray();
+        int[] nearest = Enumerable.Repeat(int.MaxValue, candidates.Count).ToArray();   // distance au joueur placé le plus proche
         bool[] taken = new bool[candidates.Count];
         int topCount = Math.Max(1, candidates.Count / 10);
 
         for (int p = 0; p < count; p++)
         {
-            int chosen = p == 0 ? rng.Next(candidates.Count) : PickAmongFarthest(minDistance, taken, topCount, rng);
-            result.Add(new StartPick(chosen, minDistance[chosen]));
+            int chosen = p == 0 ? rng.Next(candidates.Count)
+                : PickFarEnough(nearest, taken, minDistance, rng) ?? PickAmongFarthest(nearest, taken, topCount, rng);
+            result.Add(new StartPick(chosen, nearest[chosen]));
             taken[chosen] = true;
 
             for (int i = 0; i < candidates.Count; i++)
             {
                 int d = HexMetrics.AxialDistance(candidates[i], candidates[chosen]);
-                if (d < minDistance[i]) minDistance[i] = d;
+                if (d < nearest[i]) nearest[i] = d;
             }
         }
 
         return result;
+    }
+
+    // Un candidat libre à au moins minDistance de tous les joueurs placés, au hasard ; null s'il n'y en a pas.
+    private static int? PickFarEnough(int[] nearest, bool[] taken, int minDistance, System.Random rng)
+    {
+        if (minDistance <= 0) return null;
+        var allowed = Enumerable.Range(0, nearest.Length).Where(i => !taken[i] && nearest[i] >= minDistance).ToList();
+        return allowed.Count > 0 ? allowed[rng.Next(allowed.Count)] : (int?)null;
     }
 
     private static int PickAmongFarthest(int[] minDistance, bool[] taken, int topCount, System.Random rng)
