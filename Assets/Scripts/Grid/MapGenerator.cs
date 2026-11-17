@@ -51,6 +51,8 @@ public class MapGenerator : MonoBehaviour
 
     public MapCell[,] Cells { get; private set; }
 
+    public HashSet<RiverEdge> RiverEdges { get; private set; }   // rivières sur les arêtes (axial), pas encore affichées
+
     public Color[] ColorMap { get; private set; }
 
     public event Action<float[,]> OnNoiseMapGenerated;
@@ -181,12 +183,9 @@ public class MapGenerator : MonoBehaviour
                 relief[x, y] = MapRules.ReliefAt(altitude[x, y], sea, hill, mountain);
         bool[,] coast = MapRules.CoastMask(relief, (x, y) => Neighbours(x, y, orientation));
 
-        // Écoulement : case aval, débit (pluie = humidité), puis rivière / fleuve navigable.
+        // Écoulement de case en case : case aval, débit (pluie = humidité), puis fleuves navigables.
         var (downstream, flow) = Hydrology.Flow(altitude, relief, humidity, (x, y) => Neighbours(x, y, orientation));
-        RiverKind[,] river = Hydrology.Classify(flow, relief, Rules);
-        int rivers = 0, navigable = 0;
-        foreach (var k in river) { if (k == RiverKind.River) rivers++; else if (k == RiverKind.Navigable) navigable++; }
-        Debug.Log($"MapGenerator : {rivers} cases de rivière, {navigable} de fleuve navigable");
+        bool[,] navigable = Hydrology.Navigable(flow, relief, Rules);
 
         // Températures des terres, puis seuils de climat en proportions.
         var temperature = new float[Width, Height];
@@ -209,7 +208,7 @@ public class MapGenerator : MonoBehaviour
             for (int x = 0; x < Width; x++)
             {
                 // Fleuve navigable : la case devient de l'eau douce (hauteur 0, infranchissable à pied).
-                bool isNavigable = river[x, y] == RiverKind.Navigable;
+                bool isNavigable = navigable[x, y];
                 Relief r = isNavigable ? Relief.Water : relief[x, y];
                 Biome biome;
                 if (isNavigable) biome = Biome.River;
@@ -218,8 +217,25 @@ public class MapGenerator : MonoBehaviour
                     biome = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
                 TerrainType terrain = r == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
                 cells[x, y] = new MapCell { Relief = r, Biome = biome, Terrain = terrain,
-                                            Flow = flow[x, y], Downstream = downstream[x, y], River = river[x, y] };
+                                            Flow = flow[x, y], Downstream = downstream[x, y], Navigable = isNavigable };
             }
+
+        // Rivières d'arêtes, sur la carte finale (fleuves navigables = eau, les rivières s'y jettent).
+        Vector2Int Off(Vector2Int a) => HexMetrics.CubeToOffset(HexMetrics.AxialToCube(a), orientation);
+        bool Exists(Vector2Int a) { var o = Off(a); return o.x >= 0 && o.x < Width && o.y >= 0 && o.y < Height; }
+        var axialCells = new List<Vector2Int>();
+        for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+                axialCells.Add(HexMetrics.OffsetToAxial(x, y, orientation));
+        RiverEdges = RiverNetwork.Rivers(axialCells, Exists,
+            a => { var o = Off(a); return cells[o.x, o.y].Relief == Relief.Water; },
+            a => { var o = Off(a); return altitude[o.x, o.y]; },
+            a => { var o = Off(a); return humidity[o.x, o.y]; },
+            Rules.RiverFraction, Rules.RiverMinLength);
+
+        int navigableCount = 0;
+        foreach (bool b in navigable) if (b) navigableCount++;
+        Debug.Log($"MapGenerator : {RiverEdges.Count} arêtes de rivière, {navigableCount} cases de fleuve navigable");
         return cells;
     }
 
@@ -275,5 +291,5 @@ public struct MapCell
     public TerrainType Terrain;
     public float Flow;              // débit cumulé (pluie = humidité)
     public Vector2Int Downstream;   // case aval (offset), Hydrology.NoDownstream si aucune
-    public RiverKind River;         // rivière (pas encore affichée) / fleuve navigable (case d'eau douce)
+    public bool Navigable;          // fleuve navigable (case d'eau douce) ; les rivières sont sur les arêtes
 }

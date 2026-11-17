@@ -31,8 +31,9 @@ public class MapRulesSettings
     [Range(0f, 1f)] public float LowlandFraction = 0.2f;     // terres plates les plus basses où un marais est possible
 
     [Header("Fleuves (proportions des terres, par débit)")]
-    [Range(0f, 1f)] public float RiverFraction = 0.15f;       // plus forts débits : rivière
-    [Range(0f, 1f)] public float NavigableFraction = 0.03f;   // plus forts de tous : fleuve navigable
+    [Range(0f, 1f)] public float RiverFraction = 0.15f;       // part des sommets de terre d'où part une rivière (plus forts débits)
+    [Range(0f, 1f)] public float NavigableFraction = 0.03f;   // plus forts débits des cases : fleuve navigable
+    [Min(1)] public int RiverMinLength = 3;                    // rivières plus courtes (en arêtes) supprimées
 
     public MapRulesSettings Clone() => (MapRulesSettings)MemberwiseClone();
 }

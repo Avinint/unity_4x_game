@@ -58,15 +58,15 @@ public class HydrologyTests
     }
 
     [Test]
-    public void Classify_StrongestFlowsAreRivers_MountainNeverNavigable()
+    public void Navigable_StrongestFlows_NeverMountainNorWater()
     {
-        var s = new MapRulesSettings { RiverFraction = 0.5f, NavigableFraction = 0.25f };
-        var kind = Hydrology.Classify(Row(0f, 4f, 3f, 2f, 1f), Reliefs(W, F, M, F, F), s);
+        var s = new MapRulesSettings { NavigableFraction = 0.5f };
+        var navigable = Hydrology.Navigable(Row(0f, 4f, 3f, 2f, 1f), Reliefs(W, F, M, F, F), s);
 
-        Assert.AreEqual(RiverKind.None, kind[0, 0]);        // eau
-        Assert.AreEqual(RiverKind.Navigable, kind[1, 0]);   // plus fort débit
-        Assert.AreEqual(RiverKind.River, kind[2, 0]);       // fort, mais montagne
-        Assert.AreEqual(RiverKind.None, kind[4, 0]);        // faible
+        Assert.IsFalse(navigable[0, 0]);   // eau
+        Assert.IsTrue(navigable[1, 0]);    // plus fort débit
+        Assert.IsFalse(navigable[2, 0]);   // fort, mais montagne
+        Assert.IsFalse(navigable[4, 0]);   // faible
     }
 
     [Test]
@@ -74,16 +74,16 @@ public class HydrologyTests
     {
         var reliefs = Reliefs(W, F, F, F, F, F);
         var (down, flow) = Hydrology.Flow(Row(0f, .1f, .2f, .3f, .4f, .5f), reliefs, Row(0f, 1f, 1f, 1f, 1f, 1f), Line);
-        var kind = Hydrology.Classify(flow, reliefs, new MapRulesSettings { RiverFraction = 0.6f, NavigableFraction = 0.4f });
+        var navigable = Hydrology.Navigable(flow, reliefs, new MapRulesSettings { NavigableFraction = 0.4f });
 
-        int navigable = 0;
+        int count = 0;
         for (int x = 1; x < 6; x++)
         {
-            if (kind[x, 0] != RiverKind.Navigable) continue;
-            navigable++;
+            if (!navigable[x, 0]) continue;
+            count++;
             var d = down[x, 0];
-            Assert.IsTrue(reliefs[d.x, 0] == Relief.Water || kind[d.x, 0] == RiverKind.Navigable);
+            Assert.IsTrue(reliefs[d.x, 0] == Relief.Water || navigable[d.x, 0]);
         }
-        Assert.Greater(navigable, 0);
+        Assert.Greater(count, 0);
     }
 }

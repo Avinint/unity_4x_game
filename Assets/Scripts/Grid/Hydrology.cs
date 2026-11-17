@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum RiverKind { None, River, Navigable }
-
 // Écoulement de l'eau à la génération. Ne connaît pas la carte : voisins fournis par l'appelant.
 public static class Hydrology
 {
@@ -58,23 +56,22 @@ public static class Hydrology
         return (downstream, flow);
     }
 
-    // Rivière / fleuve navigable selon le débit, en proportions des terres (montagnes : rivière au plus).
-    public static RiverKind[,] Classify(float[,] flow, Relief[,] relief, MapRulesSettings s)
+    // Fleuve navigable : les plus forts débits, en proportion des terres (jamais en montagne).
+    // Les rivières plus petites sont sur les arêtes (RiverNetwork).
+    public static bool[,] Navigable(float[,] flow, Relief[,] relief, MapRulesSettings s)
     {
         int w = flow.GetLength(0), h = flow.GetLength(1);
         var landFlows = new List<float>();
         foreach (var (x, y) in Cells(w, h)) if (relief[x, y] != Relief.Water) landFlows.Add(flow[x, y]);
-        float riverAbove = MapRules.Percentile(landFlows, 1f - s.RiverFraction);
         float navigableAbove = MapRules.Percentile(landFlows, 1f - s.NavigableFraction);
 
-        var kind = new RiverKind[w, h];
+        var navigable = new bool[w, h];
         foreach (var (x, y) in Cells(w, h))
         {
             if (relief[x, y] == Relief.Water || landFlows.Count == 0) continue;
-            if (flow[x, y] >= navigableAbove && relief[x, y] != Relief.Mountain) kind[x, y] = RiverKind.Navigable;
-            else if (flow[x, y] >= riverAbove) kind[x, y] = RiverKind.River;
+            navigable[x, y] = flow[x, y] >= navigableAbove && relief[x, y] != Relief.Mountain;
         }
-        return kind;
+        return navigable;
     }
 
     private static IEnumerable<(int, int)> Cells(int w, int h)
