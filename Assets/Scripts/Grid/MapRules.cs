@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum Relief { Water, Flat, Hill, Mountain }
 
-public enum Biome { Ocean, Coast, Grassland, Plain, Desert, Forest, Taiga, Jungle, Tundra, Snow, Marsh }
+public enum Biome { Ocean, Coast, Grassland, Plain, Desert, Forest, Taiga, Jungle, Tundra, Snow, Marsh, River }   // nouveaux biomes à la fin (numéros enregistrés)
 
 // Seuils de génération (réglables dans l'Inspector de MapGenerator).
 [Serializable]

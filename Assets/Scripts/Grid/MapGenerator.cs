@@ -208,12 +208,16 @@ public class MapGenerator : MonoBehaviour
         for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
+                // Fleuve navigable : la case devient de l'eau douce (hauteur 0, infranchissable à pied).
+                bool isNavigable = river[x, y] == RiverKind.Navigable;
+                Relief r = isNavigable ? Relief.Water : relief[x, y];
                 Biome biome;
-                if (relief[x, y] == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
+                if (isNavigable) biome = Biome.River;
+                else if (r == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
                 else
                     biome = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
-                TerrainType terrain = relief[x, y] == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
-                cells[x, y] = new MapCell { Relief = relief[x, y], Biome = biome, Terrain = terrain,
+                TerrainType terrain = r == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
+                cells[x, y] = new MapCell { Relief = r, Biome = biome, Terrain = terrain,
                                             Flow = flow[x, y], Downstream = downstream[x, y], River = river[x, y] };
             }
         return cells;
@@ -271,5 +275,5 @@ public struct MapCell
     public TerrainType Terrain;
     public float Flow;              // débit cumulé (pluie = humidité)
     public Vector2Int Downstream;   // case aval (offset), Hydrology.NoDownstream si aucune
-    public RiverKind River;         // rivière / fleuve navigable (pas encore affiché)
+    public RiverKind River;         // rivière (pas encore affichée) / fleuve navigable (case d'eau douce)
 }
