@@ -158,4 +158,24 @@ public class HexMetricsTests
     {
         Assert.AreEqual(Rect.zero, HexMetrics.GridBounds(0, 5, HexSize, HexOrientation.PointyTop));
     }
+
+    [Test]
+    public void AxialLine_Straight_ListsEveryCell()
+    {
+        var line = HexMetrics.AxialLine(Vector2Int.zero, new Vector2Int(3, 0));
+
+        CollectionAssert.AreEqual(new[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0), new Vector2Int(3, 0) }, line);
+    }
+
+    [Test]
+    public void AxialLine_StepsAreNeighbours()
+    {
+        var a = new Vector2Int(-2, 1);
+        var b = new Vector2Int(3, -4);
+        var line = HexMetrics.AxialLine(a, b);
+
+        Assert.AreEqual(HexMetrics.AxialDistance(a, b) + 1, line.Count);
+        for (int i = 1; i < line.Count; i++)
+            Assert.AreEqual(1, HexMetrics.AxialDistance(line[i - 1], line[i]));
+    }
 }

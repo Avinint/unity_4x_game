@@ -98,6 +98,18 @@ public static class MapRules
     public static float Elevation(Relief relief, float hillHeight, float mountainHeight) =>
         relief == Relief.Hill ? hillHeight : relief == Relief.Mountain ? mountainHeight : 0f;
 
+    // Ligne de vue : hauteur du relief (plat et eau 0, colline 2, montagne 4 ; la végétation dense ajoute 1).
+    public static int SightHeight(Relief relief) =>
+        relief == Relief.Hill ? 2 : relief == Relief.Mountain ? 4 : 0;
+
+    // Végétation dense : cache ce qui est derrière.
+    public static bool BlocksSight(Biome biome) =>
+        biome == Biome.Forest || biome == Biome.Taiga || biome == Biome.Jungle;
+
+    // Hauteur d'une case comme obstacle à la vue.
+    public static int ObstacleHeight(Relief relief, Biome biome) =>
+        SightHeight(relief) + (BlocksSight(biome) ? 1 : 0);
+
     public static Biome WaterBiome(bool touchesLand) => touchesLand ? Biome.Coast : Biome.Ocean;
 
     // Cases d'eau qui touchent au moins une terre (voisins fournis par l'appelant, hors carte ignorés).

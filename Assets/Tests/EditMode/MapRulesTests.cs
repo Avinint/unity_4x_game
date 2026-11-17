@@ -176,4 +176,14 @@ public class MapRulesTests
         Assert.AreEqual(Biome.Coast, MapRules.WaterBiome(true));
         Assert.AreEqual(Biome.Ocean, MapRules.WaterBiome(false));
     }
+
+    [Test]
+    public void ObstacleHeight_ReliefPlusDenseVegetation()
+    {
+        Assert.AreEqual(0, MapRules.ObstacleHeight(Relief.Flat, Biome.Plain));
+        Assert.AreEqual(1, MapRules.ObstacleHeight(Relief.Flat, Biome.Forest));
+        Assert.AreEqual(2, MapRules.ObstacleHeight(Relief.Hill, Biome.Plain));
+        Assert.AreEqual(3, MapRules.ObstacleHeight(Relief.Hill, Biome.Taiga));
+        Assert.AreEqual(4, MapRules.ObstacleHeight(Relief.Mountain, Biome.Plain));
+    }
 }

@@ -141,6 +141,19 @@ public class HexGrid : MonoBehaviour
         return cells;
     }
 
+    // Cases existantes vues depuis center dans un rayon, selon la ligne de vue (relief, forêts).
+    public List<Vector2Int> CellsInSight(Vector2Int center, int radius)
+    {
+        int eye = Tiles.TryGetValue(center, out HexTile from) ? MapRules.SightHeight(from.Relief) : 0;
+        return LineOfSight.Visible(center, CellsInRange(center, radius), ObstacleAt, SurfaceAt, eye);
+    }
+
+    private int ObstacleAt(Vector2Int axial) =>
+        Tiles.TryGetValue(axial, out HexTile tile) ? MapRules.ObstacleHeight(tile.Relief, tile.Biome) : 0;
+
+    private int SurfaceAt(Vector2Int axial) =>
+        Tiles.TryGetValue(axial, out HexTile tile) ? MapRules.SightHeight(tile.Relief) : 0;
+
     // Rectangle (x, z) couvrant les centres des cases, en coordonnées monde.
     public Rect WorldBounds
     {

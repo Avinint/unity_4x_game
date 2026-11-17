@@ -141,7 +141,7 @@ public class Unit : MonoBehaviour
         if (Owner == null || type == null) return;
         var fog = GameManager.Instance.Fog;
         if (seenCells != null) fog.RemoveWatcher(Owner, seenCells);
-        seenCells = tile.Grid.CellsInRange(tile.AxialCoordinates, type.SightRadius);
+        seenCells = tile.Grid.CellsInSight(tile.AxialCoordinates, type.SightRadius);
         fog.AddWatcher(Owner, seenCells);
     }
 }

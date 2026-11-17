@@ -237,6 +237,20 @@ public static class HexMetrics
         return roundedCoordinates;
     }
 
+    // Cases traversées par la ligne droite de a à b, a et b compris (une case par pas).
+    // nudge : léger décalage pour trancher quand la ligne longe une arête (signe + ou − : un côté ou l'autre).
+    public static List<Vector2Int> AxialLine(Vector2Int a, Vector2Int b, float nudge = 1e-6f)
+    {
+        int n = AxialDistance(a, b);
+        var offset = new Vector3(1f, 2f, -3f) * nudge;
+        Vector3 ca = (Vector3)AxialToCube(a) + offset;
+        Vector3 cb = (Vector3)AxialToCube(b) + offset;
+        var line = new List<Vector2Int>(n + 1);
+        for (int i = 0; i <= n; i++)
+            line.Add(CubeToAxial(CubeRound(n == 0 ? ca : Vector3.Lerp(ca, cb, (float)i / n))));
+        return line;
+    }
+
     public static Vector2Int AxialRound(Vector2Int coordinates)
     {
         return CubeToAxial(CubeRound(AxialToCube(coordinates.x, coordinates.y)));
