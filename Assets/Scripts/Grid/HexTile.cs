@@ -48,6 +48,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         IsDiscovered = true;
         if (terrain != null) Reveal();
         foreach (var go in units) UpdateUnitVisibility(go);
+        if (Grid != null) Grid.OnTileDiscovered(this);
     }
 
     public void Reveal()

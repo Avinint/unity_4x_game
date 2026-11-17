@@ -160,6 +160,17 @@ public class HexMetricsTests
     }
 
     [Test]
+    public void SharedEdge_IsTheCommonSideOfTwoNeighbours()
+    {
+        Vector3 a = HexMetrics.Center(HexSize, 2, 2, HexOrientation.PointyTop);
+        Vector3 b = HexMetrics.Center(HexSize, 3, 2, HexOrientation.PointyTop);   // voisine à l'est
+        var (p, q) = HexMetrics.SharedEdge(a, b, HexSize, HexOrientation.PointyTop);
+
+        Assert.AreEqual(HexSize, Vector3.Distance(p, q), 0.001f);                   // une arête = un côté
+        Assert.AreEqual(0f, ((a + b) / 2f - (p + q) / 2f).magnitude, 0.001f);     // au milieu des deux centres
+    }
+
+    [Test]
     public void AxialLine_Straight_ListsEveryCell()
     {
         var line = HexMetrics.AxialLine(Vector2Int.zero, new Vector2Int(3, 0));

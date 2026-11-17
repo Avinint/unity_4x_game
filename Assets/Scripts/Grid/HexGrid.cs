@@ -28,6 +28,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private Transform debugPrefab;
     
     private MapGenerator mapGenerator;
+    private RiverView riverView;
 
     private Task<Dictionary<Vector2Int, HexTile>> hexGenerationTask;
     // TODO: Methods to get, add, change, and remove hexes
@@ -75,6 +76,8 @@ public class HexGrid : MonoBehaviour
             BatchSize = 1;
         gridOrigin = transform.position;
         mapGenerator = FindAnyObjectByType<MapGenerator>();
+        riverView = new GameObject("Rivers").AddComponent<RiverView>();
+        riverView.transform.SetParent(transform, false);
     }
 
     private void OnEnable()
@@ -97,12 +100,25 @@ public class HexGrid : MonoBehaviour
         MouseController.Instance.OnMouseMoving += OnMouseMove;
         MouseController.Instance.onMouseExit += OnMouseLeaveGrid;
         OnTileInstancesGenerated += ToggleGizmo;
-
+        OnTileInstancesGenerated += BuildRivers;
     }
 
     private void ToggleGizmo()
     {
         displayGizmo = !displayGizmo;
+    }
+
+    // Cases instanciées : on trace les rivières calculées par MapGenerator.
+    private void BuildRivers()
+    {
+        if (riverView != null && mapGenerator != null && mapGenerator.RiverEdges != null)
+            riverView.Build(this, mapGenerator.RiverEdges);
+    }
+
+    // Appelé par HexTile.Discover : les rivières de cette case apparaissent.
+    public void OnTileDiscovered(HexTile tile)
+    {
+        if (riverView != null) riverView.Reveal(tile);
     }
 
     private void OnDisable()
@@ -119,6 +135,8 @@ public class HexGrid : MonoBehaviour
 
         MouseController.Instance.OnMouseMoving -= OnMouseMove;
         MouseController.Instance.onMouseExit -= OnMouseLeaveGrid;
+        OnTileInstancesGenerated -= ToggleGizmo;
+        OnTileInstancesGenerated -= BuildRivers;
     }
 
     public bool TryGetTile(int x, int y, out HexTile tile)

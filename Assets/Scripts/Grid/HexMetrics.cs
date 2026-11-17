@@ -26,6 +26,17 @@ public static class HexMetrics
         return corners;
     }
 
+    // Les deux coins de la case de centre `a` partagés avec sa voisine de centre `b` (à la hauteur de a).
+    // Ce sont les deux coins qui avancent le plus vers b.
+    public static (Vector3, Vector3) SharedEdge(Vector3 a, Vector3 b, float hexSize, HexOrientation orientation)
+    {
+        Vector3[] corners = Corners(hexSize, orientation);
+        Vector3 dir = b - a;
+        dir.y = 0f;
+        System.Array.Sort(corners, (u, v) => Vector3.Dot(v, dir).CompareTo(Vector3.Dot(u, dir)));
+        return (a + corners[0], a + corners[1]);
+    }
+
     public static Vector3 Corner(float hexSize, HexOrientation orientation, int index)
     {
         float angle = 60f * -index;

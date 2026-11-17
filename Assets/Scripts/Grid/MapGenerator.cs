@@ -51,7 +51,7 @@ public class MapGenerator : MonoBehaviour
 
     public MapCell[,] Cells { get; private set; }
 
-    public HashSet<RiverEdge> RiverEdges { get; private set; }   // rivières sur les arêtes (axial), pas encore affichées
+    public HashSet<RiverEdge> RiverEdges { get; private set; }   // rivières sur les arêtes (axial), tracées par RiverView
 
     public Color[] ColorMap { get; private set; }
 
