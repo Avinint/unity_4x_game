@@ -1,0 +1,89 @@
+using System.Collections.Generic;
+using NUnit.Framework;
+using UnityEngine;
+
+public class HydrologyTests
+{
+    // Carte d'une seule rangée : voisins = gauche et droite.
+    private static IEnumerable<Vector2Int> Line(int x, int y)
+    {
+        yield return new Vector2Int(x - 1, y);
+        yield return new Vector2Int(x + 1, y);
+    }
+
+    private static float[,] Row(params float[] v)
+    {
+        var a = new float[v.Length, 1];
+        for (int i = 0; i < v.Length; i++) a[i, 0] = v[i];
+        return a;
+    }
+
+    private static Relief[,] Reliefs(params Relief[] v)
+    {
+        var a = new Relief[v.Length, 1];
+        for (int i = 0; i < v.Length; i++) a[i, 0] = v[i];
+        return a;
+    }
+
+    private const Relief W = Relief.Water, F = Relief.Flat, M = Relief.Mountain;
+
+    [Test]
+    public void Slope_FlowsToSea_AndAccumulates()
+    {
+        var (down, flow) = Hydrology.Flow(Row(0f, 0.5f, 0.6f, 0.7f), Reliefs(W, F, F, F), Row(0f, 1f, 1f, 1f), Line);
+
+        Assert.AreEqual(new Vector2Int(0, 0), down[1, 0]);
+        Assert.AreEqual(new Vector2Int(1, 0), down[2, 0]);
+        Assert.AreEqual(3f, flow[1, 0], 1e-4f);   // toute la pluie arrive au bord de la mer
+        Assert.AreEqual(1f, flow[3, 0], 1e-4f);   // source
+    }
+
+    [Test]
+    public void Pit_DrainsThroughLowestPass()
+    {
+        // La cuvette (0.3) est plus basse que le col (0.6) : elle se déverse quand même vers la mer.
+        var (down, flow) = Hydrology.Flow(Row(0f, 0.6f, 0.3f, 0.8f), Reliefs(W, F, F, F), Row(0f, 1f, 1f, 1f), Line);
+
+        Assert.AreEqual(new Vector2Int(1, 0), down[2, 0]);
+        Assert.AreEqual(3f, flow[1, 0], 1e-4f);
+    }
+
+    [Test]
+    public void NoWater_NoDownstream()
+    {
+        var (down, flow) = Hydrology.Flow(Row(0.5f, 0.6f), Reliefs(F, F), Row(1f, 1f), Line);
+
+        Assert.AreEqual(Hydrology.NoDownstream, down[0, 0]);
+        Assert.AreEqual(1f, flow[0, 0], 1e-4f);
+    }
+
+    [Test]
+    public void Classify_StrongestFlowsAreRivers_MountainNeverNavigable()
+    {
+        var s = new MapRulesSettings { RiverFraction = 0.5f, NavigableFraction = 0.25f };
+        var kind = Hydrology.Classify(Row(0f, 4f, 3f, 2f, 1f), Reliefs(W, F, M, F, F), s);
+
+        Assert.AreEqual(RiverKind.None, kind[0, 0]);        // eau
+        Assert.AreEqual(RiverKind.Navigable, kind[1, 0]);   // plus fort débit
+        Assert.AreEqual(RiverKind.River, kind[2, 0]);       // fort, mais montagne
+        Assert.AreEqual(RiverKind.None, kind[4, 0]);        // faible
+    }
+
+    [Test]
+    public void Navigable_DownstreamIsNavigableOrSea()
+    {
+        var reliefs = Reliefs(W, F, F, F, F, F);
+        var (down, flow) = Hydrology.Flow(Row(0f, .1f, .2f, .3f, .4f, .5f), reliefs, Row(0f, 1f, 1f, 1f, 1f, 1f), Line);
+        var kind = Hydrology.Classify(flow, reliefs, new MapRulesSettings { RiverFraction = 0.6f, NavigableFraction = 0.4f });
+
+        int navigable = 0;
+        for (int x = 1; x < 6; x++)
+        {
+            if (kind[x, 0] != RiverKind.Navigable) continue;
+            navigable++;
+            var d = down[x, 0];
+            Assert.IsTrue(reliefs[d.x, 0] == Relief.Water || kind[d.x, 0] == RiverKind.Navigable);
+        }
+        Assert.Greater(navigable, 0);
+    }
+}

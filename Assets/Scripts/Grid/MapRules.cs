@@ -30,6 +30,10 @@ public class MapRulesSettings
     [HideInInspector] public float DryBelow = 0.33f, WetAbove = 0.66f, MarshAbove = 0.8f;
     [Range(0f, 1f)] public float LowlandFraction = 0.2f;     // terres plates les plus basses où un marais est possible
 
+    [Header("Fleuves (proportions des terres, par débit)")]
+    [Range(0f, 1f)] public float RiverFraction = 0.15f;       // plus forts débits : rivière
+    [Range(0f, 1f)] public float NavigableFraction = 0.03f;   // plus forts de tous : fleuve navigable
+
     public MapRulesSettings Clone() => (MapRulesSettings)MemberwiseClone();
 }
 

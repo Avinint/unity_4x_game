@@ -181,6 +181,13 @@ public class MapGenerator : MonoBehaviour
                 relief[x, y] = MapRules.ReliefAt(altitude[x, y], sea, hill, mountain);
         bool[,] coast = MapRules.CoastMask(relief, (x, y) => Neighbours(x, y, orientation));
 
+        // Écoulement : case aval, débit (pluie = humidité), puis rivière / fleuve navigable.
+        var (downstream, flow) = Hydrology.Flow(altitude, relief, humidity, (x, y) => Neighbours(x, y, orientation));
+        RiverKind[,] river = Hydrology.Classify(flow, relief, Rules);
+        int rivers = 0, navigable = 0;
+        foreach (var k in river) { if (k == RiverKind.River) rivers++; else if (k == RiverKind.Navigable) navigable++; }
+        Debug.Log($"MapGenerator : {rivers} cases de rivière, {navigable} de fleuve navigable");
+
         // Températures des terres, puis seuils de climat en proportions.
         var temperature = new float[Width, Height];
         var landTemps = new List<float>();
@@ -206,7 +213,8 @@ public class MapGenerator : MonoBehaviour
                 else
                     biome = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
                 TerrainType terrain = relief[x, y] == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
-                cells[x, y] = new MapCell { Relief = relief[x, y], Biome = biome, Terrain = terrain };
+                cells[x, y] = new MapCell { Relief = relief[x, y], Biome = biome, Terrain = terrain,
+                                            Flow = flow[x, y], Downstream = downstream[x, y], River = river[x, y] };
             }
         return cells;
     }
@@ -261,4 +269,7 @@ public struct MapCell
     public Relief Relief;
     public Biome Biome;
     public TerrainType Terrain;
+    public float Flow;              // débit cumulé (pluie = humidité)
+    public Vector2Int Downstream;   // case aval (offset), Hydrology.NoDownstream si aucune
+    public RiverKind River;         // rivière / fleuve navigable (pas encore affiché)
 }
