@@ -244,9 +244,10 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     // Coût du biome, +1 en colline.
     public int MovementCost => (TerrainType != null ? TerrainType.MovementCost : 1) + (Relief == Relief.Hill ? 1 : 0);
 
-    // Selon ce que sait le joueur : une case inexplorée est supposée praticable, au coût 1.
-    public bool IsWalkableFor(Player owner, bool explored) =>
-        !explored || (IsLand() && !HasUnitOfOtherPlayer(owner));
+    // Selon ce que sait le joueur : une case inexplorée est supposée praticable, au coût 1 ;
+    // une unité d'un autre joueur ne bloque que si la case est vue en ce moment (sinon le joueur ne la connaît pas).
+    public bool IsWalkableFor(Player owner, bool explored, bool seenNow) =>
+        !explored || (IsLand() && !(seenNow && HasUnitOfOtherPlayer(owner)));
 
     public int MovementCostFor(bool explored) => explored ? MovementCost : 1;
 

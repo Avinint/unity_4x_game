@@ -96,8 +96,10 @@ public class SelectionController : Singleton<SelectionController>
     // Selon la connaissance du propriétaire de l'unité, pas selon l'affichage.
     private bool Knows(Vector2Int axial) => GameManager.Instance.Fog.IsExplored(SelectedUnit.Owner, axial);
 
+    private bool Sees(Vector2Int axial) => GameManager.Instance.Fog.IsVisible(SelectedUnit.Owner, axial);
+
     private bool IsWalkable(Vector2Int axial) =>
-        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsWalkableFor(SelectedUnit.Owner, Knows(axial));
+        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.IsWalkableFor(SelectedUnit.Owner, Knows(axial), Sees(axial));
 
     // Seule une unité du joueur courant, à l'arrêt, reçoit des ordres.
     private bool CanCommand() =>

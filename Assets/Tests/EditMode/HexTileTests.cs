@@ -318,7 +318,7 @@ public class HexTileTests
         var tile = NewTile();
         tile.Relief = Relief.Water;
 
-        Assert.IsTrue(tile.IsWalkableFor(NewPlayer(), explored: false));
+        Assert.IsTrue(tile.IsWalkableFor(NewPlayer(), explored: false, seenNow: false));
     }
 
     [Test]
@@ -327,11 +327,11 @@ public class HexTileTests
         var tile = NewTile();
         tile.Relief = Relief.Water;
 
-        Assert.IsFalse(tile.IsWalkableFor(NewPlayer(), explored: true));
+        Assert.IsFalse(tile.IsWalkableFor(NewPlayer(), explored: true, seenNow: true));
     }
 
     [Test]
-    public void IsWalkableFor_ExploredForeignUnit_IsFalse()
+    public void IsWalkableFor_SeenForeignUnit_IsFalse()
     {
         var tile = NewTile();
         tile.Relief = Relief.Flat;
@@ -339,7 +339,19 @@ public class HexTileTests
         unitObject.GetComponent<Unit>().Owner = NewPlayer();
         tile.AddUnit(unitObject);
 
-        Assert.IsFalse(tile.IsWalkableFor(NewPlayer(), explored: true));
+        Assert.IsFalse(tile.IsWalkableFor(NewPlayer(), explored: true, seenNow: true));
+    }
+
+    [Test]
+    public void IsWalkableFor_ForeignUnitOnTileNotSeen_IsTrue()
+    {
+        var tile = NewTile();
+        tile.Relief = Relief.Flat;
+        NewUnit();
+        unitObject.GetComponent<Unit>().Owner = NewPlayer();
+        tile.AddUnit(unitObject);
+
+        Assert.IsTrue(tile.IsWalkableFor(NewPlayer(), explored: true, seenNow: false));
     }
 
     [Test]
