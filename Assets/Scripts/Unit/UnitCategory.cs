@@ -10,15 +10,7 @@ public enum UnitCategory
 
 public static class UnitCategoryExtensions
 {
-    // Nom affiché en jeu (français). À remplacer par le package Localization si le jeu est traduit.
-    public static string DisplayName(this UnitCategory category) => category switch
-    {
-        UnitCategory.Civilian => "civil",
-        UnitCategory.Melee => "mêlée",
-        UnitCategory.Ranged => "tir",
-        UnitCategory.Cavalry => "cavalerie",
-        UnitCategory.Siege => "siège",
-        UnitCategory.Recon => "éclaireur",
-        _ => category.ToString(),
-    };
+    // Nom affiché, traduit (table Units, clé "category.melee"…).
+    public static string DisplayName(this UnitCategory category) =>
+        L10n.Get("Units", "category." + category.ToString().ToLower());
 }

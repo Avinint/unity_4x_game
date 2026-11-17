@@ -35,6 +35,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377150966300784
+  - m_Id: 95636222595072
+    m_Key: player.default_name
+    m_Metadata:
+      m_Items:
+      - rid: 7013377159152795720
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -62,3 +67,7 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: '{0} = points de mouvement restants, {1} = maximum'
+    - rid: 7013377159152795720
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "{0} = num\xE9ro du joueur ; nom provisoire avant les noms de nations"

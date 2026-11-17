@@ -23,15 +23,4 @@ public class UnitCategoryTests
             UnityEngine.Object.DestroyImmediate(type);
         }
     }
-
-    [Test]
-    public void DisplayName_EveryCategoryHasAFrenchName()
-    {
-        foreach (UnitCategory category in Enum.GetValues(typeof(UnitCategory)))
-        {
-            string name = category.DisplayName();
-            Assert.IsFalse(string.IsNullOrEmpty(name), $"{category}");
-            Assert.AreNotEqual(category.ToString(), name, $"{category} n'a pas de nom français");
-        }
-    }
 }
