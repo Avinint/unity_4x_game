@@ -106,29 +106,50 @@ public class Unit : MonoBehaviour
 
     public bool IsMoving { get; private set; }
 
-    // Suit les points dans l'ordre, à vitesse constante.
+    // Case de l'unité, tenue à jour par HexTile.AddUnit / RemoveUnit.
+    public HexTile Tile { get; internal set; }
+
+    // Suit le chemin case par case. La case d'arrivée est réservée dès le départ ;
+    // si l'unité doit s'arrêter plus tôt, elle reprend la case où elle s'est arrêtée.
     public void MoveAlong(List<HexTile> path)
     {
-        if (IsMoving || path == null || path.Count == 0) return;
-        int cost = 0;
-        foreach (var tile in path) cost += tile.MovementCost;
-        MovementPoints = Mathf.Max(0, MovementPoints - cost);
-        StartCoroutine(MoveRoutine(path));
+        if (IsMoving || path == null || path.Count == 0 || Tile == null) return;
+        HexTile start = Tile;
+        start.RemoveUnit(gameObject);
+        path[path.Count - 1].AddUnit(gameObject);
+        StartCoroutine(MoveRoutine(start, path));
     }
 
+    // Peut-elle entrer dans la case voisine `next` ? Il reste un point, et la case, vue car voisine,
+    // est vraiment praticable : de la terre sans unité d'un autre joueur, découverte en route au besoin.
+    public bool CanEnter(HexTile next) =>
+        MovementPoints > 0 && next.IsWalkableFor(Owner, explored: true, seenNow: true);
+
     // Avance case par case ; à chaque case atteinte, l'unité révèle ce qu'elle voit.
-    private IEnumerator MoveRoutine(List<HexTile> path)
+    // Elle paie le vrai coût de chaque case et s'arrête si la suivante se révèle impraticable.
+    private IEnumerator MoveRoutine(HexTile start, List<HexTile> path)
     {
         IsMoving = true;
+        HexTile current = start;
         foreach (var tile in path)
         {
+            if (!CanEnter(tile)) break;
+            MovementPoints = Mathf.Max(0, MovementPoints - tile.MovementCost);
             Vector3 point = tile.CentrePosition;
             while (transform.position != point)
             {
                 transform.position = Vector3.MoveTowards(transform.position, point, moveSpeed * Time.deltaTime);
                 yield return null;
             }
+            current = tile;
             UpdateVision(tile);
+        }
+        // Arrêt avant la case réservée : l'unité reprend la case atteinte.
+        HexTile end = path[path.Count - 1];
+        if (current != end)
+        {
+            end.RemoveUnit(gameObject);
+            current.AddUnit(gameObject);
         }
         IsMoving = false;
     }

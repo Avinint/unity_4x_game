@@ -4,7 +4,8 @@ using UnityEngine;
 public class SelectionController : Singleton<SelectionController>
 {
     public Unit SelectedUnit { get; private set; }
-    public HexTile SelectedTile { get; private set; }
+    // Case de l'unité sélectionnée (suit l'unité, y compris quand elle s'arrête plus tôt que prévu).
+    public HexTile SelectedTile => SelectedUnit != null ? SelectedUnit.Tile : null;
 
     private HexGrid Grid => GameManager.Instance.HexGrid;
 
@@ -54,7 +55,6 @@ public class SelectionController : Singleton<SelectionController>
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
         SelectedUnit = unit;
         SelectedUnit.Select();
-        SelectedTile = tile;
 
         if (Grid.Selector != null)
         {
@@ -76,7 +76,6 @@ public class SelectionController : Singleton<SelectionController>
         int reachable = StopCount(path, SelectedUnit.MovementPoints);
         if (reachable == 0) return;
         if (path.Count > reachable) path.RemoveRange(reachable, path.Count - reachable);
-        Grid.TryGetTileAxial(path[path.Count - 1], out HexTile end);
 
         var steps = new List<HexTile>();
         foreach (var axial in path)
@@ -85,10 +84,7 @@ public class SelectionController : Singleton<SelectionController>
             steps.Add(step);
         }
 
-        // La case de l'unité change dès le départ.
-        SelectedTile.RemoveUnit(SelectedUnit.gameObject);
-        end.AddUnit(SelectedUnit.gameObject);
-        SelectedTile = end;
+        // L'unité change de case elle-même (réservée dès le départ, corrigée si elle s'arrête plus tôt).
         SelectedUnit.MoveAlong(steps);
         Grid.UpdateHoverMarker();
     }
@@ -178,7 +174,6 @@ public class SelectionController : Singleton<SelectionController>
         if (SelectedUnit == null) return;
         SelectedUnit.Deselect();
         SelectedUnit = null;
-        SelectedTile = null;
 
         if (Grid.Selector != null) Grid.Selector.SetActive(false);
 

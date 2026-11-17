@@ -279,6 +279,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     public void AddUnit(GameObject unit)
     {
         units.Add(unit);
+        if (unit != null && unit.TryGetComponent(out Unit u)) u.Tile = this;
         UpdateUnitVisibility(unit);
     }
 
@@ -294,6 +295,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     public void RemoveUnit(GameObject unit)
     {
         units.Remove(unit);
+        if (unit != null && unit.TryGetComponent(out Unit u) && u.Tile == this) u.Tile = null;
     }
 
     // Vrai si la case porte une unité d'un autre joueur que `player`.
