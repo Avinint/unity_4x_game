@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Units Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Units
+  m_TableCollectionNameGuidString: bf77c86e4634b5547ad81541d7ad4f22
+  m_Entries:
+  - m_Id: 630411264
+    m_Key: category.civilian
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300773
+  - m_Id: 672354304
+    m_Key: category.melee
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300774
+  - m_Id: 672354305
+    m_Key: category.ranged
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300775
+  - m_Id: 672354306
+    m_Key: category.cavalry
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300776
+  - m_Id: 672354307
+    m_Key: category.siege
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300777
+  - m_Id: 672354308
+    m_Key: category.recon
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300778
+  - m_Id: 672354309
+    m_Key: unit.settler
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300779
+  - m_Id: 672354310
+    m_Key: unit.warrior
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300780
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 7013377150966300772
+  references:
+    version: 2
+    RefIds:
+    - rid: 7013377150966300772
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1794930207751
+    - rid: 7013377150966300773
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Cat\xE9gorie d'unit\xE9, entre parenth\xE8ses apr\xE8s le nom"
+    - rid: 7013377150966300774
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Cat\xE9gorie d'unit\xE9, entre parenth\xE8ses apr\xE8s le nom"
+    - rid: 7013377150966300775
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Cat\xE9gorie d'unit\xE9, entre parenth\xE8ses apr\xE8s le nom"
+    - rid: 7013377150966300776
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Cat\xE9gorie d'unit\xE9, entre parenth\xE8ses apr\xE8s le nom"
+    - rid: 7013377150966300777
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Cat\xE9gorie d'unit\xE9, entre parenth\xE8ses apr\xE8s le nom"
+    - rid: 7013377150966300778
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Cat\xE9gorie d'unit\xE9, entre parenth\xE8ses apr\xE8s le nom"
+    - rid: 7013377150966300779
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Nom d'unit\xE9 : civil qui fonde les villes"
+    - rid: 7013377150966300780
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Nom d'unit\xE9 : guerrier de m\xEAl\xE9e de base"

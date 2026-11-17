@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: UI
+  m_TableCollectionNameGuidString: 2be7382dca14bb84586ea66971b6914e
+  m_Entries:
+  - m_Id: 2534625280
+    m_Key: hud.turn
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300781
+  - m_Id: 2664648704
+    m_Key: hud.turn_player
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300782
+  - m_Id: 2668843008
+    m_Key: hud.unit_with_category
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300783
+  - m_Id: 2668843009
+    m_Key: hud.movement
+    m_Metadata:
+      m_Items:
+      - rid: 7013377150966300784
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 7013377150966300771
+  references:
+    version: 2
+    RefIds:
+    - rid: 7013377150966300771
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1794930207113
+    - rid: 7013377150966300781
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "{0} = num\xE9ro du tour"
+    - rid: 7013377150966300782
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "{0} = num\xE9ro du tour, {1} = nom du joueur courant"
+    - rid: 7013377150966300783
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "{0} = nom de l'unit\xE9, {1} = sa cat\xE9gorie (minuscule)"
+    - rid: 7013377150966300784
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: '{0} = points de mouvement restants, {1} = maximum'
