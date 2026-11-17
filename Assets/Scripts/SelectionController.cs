@@ -72,8 +72,9 @@ public class SelectionController : Singleton<SelectionController>
         List<Vector2Int> path = PathTo(HoveredTile());
         if (path == null) return;
 
-        // On s'arrête là où les points s'épuisent (coût du terrain).
-        int reachable = PathFinder.ReachableCount(StepCosts(path), SelectedUnit.MovementPoints);
+        // On s'arrête là où les points s'épuisent, sur une case libre (empilement).
+        int reachable = StopCount(path, SelectedUnit.MovementPoints);
+        if (reachable == 0) return;
         if (path.Count > reachable) path.RemoveRange(reachable, path.Count - reachable);
         Grid.TryGetTileAxial(path[path.Count - 1], out HexTile end);
 
@@ -106,12 +107,20 @@ public class SelectionController : Singleton<SelectionController>
     private List<Vector2Int> PathTo(HexTile target)
     {
         if (SelectedTile == null || target == null || target == SelectedTile) return null;
+        if (!target.CanStop(SelectedUnit)) return null;   // case pleine : on peut la traverser, pas s'y arrêter
         var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable, StepCost);
         return path != null && path.Count > 0 ? path : null;
     }
 
     private int StepCost(Vector2Int axial) =>
         Grid.TryGetTileAxial(axial, out HexTile tile) ? tile.MovementCostFor(Knows(axial)) : 1;
+
+    // Cases parcourues ce tour-ci : limitées par les points, puis recul jusqu'à une case où l'unité peut s'arrêter.
+    private int StopCount(List<Vector2Int> path, int points) =>
+        PathFinder.LastStop(PathFinder.ReachableCount(StepCosts(path), points), i => CanStopAt(path[i]));
+
+    private bool CanStopAt(Vector2Int axial) =>
+        Grid.TryGetTileAxial(axial, out HexTile tile) && tile.CanStop(SelectedUnit);
 
     private List<int> StepCosts(List<Vector2Int> path)
     {
@@ -159,7 +168,7 @@ public class SelectionController : Singleton<SelectionController>
             steps.Add(step.DisplayPosition);
         }
         if (forbidden) preview.ShowForbidden(SelectedTile.DisplayPosition, steps);
-        else preview.Show(SelectedTile.DisplayPosition, steps, PathFinder.ReachableCount(StepCosts(path), points));
+        else preview.Show(SelectedTile.DisplayPosition, steps, StopCount(path, points));
     }
 
     private void Deselect()

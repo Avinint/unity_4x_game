@@ -264,6 +264,54 @@ public class HexTileTests
         Assert.IsFalse(NewTile().HasUnitOfOtherPlayer(NewPlayer()));
     }
 
+    private Unit NewUnitOf(Player owner, UnitCategory category)
+    {
+        NewUnit();
+        var unit = unitObject.GetComponent<Unit>();
+        var type = ScriptableObject.CreateInstance<UnitType>();
+        typeof(UnitType).GetField("<Category>k__BackingField",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(type, category);
+        unit.type = type;
+        unit.Owner = owner;
+        return unit;
+    }
+
+    [Test]
+    public void CanStop_EmptyTile_IsTrue()
+    {
+        Assert.IsTrue(NewTile().CanStop(NewUnitOf(NewPlayer(), UnitCategory.Melee)));
+    }
+
+    [Test]
+    public void CanStop_OwnMilitaryAlreadyThere_IsFalse()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        tile.AddUnit(NewUnitOf(me, UnitCategory.Melee).gameObject);
+
+        Assert.IsFalse(tile.CanStop(NewUnitOf(me, UnitCategory.Ranged)));
+    }
+
+    [Test]
+    public void CanStop_OwnCivilianThere_MilitaryCanStop()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        tile.AddUnit(NewUnitOf(me, UnitCategory.Civilian).gameObject);
+
+        Assert.IsTrue(tile.CanStop(NewUnitOf(me, UnitCategory.Melee)));
+    }
+
+    [Test]
+    public void CanStop_UnitAlreadyOnTile_IgnoresItself()
+    {
+        var tile = NewTile();
+        var unit = NewUnitOf(NewPlayer(), UnitCategory.Melee);
+        tile.AddUnit(unit.gameObject);
+
+        Assert.IsTrue(tile.CanStop(unit));
+    }
+
     [Test]
     public void IsWalkableFor_Unexplored_IsTrueEvenOnWater()
     {

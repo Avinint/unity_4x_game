@@ -51,7 +51,8 @@ Jeu 4X heroic fantasy réaliste sous Unity. Langue de travail : français, répo
 ## Règles de jeu décidées
 - Une unité ne peut ni s'arrêter sur la case d'une unité d'un autre joueur, ni la traverser, sauf si un événement change la règle (alliance). Code : `IsWalkable` exclut `HexTile.HasUnitOfOtherPlayer(owner)` (testé) ; l'aperçu montre ces cases en rouge. Petite fuite connue : testé sur toute case explorée, même pas vue en ce moment (à limiter aux cases vues).
 - Ordre vers la case d'une unité d'un autre joueur = attaque (à concevoir avec le combat : unité civile / militaire, dégâts, riposte). En attendant, refusé.
-- À décider : limite d'empilement (piste : une unité civile et une unité militaire max par case) ; zones de contrôle (plus tard).
+- Empilement (comme Civ 5 / 6) : au plus une unité civile et une militaire par joueur et par case (à ajuster plus tard). On peut traverser une case pleine de ses unités, pas s'y arrêter. Code : `HexTile.CanStop(unit)` (même propriétaire et même famille `IsMilitary`, l'unité elle-même ignorée, testé) ; case visée pleine = interdite (aperçu rouge, `PathTo` renvoie null) ; si les points s'épuisent sur une case pleine, l'unité s'arrête sur la dernière case libre (`PathFinder.LastStop`, testé, partagé par `Command` et l'aperçu via `StopCount`). Plus tard : échange de places entre deux unités amies voisines (Civ 6), formations.
+- À décider : zones de contrôle (plus tard).
 
 ## Points fragiles connus
 - `BaseUnitState` : classe simple (plus de `Singleton`/`MonoBehaviour`), états créés avec `new`. `Unit` a un `State` et un `ChangeState` (Idle / Selected utilisés, les autres états sont vides).

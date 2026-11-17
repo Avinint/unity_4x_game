@@ -133,4 +133,16 @@ public class PathFinderTests
     {
         Assert.AreEqual(0, PathFinder.ReachableCount(new[] { 1, 1 }, 0));
     }
+
+    [Test]
+    public void LastStop_AllFree_Unchanged() =>
+        Assert.AreEqual(3, PathFinder.LastStop(3, i => true));
+
+    [Test]
+    public void LastStop_LastTileFull_StepsBack() =>
+        Assert.AreEqual(1, PathFinder.LastStop(3, i => i == 0));   // cases 2 et 3 pleines : arrêt sur la 1re
+
+    [Test]
+    public void LastStop_NoFreeTile_IsZero() =>
+        Assert.AreEqual(0, PathFinder.LastStop(2, i => false));
 }

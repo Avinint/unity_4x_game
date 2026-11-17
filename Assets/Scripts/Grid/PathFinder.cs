@@ -66,6 +66,14 @@ public static class PathFinder
         return count;
     }
 
+    // Nombre de cases à parcourir en reculant depuis `count` jusqu'à une case où l'on peut s'arrêter
+    // (canStopAt(i) : arrêt possible sur la i-ème case du chemin). 0 si aucune.
+    public static int LastStop(int count, Func<int, bool> canStopAt)
+    {
+        while (count > 0 && !canStopAt(count - 1)) count--;
+        return count;
+    }
+
     // Plus petit coût estimé ; à égalité, la case la plus proche de la destination.
     private static Vector2Int Cheapest(List<Vector2Int> open, Dictionary<Vector2Int, int> costFromOrigin, Vector2Int destination)
     {

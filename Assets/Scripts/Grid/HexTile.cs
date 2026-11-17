@@ -304,6 +304,20 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         return false;
     }
 
+    // Empilement : au plus une unité civile et une militaire par joueur sur une case.
+    // Faux si une autre unité du même propriétaire et de la même famille s'y trouve déjà.
+    // Les unités des autres joueurs sont exclues ailleurs (IsWalkableFor).
+    public bool CanStop(Unit unit)
+    {
+        foreach (var go in units)
+            if (go != null && go.TryGetComponent(out Unit other) && other != unit
+                && other.Owner == unit.Owner && IsMilitary(other) == IsMilitary(unit))
+                return false;
+        return true;
+    }
+
+    private static bool IsMilitary(Unit unit) => unit.type != null && unit.type.IsMilitary;
+
     // Première unité de la case, en priorité celle de `owner` (null s'il n'y en a pas).
     public Unit GetFirstUnit(Player owner = null)
     {
