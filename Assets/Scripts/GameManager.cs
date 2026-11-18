@@ -131,6 +131,13 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    // Touche de débogage lue directement : pas d'action dans PlayerControls pour un outil provisoire.
+    private void Update()
+    {
+        if (Debug.isDebugBuild && Keyboard.current != null && Keyboard.current.f12Key.wasPressedThisFrame)
+            L10n.NextLocale();
+    }
+
     // Entrée : fin du tour du joueur local.
     public void ChangeTurn(InputAction.CallbackContext context)
     {
