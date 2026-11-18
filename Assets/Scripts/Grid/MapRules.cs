@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum Relief { Water, Flat, Hill, Mountain }
 
-public enum Biome { Ocean, Coast, Grassland, Plain, Desert, Forest, Taiga, Jungle, Tundra, Snow, Marsh, River }   // nouveaux biomes à la fin (numéros enregistrés)
+public enum Biome { Ocean, Coast, Grassland, Plain, Desert, Forest, Taiga, Jungle, Tundra, Snow, Marsh, River, Lake }   // nouveaux biomes à la fin (numéros enregistrés)
 
 // Seuils de génération (réglables dans l'Inspector de MapGenerator).
 [Serializable]
@@ -36,6 +36,7 @@ public class MapRulesSettings
     [Range(0f, 1f)] public float NavigableFraction = 0.03f;   // plus forts débits des cases : fleuve navigable
     [Min(1)] public int RiverMinLength = 3;                    // rivières plus courtes (en arêtes) supprimées
     [Min(1)] public int NavigableMinLength = 3;                // fleuves navigables plus courts (en cases) rendus à la terre
+    [Min(0)] public int LakeMaxSize = 6;                       // étendues d'eau de cette taille au plus (en cases) : lacs d'eau douce
 
     public MapRulesSettings Clone() => (MapRulesSettings)MemberwiseClone();
 }
@@ -139,6 +140,40 @@ public static class MapRules
         SightHeight(relief) + (BlocksSight(biome) ? 1 : 0);
 
     public static Biome WaterBiome(bool touchesLand) => touchesLand ? Biome.Coast : Biome.Ocean;
+
+    // Lacs : étendues d'eau (cases d'eau voisines entre elles) de maxSize cases au plus.
+    // Évite les « mers » d'une case au milieu des terres ; voisins fournis par l'appelant.
+    public static bool[,] LakeMask(Relief[,] relief, Func<int, int, IEnumerable<Vector2Int>> neighbours, int maxSize)
+    {
+        int w = relief.GetLength(0), h = relief.GetLength(1);
+        var lake = new bool[w, h];
+        var seen = new bool[w, h];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                if (seen[x, y] || relief[x, y] != Relief.Water) continue;
+                // Parcours de l'étendue d'eau qui contient (x, y).
+                var body = new List<Vector2Int>();
+                var stack = new Stack<Vector2Int>();
+                stack.Push(new Vector2Int(x, y));
+                seen[x, y] = true;
+                while (stack.Count > 0)
+                {
+                    var c = stack.Pop();
+                    body.Add(c);
+                    foreach (var n in neighbours(c.x, c.y))
+                    {
+                        if (n.x < 0 || n.x >= w || n.y < 0 || n.y >= h) continue;
+                        if (seen[n.x, n.y] || relief[n.x, n.y] != Relief.Water) continue;
+                        seen[n.x, n.y] = true;
+                        stack.Push(n);
+                    }
+                }
+                if (body.Count <= maxSize)
+                    foreach (var c in body) lake[c.x, c.y] = true;
+            }
+        return lake;
+    }
 
     // Cases d'eau qui touchent au moins une terre (voisins fournis par l'appelant, hors carte ignorés).
     public static bool[,] CoastMask(Relief[,] relief, Func<int, int, IEnumerable<Vector2Int>> neighbours)

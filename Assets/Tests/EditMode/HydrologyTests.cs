@@ -106,7 +106,8 @@ public class HydrologyTests
     public void KeepLongRivers_ShortRiver_BackToLand()
     {
         // 2 cases navigables (1, 2) avant la mer (0) : trop court pour 3.
-        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, false), Downs(-1, 0, 1, 2), 3);
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, false), Downs(-1, 0, 1, 2),
+            Bools(false, false, false, false), 3);
 
         Assert.IsFalse(kept[1, 0]);
         Assert.IsFalse(kept[2, 0]);
@@ -115,7 +116,8 @@ public class HydrologyTests
     [Test]
     public void KeepLongRivers_LongEnough_Kept()
     {
-        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true), Downs(-1, 0, 1, 2), 3);
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true), Downs(-1, 0, 1, 2),
+            Bools(false, false, false, false), 3);
 
         Assert.IsTrue(kept[1, 0] && kept[2, 0] && kept[3, 0]);
     }
@@ -124,8 +126,19 @@ public class HydrologyTests
     public void KeepLongRivers_ShortTributaryOfLongRiver_Kept()
     {
         // Fleuve 3 → 2 → 1 → mer ; affluent d'une case 4 → 1.
-        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true, true), Downs(-1, 0, 1, 2, 1), 3);
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true, true), Downs(-1, 0, 1, 2, 1),
+            Bools(false, false, false, false, false), 3);
 
         Assert.IsTrue(kept[4, 0]);
+    }
+
+    [Test]
+    public void KeepLongRivers_EndsInLake_BackToLand()
+    {
+        // Fleuve de 3 cases (1, 2, 3) assez long, mais il se jette dans un lac (0).
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true), Downs(-1, 0, 1, 2),
+            Bools(true, false, false, false), 3);
+
+        Assert.IsFalse(kept[1, 0] || kept[2, 0] || kept[3, 0]);
     }
 }

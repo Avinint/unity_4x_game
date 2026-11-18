@@ -1434,6 +1434,7 @@ MonoBehaviour:
     NavigableFraction: 0.03
     RiverMinLength: 3
     NavigableMinLength: 3
+    LakeMaxSize: 6
   BiomeTerrains:
   - Biome: 0
     Terrain: {fileID: 11400000, guid: 176646758c181274caa30aa60a96db14, type: 2}
@@ -1459,6 +1460,8 @@ MonoBehaviour:
     Terrain: {fileID: 11400000, guid: 7c7e6c8dcb69fd246af471ae3993888b, type: 2}
   - Biome: 11
     Terrain: {fileID: 11400000, guid: ed8aefbe5b8bc2f468054fa8dc9a9b41, type: 2}
+  - Biome: 12
+    Terrain: {fileID: 11400000, guid: d304e24107b633248a768e57ce69b736, type: 2}
   MountainTerrain: {fileID: 11400000, guid: c2cd1b213f826614ca761d8ab454d63a, type: 2}
 --- !u!1001 &1406913779
 PrefabInstance:

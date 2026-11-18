@@ -74,10 +74,10 @@ public static class Hydrology
         return navigable;
     }
 
-    // Retire les fleuves navigables trop courts. Un fleuve = toutes les cases qui descendent vers la même
-    // embouchure (dernière case navigable avant la mer) ; sa longueur = le plus long trajet jusqu'à elle,
-    // donc un petit affluent d'un grand fleuve est gardé.
-    public static bool[,] KeepLongRivers(bool[,] navigable, Vector2Int[,] downstream, int minLength)
+    // Retire les fleuves navigables trop courts ou qui finissent dans un lac (ils ne mènent pas à la mer).
+    // Un fleuve = toutes les cases qui descendent vers la même embouchure (dernière case navigable avant l'eau) ;
+    // sa longueur = le plus long trajet jusqu'à elle, donc un petit affluent d'un grand fleuve est gardé.
+    public static bool[,] KeepLongRivers(bool[,] navigable, Vector2Int[,] downstream, bool[,] lake, int minLength)
     {
         int w = navigable.GetLength(0), h = navigable.GetLength(1);
         var mouthOf = new Vector2Int[w, h];
@@ -94,7 +94,13 @@ public static class Hydrology
 
         var kept = new bool[w, h];
         foreach (var (x, y) in Cells(w, h))
-            kept[x, y] = navigable[x, y] && longest[mouthOf[x, y]] >= minLength;
+        {
+            if (!navigable[x, y]) continue;
+            var mouth = mouthOf[x, y];
+            var outlet = downstream[mouth.x, mouth.y];
+            bool intoLake = outlet != NoDownstream && lake[outlet.x, outlet.y];
+            kept[x, y] = longest[mouth] >= minLength && !intoLake;
+        }
         return kept;
     }
 

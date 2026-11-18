@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 
 public class MapRulesTests
 {
@@ -223,5 +225,48 @@ public class MapRulesTests
         var result = MapRules.AddRidges(altitude, noise, 0.5f, 0.5f);
 
         Assert.Greater(result[0, 0], result[1, 0]);
+    }
+
+    // Carte d'une seule rangée : voisins = gauche et droite.
+    private static IEnumerable<Vector2Int> Line(int x, int y)
+    {
+        yield return new Vector2Int(x - 1, y);
+        yield return new Vector2Int(x + 1, y);
+    }
+
+    private static Relief[,] Row(params Relief[] v)
+    {
+        var a = new Relief[v.Length, 1];
+        for (int i = 0; i < v.Length; i++) a[i, 0] = v[i];
+        return a;
+    }
+
+    [Test]
+    public void LakeMask_SmallWaterBody_IsLake()
+    {
+        var lake = MapRules.LakeMask(Row(Relief.Flat, Relief.Water, Relief.Flat), Line, 6);
+
+        Assert.IsTrue(lake[1, 0]);
+        Assert.IsFalse(lake[0, 0]);   // terre
+    }
+
+    [Test]
+    public void LakeMask_LargeWaterBody_IsSea()
+    {
+        var w = Relief.Water;
+        var lake = MapRules.LakeMask(Row(Relief.Flat, w, w, w, Relief.Flat), Line, 2);
+
+        Assert.IsFalse(lake[1, 0] || lake[2, 0] || lake[3, 0]);
+    }
+
+    [Test]
+    public void LakeMask_EachBodyMeasuredSeparately()
+    {
+        // Une case d'eau isolée (lac) et une étendue de 3 cases (mer, max 2).
+        var w = Relief.Water;
+        var lake = MapRules.LakeMask(Row(w, Relief.Flat, w, w, w), Line, 2);
+
+        Assert.IsTrue(lake[0, 0]);
+        Assert.IsFalse(lake[2, 0]);
     }
 }

@@ -184,11 +184,12 @@ public class MapGenerator : MonoBehaviour
             for (int x = 0; x < Width; x++)
                 relief[x, y] = MapRules.ReliefAt(altitude[x, y], sea, hill, mountain);
         bool[,] coast = MapRules.CoastMask(relief, (x, y) => Neighbours(x, y, orientation));
+        bool[,] lake = MapRules.LakeMask(relief, (x, y) => Neighbours(x, y, orientation), Rules.LakeMaxSize);
 
         // Écoulement de case en case : case aval, débit (pluie = humidité), puis fleuves navigables.
         var (downstream, flow) = Hydrology.Flow(altitude, relief, humidity, (x, y) => Neighbours(x, y, orientation));
         bool[,] navigable = Hydrology.Navigable(flow, relief, Rules);
-        navigable = Hydrology.KeepLongRivers(navigable, downstream, Rules.NavigableMinLength);
+        navigable = Hydrology.KeepLongRivers(navigable, downstream, lake, Rules.NavigableMinLength);
 
         // Températures des terres, puis seuils de climat en proportions.
         var temperature = new float[Width, Height];
@@ -215,6 +216,7 @@ public class MapGenerator : MonoBehaviour
                 Relief r = isNavigable ? Relief.Water : relief[x, y];
                 Biome biome;
                 if (isNavigable) biome = Biome.River;
+                else if (lake[x, y]) biome = Biome.Lake;
                 else if (r == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
                 else
                     biome = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);

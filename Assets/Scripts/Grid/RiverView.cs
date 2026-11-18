@@ -4,7 +4,6 @@ using UnityEngine;
 // Affiche les rivières d'arêtes : une ligne par arête, visible dès qu'une de ses deux rives est découverte.
 public class RiverView : MonoBehaviour
 {
-    [SerializeField] private float width = 0.5f;
     [SerializeField] private float heightOffset = 0.1f;
     [SerializeField] private Color color = new Color(0.30f, 0.55f, 0.90f, 1f);   // comme River.mat
 
@@ -12,7 +11,7 @@ public class RiverView : MonoBehaviour
     private readonly Dictionary<Vector2Int, List<LineRenderer>> byTile = new Dictionary<Vector2Int, List<LineRenderer>>();
     private Material material;
 
-    public void Build(HexGrid grid, IEnumerable<RiverEdge> edges)
+    public void Build(HexGrid grid, IEnumerable<RiverEdge> edges, float width)
     {
         Clear();
         if (material == null) material = new Material(Shader.Find("Sprites/Default"));

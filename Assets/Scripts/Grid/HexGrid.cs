@@ -59,6 +59,7 @@ public class HexGrid : MonoBehaviour
     [Header("Fleuves")]
     [SerializeField, Min(0)] private int riverCrossingCost = 3;   // surcoût pour franchir une rivière d'arête
     public int RiverCrossingCost => riverCrossingCost;
+    [SerializeField] private float riverWidth = 0.8f;   // largeur des rivières d'arêtes (0,5 : peu visibles dézoomé)
     private HashSet<RiverEdge> riverEdges = new HashSet<RiverEdge>();
 
     // Une rivière sépare-t-elle ces deux cases voisines ?
@@ -125,7 +126,7 @@ public class HexGrid : MonoBehaviour
     {
         if (mapGenerator == null || mapGenerator.RiverEdges == null) return;
         riverEdges = mapGenerator.RiverEdges;
-        if (riverView != null) riverView.Build(this, riverEdges);
+        if (riverView != null) riverView.Build(this, riverEdges, riverWidth);
     }
 
     // Appelé par HexTile.Discover : les rivières de cette case apparaissent.
