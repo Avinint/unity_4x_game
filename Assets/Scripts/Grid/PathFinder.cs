@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// A* sur coordonnées axiales, coût 1 par case par défaut, ou coût par pas.
+// A* sur coordonnées axiales : le plus court en cases, ou le moins de tours selon un coût par pas.
 public static class PathFinder
 {
     private static readonly Vector2Int[] Directions =
@@ -12,26 +12,43 @@ public static class PathFinder
 
     // Chemin de origin (exclue) à destination (incluse). Liste vide si origin == destination,
     // null si destination inaccessible. isPassable dit si une case existe et peut être traversée.
-    // Coût 1 par case.
+    // Le plus court en nombre de cases.
     public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination, Func<Vector2Int, bool> isPassable)
-        => FindPath(origin, destination, isPassable, _ => 1);
+        => Search(origin, destination, isPassable, 0, (score, _, _) => score + 1);
 
-    // stepCost(case) : coût pour entrer dans la case (≥ 1).
-    public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination,
-        Func<Vector2Int, bool> isPassable, Func<Vector2Int, int> stepCost)
-        => FindPath(origin, destination, isPassable, (_, to) => stepCost(to));
-
+    // Chemin qui prend le moins de tours, puis, à égalité, qui laisse le plus de points.
     // stepCost(depuis, vers) : coût du pas (≥ 1), par exemple plus cher à travers une rivière.
-    // Renvoie le chemin le moins coûteux.
+    // Même règle que le déplacement : on entre dans une case s'il reste au moins un point,
+    // les points ne descendent pas sous 0, et un nouveau tour rend maxPoints.
     public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination,
-        Func<Vector2Int, bool> isPassable, Func<Vector2Int, Vector2Int, int> stepCost)
+        Func<Vector2Int, bool> isPassable, Func<Vector2Int, Vector2Int, int> stepCost,
+        int startPoints, int maxPoints)
+    {
+        maxPoints = Mathf.Max(1, maxPoints);
+        // État (tour, points restants) résumé en un nombre, plus petit = meilleur :
+        // tour × (max + 1) + points déjà dépensés dans ce tour.
+        int PathScore(int turn, int points) => turn * (maxPoints + 1) + (maxPoints - points);
+        return Search(origin, destination, isPassable, PathScore(0, Mathf.Clamp(startPoints, 0, maxPoints)),
+            (score, from, to) =>
+            {
+                int turn = score / (maxPoints + 1);
+                int points = maxPoints - score % (maxPoints + 1);
+                if (points <= 0) { turn++; points = maxPoints; }   // plus de point : on attend le tour suivant
+                return PathScore(turn, Mathf.Max(0, points - stepCost(from, to)));
+            });
+    }
+
+    // A* : advance(score, depuis, vers) donne le score après un pas (il augmente d'au moins 1,
+    // donc la distance reste une bonne estimation).
+    private static List<Vector2Int> Search(Vector2Int origin, Vector2Int destination,
+        Func<Vector2Int, bool> isPassable, int startScore, Func<int, Vector2Int, Vector2Int, int> advance)
     {
         if (origin == destination) return new List<Vector2Int>();
         if (!isPassable(destination)) return null;
 
         var open = new List<Vector2Int> { origin };
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-        var costFromOrigin = new Dictionary<Vector2Int, int> { [origin] = 0 };
+        var costFromOrigin = new Dictionary<Vector2Int, int> { [origin] = startScore };
         var closed = new HashSet<Vector2Int>();
 
         while (open.Count > 0)
@@ -47,7 +64,7 @@ public static class PathFinder
                 Vector2Int next = current + dir;
                 if (closed.Contains(next) || !isPassable(next)) continue;
 
-                int cost = costFromOrigin[current] + stepCost(current, next);
+                int cost = advance(costFromOrigin[current], current, next);
                 if (costFromOrigin.TryGetValue(next, out int known) && cost >= known) continue;
 
                 costFromOrigin[next] = cost;

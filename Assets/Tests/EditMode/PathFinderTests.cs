@@ -94,10 +94,12 @@ public class PathFinderTests
     [Test]
     public void FindPath_PrefersCheaperDetour()
     {
-        // Direct : (1,0) coûte 5 puis (2,0) → 6. Détour par (0,1), (1,1), (2,0) → 3.
+        // 10 points, un seul tour : direct, (1,0) coûte 5 puis (2,0) → 6 ; détour par (0,1), (1,1), (2,0) → 3,
+        // même tour mais plus de points restants.
         var forest = new Vector2Int(1, 0);
         var origin = new Vector2Int(0, 0);
-        var path = PathFinder.FindPath(origin, new Vector2Int(2, 0), Grid(5, 2), c => c == forest ? 5 : 1);
+        var path = PathFinder.FindPath(origin, new Vector2Int(2, 0), Grid(5, 2),
+            (_, to) => to == forest ? 5 : 1, 10, 10);
 
         CollectionAssert.DoesNotContain(path, forest);
         Assert.AreEqual(3, path.Count);
@@ -105,15 +107,29 @@ public class PathFinderTests
     }
 
     [Test]
-    public void FindPath_DefaultCostUnchanged()
+    public void FindPath_FewestTurns_CrossesRiverRatherThanDetour()
+    {
+        // 1 point par tour. Traverser coûte 10 mais se fait en 1 tour (on entre avec 1 point) ;
+        // le détour par (1,0) ne coûte que 2 points mais prend 2 tours.
+        var origin = new Vector2Int(0, 1);
+        var target = new Vector2Int(1, 1);
+        var river = new RiverEdge(origin, target);
+        var path = PathFinder.FindPath(origin, target, Grid(5, 5),
+            (from, to) => new RiverEdge(from, to).Equals(river) ? 10 : 1, 1, 1);
+
+        CollectionAssert.AreEqual(new[] { target }, path);
+    }
+
+    [Test]
+    public void FindPath_FewestTurns_NoObstacle_LengthEqualsDistance()
     {
         var origin = new Vector2Int(1, 8);
         var destination = new Vector2Int(8, 1);
 
-        var withDefault = PathFinder.FindPath(origin, destination, Grid(10, 10));
-        var withOnes = PathFinder.FindPath(origin, destination, Grid(10, 10), _ => 1);
+        var path = PathFinder.FindPath(origin, destination, Grid(10, 10), (_, _) => 1, 2, 2);
 
-        CollectionAssert.AreEqual(withOnes, withDefault);
+        Assert.AreEqual(HexMetrics.AxialDistance(origin, destination), path.Count);
+        AssertContiguous(origin, path);
     }
 
     [Test]
@@ -137,11 +153,12 @@ public class PathFinderTests
     [Test]
     public void FindPath_StepCost_AvoidsExpensiveCrossing()
     {
-        // Rivière entre (0,1) et (1,1) : 10 pour la franchir ; le détour (3 pas) est moins cher.
+        // 20 points, un seul tour. Rivière entre (0,1) et (1,1) : 10 pour la franchir ;
+        // le détour (3 pas) arrive au même tour avec plus de points.
         var origin = new Vector2Int(0, 1);
         var river = new RiverEdge(origin, new Vector2Int(1, 1));
         var path = PathFinder.FindPath(origin, new Vector2Int(2, 1), Grid(5, 5),
-            (from, to) => new RiverEdge(from, to).Equals(river) ? 10 : 1);
+            (from, to) => new RiverEdge(from, to).Equals(river) ? 10 : 1, 20, 20);
 
         Assert.AreNotEqual(new Vector2Int(1, 1), path[0]);
         AssertContiguous(origin, path);

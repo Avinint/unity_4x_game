@@ -106,7 +106,9 @@ public class SelectionController : Singleton<SelectionController>
     {
         if (SelectedTile == null || target == null || target == SelectedTile) return null;
         if (!target.CanStop(SelectedUnit)) return null;   // case pleine : on peut la traverser, pas s'y arrêter
-        var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable, StepCost);
+        // Le moins de tours possible (traverser une rivière plutôt qu'un détour plus long en tours).
+        var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable, StepCost,
+            SelectedUnit.MovementPoints, SelectedUnit.type.MovementPoints);
         return path != null && path.Count > 0 ? path : null;
     }
 
