@@ -74,6 +74,33 @@ public static class Hydrology
         return navigable;
     }
 
+    // Retire les fleuves navigables trop courts. Un fleuve = toutes les cases qui descendent vers la même
+    // embouchure (dernière case navigable avant la mer) ; sa longueur = le plus long trajet jusqu'à elle,
+    // donc un petit affluent d'un grand fleuve est gardé.
+    public static bool[,] KeepLongRivers(bool[,] navigable, Vector2Int[,] downstream, int minLength)
+    {
+        int w = navigable.GetLength(0), h = navigable.GetLength(1);
+        var mouthOf = new Vector2Int[w, h];
+        var longest = new Dictionary<Vector2Int, int>();   // embouchure → plus long trajet en cases
+        foreach (var (x, y) in Cells(w, h))
+        {
+            if (!navigable[x, y]) continue;
+            var c = new Vector2Int(x, y);
+            int length = 1;
+            while (IsNavigable(navigable, downstream[c.x, c.y])) { c = downstream[c.x, c.y]; length++; }
+            mouthOf[x, y] = c;
+            longest[c] = Mathf.Max(length, longest.TryGetValue(c, out int l) ? l : 0);
+        }
+
+        var kept = new bool[w, h];
+        foreach (var (x, y) in Cells(w, h))
+            kept[x, y] = navigable[x, y] && longest[mouthOf[x, y]] >= minLength;
+        return kept;
+    }
+
+    private static bool IsNavigable(bool[,] navigable, Vector2Int c) =>
+        c != NoDownstream && navigable[c.x, c.y];
+
     private static IEnumerable<(int, int)> Cells(int w, int h)
     {
         for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) yield return (x, y);

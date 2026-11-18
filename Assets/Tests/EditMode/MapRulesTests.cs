@@ -137,8 +137,13 @@ public class MapRulesTests
     public void WithClimateThresholds_SplitsByFractions()
     {
         var values = Uniform100();
+        var s = new MapRulesSettings
+        {
+            FrozenFraction = 0.08f, TundraFraction = 0.12f, ColdFraction = 0.15f, HotFraction = 0.25f,
+            DryFraction = 0.25f, WetFraction = 0.25f, MarshFraction = 0.08f
+        };
 
-        var r = MapRules.WithClimateThresholds(S, values, values);
+        var r = MapRules.WithClimateThresholds(s, values, values);
 
         Assert.AreEqual(8, CountBelow(values, r.FrozenBelow));
         Assert.AreEqual(20, CountBelow(values, r.TundraBelow));
@@ -185,5 +190,38 @@ public class MapRulesTests
         Assert.AreEqual(2, MapRules.ObstacleHeight(Relief.Hill, Biome.Plain));
         Assert.AreEqual(3, MapRules.ObstacleHeight(Relief.Hill, Biome.Taiga));
         Assert.AreEqual(4, MapRules.ObstacleHeight(Relief.Mountain, Biome.Plain));
+    }
+
+    [Test]
+    public void AddRidges_WaterUnchanged_LandStaysAboveSea()
+    {
+        var altitude = new float[,] { { 0.1f }, { 0.6f }, { 1f } };
+        var noise = new float[,] { { 0.5f }, { 0f }, { 0f } };
+        var result = MapRules.AddRidges(altitude, noise, 0.5f, 1f);
+
+        Assert.AreEqual(0.1f, result[0, 0]);               // eau
+        Assert.GreaterOrEqual(result[1, 0], 0.5f);         // terre sans crête : au niveau de la mer, pas dessous
+        Assert.GreaterOrEqual(result[2, 0], 0.5f);
+    }
+
+    [Test]
+    public void AddRidges_WeightZero_Unchanged()
+    {
+        var altitude = new float[,] { { 0.2f }, { 0.7f }, { 0.9f } };
+        var result = MapRules.AddRidges(altitude, new float[,] { { 0.5f }, { 0.5f }, { 0.1f } }, 0.5f, 0f);
+
+        Assert.AreEqual(0.7f, result[1, 0], 1e-5f);
+        Assert.AreEqual(0.9f, result[2, 0], 1e-5f);
+    }
+
+    [Test]
+    public void AddRidges_RidgeLineRaisesLand()
+    {
+        // Deux terres de même altitude : celle sur la ligne de crête (bruit 0,5) monte au-dessus de l'autre.
+        var altitude = new float[,] { { 0.6f }, { 0.6f }, { 1f } };
+        var noise = new float[,] { { 0.5f }, { 0f }, { 0f } };
+        var result = MapRules.AddRidges(altitude, noise, 0.5f, 0.5f);
+
+        Assert.Greater(result[0, 0], result[1, 0]);
     }
 }

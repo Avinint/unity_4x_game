@@ -10,17 +10,18 @@ public enum Biome { Ocean, Coast, Grassland, Plain, Desert, Forest, Taiga, Jungl
 [Serializable]
 public class MapRulesSettings
 {
-    [Range(0f, 1f)] public float WaterFraction = 0.65f;       // part de la carte sous l'eau (continents)
+    [Range(0f, 1f)] public float WaterFraction = 0.55f;       // part de la carte sous l'eau (continents)
     [Range(0f, 1f)] public float HillFraction = 0.25f;        // part des terres en colline
-    [Range(0f, 1f)] public float MountainFraction = 0.10f;    // part des terres en montagne
+    [Range(0f, 1f)] public float MountainFraction = 0.08f;    // part des terres en montagne
+    [Range(0f, 1f)] public float RidgeWeight = 0.7f;         // part des crêtes dans l'altitude des terres : chaînes plutôt que blocs
     [Range(0f, 1f)] public float LatitudeWeight = 0.8f;       // part de la latitude dans la température (le reste : bruit)
     [Range(0f, 1f)] public float AltitudeCooling = 0.2f;      // refroidissement au sommet des terres
 
     [Header("Climat (proportions des terres)")]
-    [Range(0f, 1f)] public float FrozenFraction = 0.08f;      // les plus froides : neige
-    [Range(0f, 1f)] public float TundraFraction = 0.12f;      // ensuite : toundra
-    [Range(0f, 1f)] public float ColdFraction = 0.15f;        // ensuite : taïga (toundra si sec)
-    [Range(0f, 1f)] public float HotFraction = 0.25f;         // les plus chaudes : désert / plaine / jungle
+    [Range(0f, 1f)] public float FrozenFraction = 0.05f;      // les plus froides : neige
+    [Range(0f, 1f)] public float TundraFraction = 0.08f;      // ensuite : toundra
+    [Range(0f, 1f)] public float ColdFraction = 0.12f;        // ensuite : taïga (toundra si sec)
+    [Range(0f, 1f)] public float HotFraction = 0.20f;         // les plus chaudes : désert / plaine / jungle
     [Range(0f, 1f)] public float DryFraction = 0.25f;         // les plus sèches
     [Range(0f, 1f)] public float WetFraction = 0.25f;         // les plus humides
     [Range(0f, 1f)] public float MarshFraction = 0.08f;       // les plus humides de toutes : marais possible
@@ -34,6 +35,7 @@ public class MapRulesSettings
     [Range(0f, 1f)] public float RiverFraction = 0.15f;       // part des sommets de terre d'où part une rivière (plus forts débits)
     [Range(0f, 1f)] public float NavigableFraction = 0.03f;   // plus forts débits des cases : fleuve navigable
     [Min(1)] public int RiverMinLength = 3;                    // rivières plus courtes (en arêtes) supprimées
+    [Min(1)] public int NavigableMinLength = 3;                // fleuves navigables plus courts (en cases) rendus à la terre
 
     public MapRulesSettings Clone() => (MapRulesSettings)MemberwiseClone();
 }
@@ -41,6 +43,27 @@ public class MapRulesSettings
 // Règles pures : altitude, température, humidité → relief et biome.
 public static class MapRules
 {
+    // Chaînes de montagnes : sur les terres, l'altitude est mêlée à des crêtes (1 − |2n − 1| : fortes le long
+    // des lignes où le bruit vaut 0,5), donc les plus hauts points suivent des lignes et non des taches rondes.
+    // L'eau ne change pas ; une terre reste entre le niveau de la mer et le sommet d'origine (côtes intactes).
+    public static float[,] AddRidges(float[,] altitude, float[,] noise, float sea, float weight)
+    {
+        int w = altitude.GetLength(0), h = altitude.GetLength(1);
+        float top = sea;
+        foreach (float a in altitude) top = Mathf.Max(top, a);
+
+        var result = new float[w, h];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float a = altitude[x, y];
+                if (a < sea) { result[x, y] = a; continue; }
+                float ridge = 1f - Mathf.Abs(2f * noise[x, y] - 1f);
+                result[x, y] = Mathf.Lerp(sea, top, Mathf.Lerp(Mathf.InverseLerp(sea, top, a), ridge, weight));
+            }
+        return result;
+    }
+
     // Valeur sous laquelle se trouve `fraction` des valeurs (ex. 0.65 → niveau de la mer pour 65 % d'eau).
     public static float Percentile(float[,] values, float fraction)
     {

@@ -1272,6 +1272,7 @@ MonoBehaviour:
   mountainHeight: 4
   fogColor: {r: 0.5176471, g: 0.5176471, b: 0.5176471, a: 1}
   fogAmount: 0.5
+  riverCrossingCost: 3
   <Selector>k__BackingField: {fileID: 2116262286}
   <HoverMarker>k__BackingField: {fileID: 1716819127}
 --- !u!4 &1001322750
@@ -1401,22 +1402,23 @@ MonoBehaviour:
   Octaves: 4
   Persistence: 0.6
   Lacunarity: 2.3
-  Seed: 5
-  RandomSeed: 1
+  Seed: 705476
+  RandomSeed: 0
   Offset: {x: 0, y: 0}
   AutoUpdate: 0
   GenerateMapOnStart: 1
   UseThreadedGeneration: 1
   Rules:
-    WaterFraction: 0.65
+    WaterFraction: 0.55
     HillFraction: 0.25
-    MountainFraction: 0.1
+    MountainFraction: 0.08
+    RidgeWeight: 0.7
     LatitudeWeight: 0.8
     AltitudeCooling: 0.2
-    FrozenFraction: 0.08
-    TundraFraction: 0.12
-    ColdFraction: 0.15
-    HotFraction: 0.25
+    FrozenFraction: 0.05
+    TundraFraction: 0.08
+    ColdFraction: 0.12
+    HotFraction: 0.2
     DryFraction: 0.25
     WetFraction: 0.25
     MarshFraction: 0.08
@@ -1431,6 +1433,7 @@ MonoBehaviour:
     RiverFraction: 0.15
     NavigableFraction: 0.03
     RiverMinLength: 3
+    NavigableMinLength: 3
   BiomeTerrains:
   - Biome: 0
     Terrain: {fileID: 11400000, guid: 176646758c181274caa30aa60a96db14, type: 2}

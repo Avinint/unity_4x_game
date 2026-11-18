@@ -167,9 +167,11 @@ public class MapGenerator : MonoBehaviour
         float[,] altitude = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
         float[,] humidity = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 1, Octaves, Persistence, Lacunarity, Offset);
         float[,] heat = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 2, Octaves, Persistence, Lacunarity, Offset);
-        ReliefMap = altitude;
+        float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset);
 
         float sea = MapRules.Percentile(altitude, Rules.WaterFraction);
+        altitude = MapRules.AddRidges(altitude, ridges, sea, Rules.RidgeWeight);
+        ReliefMap = altitude;
         var land = new List<float>();
         foreach (float a in altitude) if (a >= sea) land.Add(a);
         float hill = MapRules.Percentile(land, 1f - Rules.HillFraction - Rules.MountainFraction);
@@ -186,6 +188,7 @@ public class MapGenerator : MonoBehaviour
         // Écoulement de case en case : case aval, débit (pluie = humidité), puis fleuves navigables.
         var (downstream, flow) = Hydrology.Flow(altitude, relief, humidity, (x, y) => Neighbours(x, y, orientation));
         bool[,] navigable = Hydrology.Navigable(flow, relief, Rules);
+        navigable = Hydrology.KeepLongRivers(navigable, downstream, Rules.NavigableMinLength);
 
         // Températures des terres, puis seuils de climat en proportions.
         var temperature = new float[Width, Height];

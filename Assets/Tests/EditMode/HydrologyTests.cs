@@ -86,4 +86,46 @@ public class HydrologyTests
         }
         Assert.Greater(count, 0);
     }
+
+    private static bool[,] Bools(params bool[] v)
+    {
+        var a = new bool[v.Length, 1];
+        for (int i = 0; i < v.Length; i++) a[i, 0] = v[i];
+        return a;
+    }
+
+    // Aval de chaque case de la rangée, par numéro ; -1 = aucun.
+    private static Vector2Int[,] Downs(params int[] d)
+    {
+        var a = new Vector2Int[d.Length, 1];
+        for (int i = 0; i < d.Length; i++) a[i, 0] = d[i] < 0 ? Hydrology.NoDownstream : new Vector2Int(d[i], 0);
+        return a;
+    }
+
+    [Test]
+    public void KeepLongRivers_ShortRiver_BackToLand()
+    {
+        // 2 cases navigables (1, 2) avant la mer (0) : trop court pour 3.
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, false), Downs(-1, 0, 1, 2), 3);
+
+        Assert.IsFalse(kept[1, 0]);
+        Assert.IsFalse(kept[2, 0]);
+    }
+
+    [Test]
+    public void KeepLongRivers_LongEnough_Kept()
+    {
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true), Downs(-1, 0, 1, 2), 3);
+
+        Assert.IsTrue(kept[1, 0] && kept[2, 0] && kept[3, 0]);
+    }
+
+    [Test]
+    public void KeepLongRivers_ShortTributaryOfLongRiver_Kept()
+    {
+        // Fleuve 3 → 2 → 1 → mer ; affluent d'une case 4 → 1.
+        var kept = Hydrology.KeepLongRivers(Bools(false, true, true, true, true), Downs(-1, 0, 1, 2, 1), 3);
+
+        Assert.IsTrue(kept[4, 0]);
+    }
 }
