@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// A* sur coordonnées axiales, coût 1 par case.
+// A* sur coordonnées axiales, coût 1 par case par défaut, ou coût par pas.
 public static class PathFinder
 {
     private static readonly Vector2Int[] Directions =
@@ -16,9 +16,15 @@ public static class PathFinder
     public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination, Func<Vector2Int, bool> isPassable)
         => FindPath(origin, destination, isPassable, _ => 1);
 
-    // stepCost(case) : coût pour entrer dans la case (≥ 1). Renvoie le chemin le moins coûteux.
+    // stepCost(case) : coût pour entrer dans la case (≥ 1).
     public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination,
         Func<Vector2Int, bool> isPassable, Func<Vector2Int, int> stepCost)
+        => FindPath(origin, destination, isPassable, (_, to) => stepCost(to));
+
+    // stepCost(depuis, vers) : coût du pas (≥ 1), par exemple plus cher à travers une rivière.
+    // Renvoie le chemin le moins coûteux.
+    public static List<Vector2Int> FindPath(Vector2Int origin, Vector2Int destination,
+        Func<Vector2Int, bool> isPassable, Func<Vector2Int, Vector2Int, int> stepCost)
     {
         if (origin == destination) return new List<Vector2Int>();
         if (!isPassable(destination)) return null;
@@ -41,7 +47,7 @@ public static class PathFinder
                 Vector2Int next = current + dir;
                 if (closed.Contains(next) || !isPassable(next)) continue;
 
-                int cost = costFromOrigin[current] + stepCost(next);
+                int cost = costFromOrigin[current] + stepCost(current, next);
                 if (costFromOrigin.TryGetValue(next, out int known) && cost >= known) continue;
 
                 costFromOrigin[next] = cost;

@@ -134,7 +134,7 @@ public class Unit : MonoBehaviour
         foreach (var tile in path)
         {
             if (!CanEnter(tile)) break;
-            MovementPoints = Mathf.Max(0, MovementPoints - tile.MovementCost);
+            MovementPoints = Mathf.Max(0, MovementPoints - tile.Grid.MoveCost(current, tile));   // rivière comprise
             Vector3 point = tile.CentrePosition;
             while (transform.position != point)
             {

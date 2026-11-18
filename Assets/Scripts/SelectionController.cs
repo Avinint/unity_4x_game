@@ -110,8 +110,13 @@ public class SelectionController : Singleton<SelectionController>
         return path != null && path.Count > 0 ? path : null;
     }
 
-    private int StepCost(Vector2Int axial) =>
-        Grid.TryGetTileAxial(axial, out HexTile tile) ? tile.MovementCostFor(Knows(axial)) : 1;
+    // Coût d'un pas selon ce que sait le propriétaire : terrain (1 si inconnu) + rivière connue (une rive explorée).
+    private int StepCost(Vector2Int from, Vector2Int to)
+    {
+        int cost = Grid.TryGetTileAxial(to, out HexTile tile) ? tile.MovementCostFor(Knows(to)) : 1;
+        bool riverKnown = (Knows(from) || Knows(to)) && Grid.HasRiver(from, to);
+        return cost + (riverKnown ? Grid.RiverCrossingCost : 0);
+    }
 
     // Cases parcourues ce tour-ci : limitées par les points, puis recul jusqu'à une case où l'unité peut s'arrêter.
     private int StopCount(List<Vector2Int> path, int points) =>
@@ -123,7 +128,12 @@ public class SelectionController : Singleton<SelectionController>
     private List<int> StepCosts(List<Vector2Int> path)
     {
         var costs = new List<int>(path.Count);
-        foreach (var axial in path) costs.Add(StepCost(axial));
+        Vector2Int from = SelectedTile.AxialCoordinates;
+        foreach (var to in path)
+        {
+            costs.Add(StepCost(from, to));
+            from = to;
+        }
         return costs;
     }
 

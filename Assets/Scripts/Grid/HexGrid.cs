@@ -56,6 +56,18 @@ public class HexGrid : MonoBehaviour
     public Color FogColor => fogColor;
     public float FogAmount => fogAmount;
 
+    [Header("Fleuves")]
+    [SerializeField, Min(0)] private int riverCrossingCost = 3;   // surcoût pour franchir une rivière d'arête
+    public int RiverCrossingCost => riverCrossingCost;
+    private HashSet<RiverEdge> riverEdges = new HashSet<RiverEdge>();
+
+    // Une rivière sépare-t-elle ces deux cases voisines ?
+    public bool HasRiver(Vector2Int a, Vector2Int b) => riverEdges.Contains(new RiverEdge(a, b));
+
+    // Vrai coût du pas de `from` vers sa voisine `to` : terrain d'arrivée + traversée éventuelle.
+    public int MoveCost(HexTile from, HexTile to) =>
+        to.MovementCost + (HasRiver(from.AxialCoordinates, to.AxialCoordinates) ? riverCrossingCost : 0);
+
     // Modifié dans l'Inspector pendant le jeu : réapplique l'assombrissement à toutes les cases.
     private void OnValidate()
     {
@@ -111,8 +123,9 @@ public class HexGrid : MonoBehaviour
     // Cases instanciées : on trace les rivières calculées par MapGenerator.
     private void BuildRivers()
     {
-        if (riverView != null && mapGenerator != null && mapGenerator.RiverEdges != null)
-            riverView.Build(this, mapGenerator.RiverEdges);
+        if (mapGenerator == null || mapGenerator.RiverEdges == null) return;
+        riverEdges = mapGenerator.RiverEdges;
+        if (riverView != null) riverView.Build(this, riverEdges);
     }
 
     // Appelé par HexTile.Discover : les rivières de cette case apparaissent.

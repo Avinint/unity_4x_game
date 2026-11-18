@@ -135,6 +135,19 @@ public class PathFinderTests
     }
 
     [Test]
+    public void FindPath_StepCost_AvoidsExpensiveCrossing()
+    {
+        // Rivière entre (0,1) et (1,1) : 10 pour la franchir ; le détour (3 pas) est moins cher.
+        var origin = new Vector2Int(0, 1);
+        var river = new RiverEdge(origin, new Vector2Int(1, 1));
+        var path = PathFinder.FindPath(origin, new Vector2Int(2, 1), Grid(5, 5),
+            (from, to) => new RiverEdge(from, to).Equals(river) ? 10 : 1);
+
+        Assert.AreNotEqual(new Vector2Int(1, 1), path[0]);
+        AssertContiguous(origin, path);
+    }
+
+    [Test]
     public void LastStop_AllFree_Unchanged() =>
         Assert.AreEqual(3, PathFinder.LastStop(3, i => true));
 
