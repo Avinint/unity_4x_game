@@ -17,6 +17,32 @@ public readonly struct StartPick
 
 public static class StartPositionPicker
 {
+    // Qualité d'un départ. La case de départ elle-même : plate ou en colline, dans un climat où l'on peut vivre.
+    public static bool IsGoodStart(Relief relief, Biome biome) =>
+        (relief == Relief.Flat || relief == Relief.Hill) &&
+        (biome == Biome.Grassland || biome == Biome.Plain || biome == Biome.Forest || biome == Biome.Jungle);
+
+    public const int FreshWaterBonus = 4;
+
+    // Valeur d'une case autour d'un départ : terres cultivables d'abord, un peu d'eau utile, montagne et neige gênent.
+    public static int CellValue(Relief relief, Biome biome)
+    {
+        if (relief == Relief.Mountain) return -1;
+        int value;
+        switch (biome)
+        {
+            case Biome.Grassland: case Biome.Plain: value = 2; break;
+            case Biome.Forest: case Biome.Jungle: case Biome.Coast: case Biome.Lake: case Biome.River: value = 1; break;
+            case Biome.Snow: value = -1; break;
+            default: value = 0; break;   // désert, toundra, taïga, marais, océan
+        }
+        return relief == Relief.Hill ? Mathf.Min(value, 1) : value;   // colline : +1 au plus
+    }
+
+    // Note d'un départ : valeur des cases autour, plus un bonus si la case de départ touche de l'eau douce.
+    public static int Score(IEnumerable<(Relief relief, Biome biome)> around, bool freshWater) =>
+        around.Sum(c => CellValue(c.relief, c.biome)) + (freshWater ? FreshWaterBonus : 0);
+
     // Distance conseillée entre joueurs : chacun dispose d'environ landCount / playerCount cases,
     // soit un disque hexagonal de rayon r ≈ √(cases / 3) ; deux joueurs sont à environ 2r.
     // Plancher : 2 × startRadius + 2, pour que les zones de départ ne se touchent pas (une case libre entre elles).

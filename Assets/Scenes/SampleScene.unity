@@ -1202,7 +1202,7 @@ MonoBehaviour:
   - {fileID: 1437649289}
   localPlayer: {fileID: 0}
   RevealAllPlayers: 0
-  RevealWholeMap: 0
+  RevealWholeMap: 1
   <HexGrid>k__BackingField: {fileID: 0}
   DefaultVisibleTiles:
   - {x: -1, y: -1}
@@ -1236,11 +1236,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1001322750}
   - component: {fileID: 1001322749}
+  - component: {fileID: 1001322755}
   - component: {fileID: 1001322751}
   - component: {fileID: 1001322754}
   - component: {fileID: 1001322753}
   - component: {fileID: 1001322752}
-  - component: {fileID: 1001322755}
   m_Layer: 6
   m_Name: Grid
   m_TagString: Grid
@@ -1268,12 +1268,13 @@ MonoBehaviour:
   unknownPrefab: {fileID: 6944534303261143973, guid: d9daf753b065e30439ccc588df9fa389, type: 3}
   debugPrefab: {fileID: -8679921383154817045, guid: 87e9dfbb746657e4e8c4e19b69c88dfd, type: 3}
   <PlayerSpawningMinDistance>k__BackingField: 0
+  startBestFraction: 0.33
   hillHeight: 1.5
   mountainHeight: 4
   fogColor: {r: 0.5176471, g: 0.5176471, b: 0.5176471, a: 1}
   fogAmount: 0.5
   riverCrossingCost: 3
-  riverWidth: 0.8
+  riverWidth: 1
   <Selector>k__BackingField: {fileID: 2116262286}
   <HoverMarker>k__BackingField: {fileID: 1716819127}
 --- !u!4 &1001322750
@@ -1403,7 +1404,7 @@ MonoBehaviour:
   Octaves: 4
   Persistence: 0.6
   Lacunarity: 2.3
-  Seed: 705476
+  Seed: 561079
   RandomSeed: 0
   Offset: {x: 0, y: 0}
   AutoUpdate: 0
@@ -1432,7 +1433,7 @@ MonoBehaviour:
     MarshAbove: 0.8
     LowlandFraction: 0.2
     RiverFraction: 0.15
-    NavigableFraction: 0.03
+    NavigableFraction: 0.06
     RiverMinLength: 3
     NavigableMinLength: 3
     LakeMaxSize: 6

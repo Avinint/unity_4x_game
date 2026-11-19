@@ -41,6 +41,7 @@ public class HexGrid : MonoBehaviour
     public int PlayerCount { get; set; }
 
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
+    [SerializeField, Range(0.05f, 1f)] private float startBestFraction = 0.33f;   // part des meilleurs départs gardés pour le tirage
 
     [Header("Relief")]
     [SerializeField] private float hillHeight = 1.5f;
@@ -124,9 +125,16 @@ public class HexGrid : MonoBehaviour
     // Cases instanciées : on trace les rivières calculées par MapGenerator.
     private void BuildRivers()
     {
-        if (mapGenerator == null || mapGenerator.RiverEdges == null) return;
-        riverEdges = mapGenerator.RiverEdges;
+        if (!LoadRiverEdges()) return;
         if (riverView != null) riverView.Build(this, riverEdges, riverWidth);
+    }
+
+    // DispatchPlayers en a besoin aussi, et peut passer avant BuildRivers (même événement, ordre non garanti).
+    private bool LoadRiverEdges()
+    {
+        if (mapGenerator == null || mapGenerator.RiverEdges == null) return false;
+        riverEdges = mapGenerator.RiverEdges;
+        return true;
     }
 
     // Appelé par HexTile.Discover : les rivières de cette case apparaissent.
@@ -373,6 +381,15 @@ public class HexGrid : MonoBehaviour
             ? PlayerSpawningMinDistance
             : StartPositionPicker.SuggestedMinDistance(candidates.Count, PlayerCount, DefaultVisibleRadius);
 
+        // Bons départs seulement : le tiers le mieux noté ; toutes les terres s'il n'y en a pas assez.
+        LoadRiverEdges();
+        var good = candidates.Where(t => StartPositionPicker.IsGoodStart(t.Relief, t.Biome))
+            .OrderByDescending(StartScore).ToList();
+        if (good.Count >= PlayerCount)
+            candidates = good.Take(Mathf.Max(PlayerCount, Mathf.CeilToInt(good.Count * startBestFraction))).ToList();
+        else
+            Debug.LogWarning($"DispatchPlayers : {good.Count} bons départs pour {PlayerCount} joueurs, placement sur toutes les terres.");
+
         var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
         var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random(), minDistance);
 
@@ -389,6 +406,20 @@ public class HexGrid : MonoBehaviour
         }
     }
 
+
+    private int StartScore(HexTile tile)
+    {
+        var around = new List<(Relief, Biome)>();
+        foreach (var a in CellsInRange(tile.AxialCoordinates, 2))
+            if (a != tile.AxialCoordinates && TryGetTileAxial(a, out HexTile cell))
+                around.Add((cell.Relief, cell.Biome));
+        return StartPositionPicker.Score(around, HasFreshWater(tile));
+    }
+
+    // Rivière sur une arête de la case, ou lac / fleuve voisin.
+    private bool HasFreshWater(HexTile tile) =>
+        tile.Neighbours != null && tile.Neighbours.Any(n =>
+            n.Biome == Biome.Lake || n.Biome == Biome.River || HasRiver(tile.AxialCoordinates, n.AxialCoordinates));
 
     public Dictionary<Vector2Int, HexTile> GetStartingArea(HexTile startingTile)
     {

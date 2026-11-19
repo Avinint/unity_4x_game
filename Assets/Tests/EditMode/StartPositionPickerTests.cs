@@ -5,6 +5,32 @@ using UnityEngine;
 
 public class StartPositionPickerTests
 {
+    [Test]
+    public void IsGoodStart_OnlyLivableFlatOrHill()
+    {
+        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Grassland));
+        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Hill, Biome.Forest));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Desert));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Tundra));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Mountain, Biome.Grassland));
+    }
+
+    [Test]
+    public void Score_SumsCellValues()
+    {
+        var around = new[] { (Relief.Flat, Biome.Grassland), (Relief.Flat, Biome.Forest), (Relief.Mountain, Biome.Plain) };
+
+        Assert.AreEqual(2 + 1 - 1, StartPositionPicker.Score(around, false));
+    }
+
+    [Test]
+    public void Score_FreshWaterBonus_HillCapped()
+    {
+        var around = new[] { (Relief.Hill, Biome.Grassland) };   // colline : 1, pas 2
+
+        Assert.AreEqual(1 + StartPositionPicker.FreshWaterBonus, StartPositionPicker.Score(around, true));
+    }
+
     // Grille 10 x 10 de coordonnées axiales.
     private static List<Vector2Int> Grid10x10()
     {

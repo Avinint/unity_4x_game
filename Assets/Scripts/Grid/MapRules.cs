@@ -33,9 +33,10 @@ public class MapRulesSettings
 
     [Header("Fleuves (proportions des terres, par débit)")]
     [Range(0f, 1f)] public float RiverFraction = 0.15f;       // part des sommets de terre d'où part une rivière (plus forts débits)
-    [Range(0f, 1f)] public float NavigableFraction = 0.03f;   // plus forts débits des cases : fleuve navigable
+    [Range(0f, 1f)] public float NavigableFraction = 0.10f;  // plus forts débits des cases : fleuve navigable
     [Min(1)] public int RiverMinLength = 3;                    // rivières plus courtes (en arêtes) supprimées
     [Min(1)] public int NavigableMinLength = 3;                // fleuves navigables plus courts (en cases) rendus à la terre
+    [Min(1)] public int TributaryMinLength = 2;                // affluents navigables plus courts (en cases) rendus à la terre
     [Min(0)] public int LakeMaxSize = 6;                       // étendues d'eau de cette taille au plus (en cases) : lacs d'eau douce
 
     public MapRulesSettings Clone() => (MapRulesSettings)MemberwiseClone();

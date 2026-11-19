@@ -189,6 +189,8 @@ public class MapGenerator : MonoBehaviour
         // Écoulement de case en case : case aval, débit (pluie = humidité), puis fleuves navigables.
         var (downstream, flow) = Hydrology.Flow(altitude, relief, humidity, (x, y) => Neighbours(x, y, orientation));
         bool[,] navigable = Hydrology.Navigable(flow, relief, Rules);
+        navigable = Hydrology.SingleWidth(navigable, flow, downstream, (x, y) => Neighbours(x, y, orientation));
+        navigable = Hydrology.PruneShortTributaries(navigable, flow, downstream, Rules.TributaryMinLength);
         navigable = Hydrology.KeepLongRivers(navigable, downstream, lake, Rules.NavigableMinLength);
 
         // Températures des terres, puis seuils de climat en proportions.
