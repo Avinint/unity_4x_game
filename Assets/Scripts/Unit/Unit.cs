@@ -120,6 +120,16 @@ public class Unit : MonoBehaviour
         StartCoroutine(MoveRoutine(start, path));
     }
 
+    // Débogage : pose l'unité sur `tile` sans coût ni animation, puis met à jour ce qu'elle voit.
+    public void Teleport(HexTile tile)
+    {
+        if (IsMoving || tile == null || Tile == null) return;
+        Tile.RemoveUnit(gameObject);
+        tile.AddUnit(gameObject);
+        transform.position = tile.CentrePosition;
+        UpdateVision(tile);
+    }
+
     // Peut-elle entrer dans la case voisine `next` ? Il reste un point, et la case, vue car voisine,
     // est vraiment praticable : de la terre sans unité d'un autre joueur, découverte en route au besoin.
     public bool CanEnter(HexTile next) =>

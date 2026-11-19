@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class SelectionController : Singleton<SelectionController>
 {
@@ -144,9 +145,25 @@ public class SelectionController : Singleton<SelectionController>
     // Le sélecteur suit l'unité, y compris pendant son déplacement.
     private void Update()
     {
+        DebugKeys();
         if (SelectedUnit != null && Grid.Selector != null)
             Grid.Selector.transform.position = SelectedUnit.transform.position;
         UpdatePreview();
+    }
+
+    // Touches de débogage lues directement : pas d'action dans PlayerControls pour un outil provisoire.
+    // F9 : téléporte l'unité sélectionnée sur la case survolée ; F10 : lui rend ses points de mouvement.
+    private void DebugKeys()
+    {
+        var keyboard = Keyboard.current;
+        if (!Debug.isDebugBuild || keyboard == null || SelectedUnit == null) return;
+        if (keyboard.f9Key.wasPressedThisFrame)
+        {
+            HexTile target = HoveredTile();
+            if (target != null && target.CanStop(SelectedUnit)) SelectedUnit.Teleport(target);
+            Grid.UpdateHoverMarker();
+        }
+        if (keyboard.f10Key.wasPressedThisFrame) SelectedUnit.ResetMovementPoints();
     }
 
     private HexTile previewTarget, previewOrigin;
