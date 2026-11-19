@@ -1433,9 +1433,10 @@ MonoBehaviour:
     MarshAbove: 0.8
     LowlandFraction: 0.2
     RiverFraction: 0.15
-    NavigableFraction: 0.06
+    NavigableFraction: 0.1
     RiverMinLength: 3
     NavigableMinLength: 3
+    TributaryMinLength: 2
     LakeMaxSize: 6
   BiomeTerrains:
   - Biome: 0

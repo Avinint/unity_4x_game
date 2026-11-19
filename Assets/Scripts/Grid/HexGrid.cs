@@ -42,6 +42,7 @@ public class HexGrid : MonoBehaviour
 
     [field: SerializeField] public int PlayerSpawningMinDistance { get; set; } = 0;
     [SerializeField, Range(0.05f, 1f)] private float startBestFraction = 0.33f;   // part des meilleurs départs gardés pour le tirage
+    [SerializeField, Min(0)] private int startMinLandmass = 0;   // masse de terre minimale d'un départ ; 0 = automatique (quart de la part d'un joueur)
 
     [Header("Relief")]
     [SerializeField] private float hillHeight = 1.5f;
@@ -381,14 +382,20 @@ public class HexGrid : MonoBehaviour
             ? PlayerSpawningMinDistance
             : StartPositionPicker.SuggestedMinDistance(candidates.Count, PlayerCount, DefaultVisibleRadius);
 
-        // Bons départs seulement : le tiers le mieux noté ; toutes les terres s'il n'y en a pas assez.
+        // Bons départs seulement : sur une masse de terre assez grande, puis le tiers le mieux noté ;
+        // toutes les terres s'il n'y en a pas assez.
         LoadRiverEdges();
-        var good = candidates.Where(t => StartPositionPicker.IsGoodStart(t.Relief, t.Biome))
+        var landmass = StartPositionPicker.LandmassSizes(Tiles.Values.Where(t => t.IsLand()).Select(t => t.AxialCoordinates));
+        int minLandmass = startMinLandmass > 0
+            ? startMinLandmass
+            : StartPositionPicker.SuggestedMinLandmass(landmass.Count, PlayerCount);
+        var good = candidates.Where(t => landmass[t.AxialCoordinates] >= minLandmass
+                                         && StartPositionPicker.IsGoodStart(t.Relief, t.Biome))
             .OrderByDescending(StartScore).ToList();
         if (good.Count >= PlayerCount)
             candidates = good.Take(Mathf.Max(PlayerCount, Mathf.CeilToInt(good.Count * startBestFraction))).ToList();
         else
-            Debug.LogWarning($"DispatchPlayers : {good.Count} bons départs pour {PlayerCount} joueurs, placement sur toutes les terres.");
+            Debug.LogWarning($"DispatchPlayers : {good.Count} bons départs (masse de terre ≥ {minLandmass}) pour {PlayerCount} joueurs, placement sur toutes les terres.");
 
         var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
         var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random(), minDistance);

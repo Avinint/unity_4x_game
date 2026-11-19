@@ -39,6 +39,32 @@ public static class StartPositionPicker
         return relief == Relief.Hill ? Mathf.Min(value, 1) : value;   // colline : +1 au plus
     }
 
+    // Taille de la masse de terre de chaque case : cases de `land` reliées à pied par leurs voisines hexagonales
+    // (la mer, les lacs, les fleuves et les montagnes, absents de `land`, coupent la marche).
+    public static Dictionary<Vector2Int, int> LandmassSizes(IEnumerable<Vector2Int> land)
+    {
+        var isLand = new HashSet<Vector2Int>(land);
+        var size = new Dictionary<Vector2Int, int>();
+        foreach (var start in isLand)
+        {
+            if (size.ContainsKey(start)) continue;
+            var mass = new List<Vector2Int> { start };
+            var seen = new HashSet<Vector2Int> { start };
+            var stack = new Stack<Vector2Int>();
+            stack.Push(start);
+            while (stack.Count > 0)
+                foreach (var n in HexMetrics.GetNeighbourCoordinatesList(stack.Pop()))
+                    if (isLand.Contains(n) && seen.Add(n)) { mass.Add(n); stack.Push(n); }
+            foreach (var c in mass) size[c] = mass.Count;
+        }
+        return size;
+    }
+
+    // Masse de terre minimale conseillée pour un départ : un quart de la part de terre d'un joueur
+    // (exclut les petites îles sans place pour s'étendre).
+    public static int SuggestedMinLandmass(int landCount, int playerCount) =>
+        playerCount <= 0 ? 0 : landCount / (4 * playerCount);
+
     // Note d'un départ : valeur des cases autour, plus un bonus si la case de départ touche de l'eau douce.
     public static int Score(IEnumerable<(Relief relief, Biome biome)> around, bool freshWater) =>
         around.Sum(c => CellValue(c.relief, c.biome)) + (freshWater ? FreshWaterBonus : 0);

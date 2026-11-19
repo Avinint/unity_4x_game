@@ -16,6 +16,21 @@ public class StartPositionPickerTests
     }
 
     [Test]
+    public void LandmassSizes_SeparateMasses()
+    {
+        // Une bande de 3 cases et une île d'une case, loin.
+        var land = new[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(2, 0), new Vector2Int(6, 6) };
+        var sizes = StartPositionPicker.LandmassSizes(land);
+
+        Assert.AreEqual(3, sizes[new Vector2Int(1, 0)]);
+        Assert.AreEqual(1, sizes[new Vector2Int(6, 6)]);
+    }
+
+    [Test]
+    public void SuggestedMinLandmass_QuarterOfShare() =>
+        Assert.AreEqual(20, StartPositionPicker.SuggestedMinLandmass(400, 5));   // part 80, quart 20
+
+    [Test]
     public void Score_SumsCellValues()
     {
         var around = new[] { (Relief.Flat, Biome.Grassland), (Relief.Flat, Biome.Forest), (Relief.Mountain, Biome.Plain) };
