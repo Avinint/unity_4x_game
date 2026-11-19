@@ -135,12 +135,13 @@ public class Unit : MonoBehaviour
         {
             if (!CanEnter(tile)) break;
             MovementPoints = Mathf.Max(0, MovementPoints - tile.Grid.MoveCost(current, tile));   // rivière comprise
-            Vector3 point = tile.CentrePosition;
+            Vector3 point = tile.Grid.NearestCopy(tile.CentrePosition, transform.position);   // un seul pas à la couture
             while (transform.position != point)
             {
                 transform.position = Vector3.MoveTowards(transform.position, point, moveSpeed * Time.deltaTime);
                 yield return null;
             }
+            transform.position = tile.CentrePosition;   // copie affichée de la case (identique hors de la couture)
             current = tile;
             UpdateVision(tile);
         }

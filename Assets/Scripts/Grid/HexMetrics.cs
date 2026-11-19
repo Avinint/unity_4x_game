@@ -377,6 +377,11 @@ public static class HexMetrics
         return new Vector2Int(a.x + wrapped - col, a.y);
     }
 
+    // Monde qui fait le tour : décalage (multiple de worldWidth) qui place une colonne d'abscisse x
+    // à la copie la plus proche de `nearX` (la caméra).
+    public static float WrapShift(float x, float nearX, float worldWidth) =>
+        Mathf.Round((nearX - x) / worldWidth) * worldWidth;
+
     // Distance dans un monde qui fait le tour : la plus courte vers b ou ses copies à une largeur à l'est ou à l'ouest.
     public static int WrappedDistance(Vector2Int a, Vector2Int b, int width)
     {

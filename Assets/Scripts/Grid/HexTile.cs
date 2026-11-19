@@ -19,7 +19,23 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     private HexTileGizmo gizmo;
 
-    public Vector3 CentrePosition { get; set; }
+    // Centre de la case, décalage d'affichage compris (monde qui fait le tour) : unités, marqueurs, aperçu le suivent.
+    public Vector3 CentrePosition { get => basePosition + Vector3.right * ShiftX; set => basePosition = value; }
+    private Vector3 basePosition;
+
+    // Décalage d'affichage est-ouest (multiple de la largeur du monde) : la case est dessinée près de la caméra.
+    public float ShiftX { get; private set; }
+
+    // Déplace le terrain et les unités à l'arrêt de la différence ; une unité en marche suit sa case cible elle-même.
+    public void SetShift(float shiftX)
+    {
+        if (Mathf.Approximately(shiftX, ShiftX)) return;
+        Vector3 delta = Vector3.right * (shiftX - ShiftX);
+        ShiftX = shiftX;
+        if (terrain != null) terrain.position += delta;
+        foreach (var go in units)
+            if (go != null && !(go.TryGetComponent(out Unit u) && u.IsMoving)) go.transform.position += delta;
+    }
 
     // Position affichée (marqueur de survol, aperçu) : à plat sous le brouillard, pour ne pas trahir le relief.
     public Vector3 DisplayPosition => IsDiscovered ? CentrePosition : CentrePosition - Vector3.up * Elevation;

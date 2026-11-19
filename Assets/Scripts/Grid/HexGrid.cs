@@ -128,6 +128,7 @@ public class HexGrid : MonoBehaviour
     // Cases instanciées : on trace les rivières calculées par MapGenerator.
     private void BuildRivers()
     {
+        lastShiftCameraX = float.NaN;   // cases toutes placées : décalages d'affichage à recalculer
         if (!LoadRiverEdges()) return;
         if (riverView != null) riverView.Build(this, riverEdges, riverWidth);
     }
@@ -178,6 +179,44 @@ public class HexGrid : MonoBehaviour
         Wraps ? HexMetrics.WrappedDistance(a, b, Width) : HexMetrics.AxialDistance(a, b);
 
     public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(Wrap(axial), out tile);
+
+    // Largeur du monde : Width colonnes, distance entre deux centres voisins sur une ligne.
+    public float WorldWidth =>
+        Width * (HexMetrics.Center(HexSize, 1, 0, Orientation).x - HexMetrics.Center(HexSize, 0, 0, Orientation).x);
+
+    // Copie de `position` la plus proche de `near` (monde qui fait le tour) ; sinon `position` telle quelle.
+    public Vector3 NearestCopy(Vector3 position, Vector3 near)
+    {
+        if (Wraps) position.x += HexMetrics.WrapShift(position.x, near.x, WorldWidth);
+        return position;
+    }
+
+    // Change à chaque nouveau décalage d'affichage : l'aperçu du chemin se recalcule.
+    public int ShiftVersion { get; private set; }
+    private float lastShiftCameraX = float.NaN;
+
+    // Monde qui fait le tour : chaque colonne s'affiche à la copie la plus proche de la caméra.
+    private void LateUpdate()
+    {
+        if (!Wraps || Tiles == null || CameraController.Instance == null) return;
+        float camX = CameraController.Instance.CameraTarget.transform.position.x;
+        if (!float.IsNaN(lastShiftCameraX) && Mathf.Abs(camX - lastShiftCameraX) < HexSize) return;   // pas besoin à chaque image
+        lastShiftCameraX = camX;
+
+        bool changed = false;
+        float width = WorldWidth;
+        foreach (var tile in Tiles.Values)
+        {
+            float baseX = tile.CentrePosition.x - tile.ShiftX;
+            float shift = HexMetrics.WrapShift(baseX, camX, width);
+            if (Mathf.Approximately(shift, tile.ShiftX)) continue;
+            tile.SetShift(shift);
+            changed = true;
+        }
+        if (!changed) return;
+        ShiftVersion++;
+        if (riverView != null) riverView.Refresh();
+    }
 
     public IEnumerable<HexTile> AllTiles => Tiles.Values;
 
@@ -254,7 +293,7 @@ public class HexGrid : MonoBehaviour
         Vector2Int axial = HexMetrics.CoordinateToAxial(localX, localZ, HexSize, Orientation);
 
         // Souris hors d'une case du jeu : cas normal, on ignore.
-        if (!Tiles.TryGetValue(axial, out HexTile tile)) return;
+        if (!Tiles.TryGetValue(Wrap(axial), out HexTile tile)) return;   // copie décalée : la vraie case
 
         // Même case que la précédente : rien à faire (évite Exit/Enter à chaque mouvement).
         if (tile == _activeTile) return;

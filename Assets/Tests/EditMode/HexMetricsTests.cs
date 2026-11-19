@@ -23,6 +23,17 @@ public class HexMetricsTests
     }
 
     [Test]
+    public void WrapShift_NearColumnStays() => Assert.AreEqual(0f, HexMetrics.WrapShift(10f, 12f, 100f));
+
+    [Test]
+    public void WrapShift_FarColumnComesAround()
+    {
+        // Caméra au bord est (95) : la colonne 2 est affichée juste après, à 102.
+        Assert.AreEqual(100f, HexMetrics.WrapShift(2f, 95f, 100f));
+        Assert.AreEqual(-100f, HexMetrics.WrapShift(98f, 5f, 100f));
+    }
+
+    [Test]
     public void WrappedDistance_AcrossSeam_IsOne()
     {
         var west = HexMetrics.OffsetToAxial(0, 6, HexOrientation.PointyTop);

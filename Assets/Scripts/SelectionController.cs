@@ -151,13 +151,16 @@ public class SelectionController : Singleton<SelectionController>
 
     private HexTile previewTarget, previewOrigin;
     private int previewPoints = -1;
+    private int previewShift = -1;
 
     // Aperçu du trajet vers la case survolée ; recalculé seulement si la cible, l'origine ou les points changent.
     private void UpdatePreview()
     {
         HexTile target = CanCommand() ? HoveredTile() : null;
         int points = SelectedUnit != null ? SelectedUnit.MovementPoints : 0;
-        if (target == previewTarget && SelectedTile == previewOrigin && points == previewPoints) return;
+        if (target == previewTarget && SelectedTile == previewOrigin && points == previewPoints
+            && Grid.ShiftVersion == previewShift) return;
+        previewShift = Grid.ShiftVersion;
         previewTarget = target;
         previewOrigin = SelectedTile;
         previewPoints = points;
@@ -173,11 +176,14 @@ public class SelectionController : Singleton<SelectionController>
             if (!forbidden) path = null;
         }
         if (path == null) { preview.Hide(); return; }
+        // Chaque pas pris à la copie la plus proche du précédent : pas de trait à travers la carte à la couture.
         var steps = new List<Vector3>();
+        Vector3 previous = SelectedTile.DisplayPosition;
         foreach (var axial in path)
         {
             Grid.TryGetTileAxial(axial, out HexTile step);
-            steps.Add(step.DisplayPosition);
+            previous = Grid.NearestCopy(step.DisplayPosition, previous);
+            steps.Add(previous);
         }
         if (forbidden) preview.ShowForbidden(SelectedTile.DisplayPosition, steps);
         else preview.Show(SelectedTile.DisplayPosition, steps, StopCount(path, points));

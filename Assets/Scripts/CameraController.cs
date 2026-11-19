@@ -248,7 +248,7 @@ public class CameraController : Singleton<CameraController>
         if (grid == null) return;
         Rect bounds = CameraMath.ShrinkRect(grid.WorldBounds, CameraMath.PanFreedom(distance, MaxDistance, recenterFrom));
         Vector3 p = cameraTarget.transform.position;
-        p.x = Mathf.Clamp(p.x, bounds.xMin, bounds.xMax);
+        if (!grid.Wraps) p.x = Mathf.Clamp(p.x, bounds.xMin, bounds.xMax);   // monde qui fait le tour : est-ouest libre
         p.z = Mathf.Clamp(p.z, bounds.yMin, bounds.yMax);
         cameraTarget.transform.position = p;
     }
