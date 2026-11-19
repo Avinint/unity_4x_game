@@ -293,7 +293,8 @@ public class HexGrid : MonoBehaviour
         Vector2Int axial = HexMetrics.CoordinateToAxial(localX, localZ, HexSize, Orientation);
 
         // Souris hors d'une case du jeu : cas normal, on ignore.
-        if (!Tiles.TryGetValue(Wrap(axial), out HexTile tile)) return;   // copie décalée : la vraie case
+        // Copie décalée : la vraie case. Hors de la carte (nord, sud) : plus de survol.
+        if (!Tiles.TryGetValue(Wrap(axial), out HexTile tile)) { OnMouseLeaveGrid(); return; }
 
         // Même case que la précédente : rien à faire (évite Exit/Enter à chaque mouvement).
         if (tile == _activeTile) return;

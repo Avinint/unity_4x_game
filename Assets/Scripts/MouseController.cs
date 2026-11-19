@@ -62,6 +62,7 @@ public class MouseController : Singleton<MouseController>
     }
 
     // Premier collider portant le tag "Grid" sur le rayon : le terrain sous une unité reste atteignable.
+    // Sinon (case inexplorée d'une copie décalée, hors du maillage plat de Grid) : point du rayon sur le plan du sol.
     private static bool TryRaycastGrid(Ray ray, out RaycastHit gridHit)
     {
         gridHit = default;
@@ -77,7 +78,13 @@ public class MouseController : Singleton<MouseController>
                 found = true;
             }
         }
-        return found;
+        if (found) return true;
+        var grid = GameManager.Instance != null ? GameManager.Instance.HexGrid : null;
+        if (grid == null) return false;
+        var ground = new Plane(Vector3.up, grid.transform.position);
+        if (!ground.Raycast(ray, out float enter)) return false;
+        gridHit.point = ray.GetPoint(enter);
+        return true;
     }
 
     void CheckMouseClick(Ray ray, int mouseButton)

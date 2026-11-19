@@ -129,6 +129,10 @@ public class CameraController : Singleton<CameraController>
         get
         {
             HexGrid grid = GameManager.Instance.HexGrid;
+            // Monde qui fait le tour : chaque colonne n'a qu'une copie, la vue ne doit pas dépasser 90 % du monde.
+            if (grid != null && grid.Wraps && Camera.main != null)
+                return Mathf.Max(distanceMin,
+                    CameraMath.FitDistance(new Vector2(grid.WorldWidth, 0f), fieldOfView, Camera.main.aspect, pitchFar, 0.9f));
             if (!fitMapOnMaxZoom || grid == null || Camera.main == null) return distanceMax;
             Vector2 size = grid.WorldBounds.size + Vector2.one * 2f * grid.HexSize;   // cases entières, pas seulement leurs centres
             return Mathf.Max(distanceMax, CameraMath.FitDistance(size, fieldOfView, Camera.main.aspect, pitchFar));
