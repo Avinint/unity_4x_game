@@ -368,6 +368,22 @@ public static class HexMetrics
         return CubeDistance(aCube, bCube);
     }
 
+    // Monde qui fait le tour (cases à sommet pointu, lignes décalées) : ramène une case axiale dans les colonnes
+    // [0, width). Décaler q d'une largeur décale la colonne d'une largeur, la ligne ne change pas.
+    public static Vector2Int WrapAxial(Vector2Int a, int width)
+    {
+        int col = a.x + (a.y - (a.y & 1)) / 2;
+        int wrapped = ((col % width) + width) % width;
+        return new Vector2Int(a.x + wrapped - col, a.y);
+    }
+
+    // Distance dans un monde qui fait le tour : la plus courte vers b ou ses copies à une largeur à l'est ou à l'ouest.
+    public static int WrappedDistance(Vector2Int a, Vector2Int b, int width)
+    {
+        var shift = new Vector2Int(width, 0);
+        return Mathf.Min(AxialDistance(a, b), Mathf.Min(AxialDistance(a, b + shift), AxialDistance(a, b - shift)));
+    }
+
     public static float OffsetDistance(Vector2Int a, Vector2Int b,  HexOrientation orientation)
     {
         var ac = OffsetToAxial((int)a.x, (int)a.y, orientation);

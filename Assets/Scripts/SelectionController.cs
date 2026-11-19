@@ -110,7 +110,7 @@ public class SelectionController : Singleton<SelectionController>
         if (!target.CanStop(SelectedUnit)) return null;   // case pleine : on peut la traverser, pas s'y arrêter
         // Le moins de tours possible (traverser une rivière plutôt qu'un détour plus long en tours).
         var path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates, IsWalkable, StepCost,
-            SelectedUnit.MovementPoints, SelectedUnit.type.MovementPoints);
+            SelectedUnit.MovementPoints, SelectedUnit.type.MovementPoints, Grid.Wrap, Grid.Distance);
         return path != null && path.Count > 0 ? path : null;
     }
 
@@ -168,7 +168,7 @@ public class SelectionController : Singleton<SelectionController>
         {
             // Case interdite (eau, montagne) : chemin jusqu'à elle, affiché en rouge.
             path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates,
-                a => a == target.AxialCoordinates || IsWalkable(a));
+                a => a == target.AxialCoordinates || IsWalkable(a), Grid.Wrap, Grid.Distance);
             forbidden = path != null && path.Count > 0;
             if (!forbidden) path = null;
         }

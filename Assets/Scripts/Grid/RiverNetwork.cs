@@ -40,15 +40,16 @@ public static class RiverNetwork
     // Arêtes portant une rivière. Seuls les sommets dont les trois cases existent comptent.
     public static HashSet<RiverEdge> Rivers(IEnumerable<Vector2Int> cells, Func<Vector2Int, bool> exists,
         Func<Vector2Int, bool> isWater, Func<Vector2Int, float> altitude, Func<Vector2Int, float> rain,
-        float fraction, int minLength)
+        float fraction, int minLength, Func<Vector2Int, Vector2Int> wrap = null)
     {
+        wrap ??= v => v;
         // 1. Sommets : altitude et pluie moyennes ; « eau » si une de leurs cases est de l'eau.
         var corners = new List<Corner>();
         var index = new Dictionary<Corner, int>();
         foreach (var cell in cells)
             for (int i = 0; i < 6; i++)
             {
-                var c = new Corner(cell, cell + Dirs[i], cell + Dirs[(i + 1) % 6]);
+                var c = new Corner(wrap(cell), wrap(cell + Dirs[i]), wrap(cell + Dirs[(i + 1) % 6]));
                 if (!exists(c.A) || !exists(c.B) || !exists(c.C) || index.ContainsKey(c)) continue;
                 index[c] = corners.Count;
                 corners.Add(c);
@@ -77,7 +78,7 @@ public static class RiverNetwork
         {
             var (lv, i) = queue.Min;
             queue.Remove(queue.Min);
-            foreach (int j in Next(corners[i], index))
+            foreach (int j in Next(corners[i], index, wrap))
             {
                 if (done[j]) continue;
                 done[j] = true;
@@ -110,19 +111,20 @@ public static class RiverNetwork
     }
 
     // Sommets voisins (le long des trois arêtes) qui existent.
-    private static IEnumerable<int> Next(Corner c, Dictionary<Corner, int> index)
+    private static IEnumerable<int> Next(Corner c, Dictionary<Corner, int> index, Func<Vector2Int, Vector2Int> wrap)
     {
         foreach (var (a, b, other) in new[] { (c.A, c.B, c.C), (c.B, c.C, c.A), (c.A, c.C, c.B) })
-            if (index.TryGetValue(new Corner(a, b, OtherCommonNeighbour(a, b, other)), out int j))
+            if (index.TryGetValue(new Corner(a, b, OtherCommonNeighbour(a, b, other, wrap)), out int j))
                 yield return j;
     }
 
     // a et b voisins ont deux voisins communs : renvoie celui qui n'est pas `known`.
-    private static Vector2Int OtherCommonNeighbour(Vector2Int a, Vector2Int b, Vector2Int known)
+    // La direction de a vers b est cherchée après bouclage (à la couture, b − a n'est pas une direction).
+    private static Vector2Int OtherCommonNeighbour(Vector2Int a, Vector2Int b, Vector2Int known, Func<Vector2Int, Vector2Int> wrap)
     {
-        int k = Array.IndexOf(Dirs, b - a);
-        var p = a + Dirs[(k + 5) % 6];
-        var q = a + Dirs[(k + 1) % 6];
+        int k = Array.FindIndex(Dirs, d => wrap(a + d) == b);
+        var p = wrap(a + Dirs[(k + 5) % 6]);
+        var q = wrap(a + Dirs[(k + 1) % 6]);
         return p == known ? q : p;
     }
 

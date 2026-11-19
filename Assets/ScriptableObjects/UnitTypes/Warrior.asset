@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: 1
   <Name>k__BackingField: Warrior
-  <Prefab>k__BackingField: {fileID: 6305013362968211143, guid: 3f4ac07bc2cd4a84285ff4c3fc122d7a,
-    type: 3}
+  <Prefab>k__BackingField: {fileID: 6305013362968211143, guid: 3f4ac07bc2cd4a84285ff4c3fc122d7a, type: 3}
+  <Category>k__BackingField: 1
+  <MovementPoints>k__BackingField: 2
+  <SightRadius>k__BackingField: 2

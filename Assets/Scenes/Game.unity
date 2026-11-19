@@ -1263,12 +1263,14 @@ MonoBehaviour:
   <Orientation>k__BackingField: 1
   <Width>k__BackingField: 40
   <Height>k__BackingField: 25
+  <WrapWorld>k__BackingField: 1
   <HexSize>k__BackingField: 5
   <BatchSize>k__BackingField: 10
   unknownPrefab: {fileID: 6944534303261143973, guid: d9daf753b065e30439ccc588df9fa389, type: 3}
   debugPrefab: {fileID: -8679921383154817045, guid: 87e9dfbb746657e4e8c4e19b69c88dfd, type: 3}
   <PlayerSpawningMinDistance>k__BackingField: 0
   startBestFraction: 0.33
+  startMinLandmass: 0
   hillHeight: 1.5
   mountainHeight: 4
   fogColor: {r: 0.5176471, g: 0.5176471, b: 0.5176471, a: 1}
@@ -1404,8 +1406,8 @@ MonoBehaviour:
   Octaves: 4
   Persistence: 0.6
   Lacunarity: 2.3
-  Seed: 561079
-  RandomSeed: 0
+  Seed: 796013
+  RandomSeed: 1
   Offset: {x: 0, y: 0}
   AutoUpdate: 0
   GenerateMapOnStart: 1

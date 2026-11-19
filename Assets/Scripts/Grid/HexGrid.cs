@@ -67,7 +67,7 @@ public class HexGrid : MonoBehaviour
     private HashSet<RiverEdge> riverEdges = new HashSet<RiverEdge>();
 
     // Une rivière sépare-t-elle ces deux cases voisines ?
-    public bool HasRiver(Vector2Int a, Vector2Int b) => riverEdges.Contains(new RiverEdge(a, b));
+    public bool HasRiver(Vector2Int a, Vector2Int b) => riverEdges.Contains(new RiverEdge(Wrap(a), Wrap(b)));
 
     // Vrai coût du pas de `from` vers sa voisine `to` : terrain d'arrivée + traversée éventuelle.
     public int MoveCost(HexTile from, HexTile to) =>
@@ -171,7 +171,13 @@ public class HexGrid : MonoBehaviour
         return Tiles.TryGetValue(coordinates, out tile);
     }
 
-    public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(axial, out tile);
+    // Bouclage effectif : seulement avec des cases à sommet pointu (le décalage par ligne garde les colonnes entières).
+    public bool Wraps => WrapWorld && Orientation == HexOrientation.PointyTop;
+    public Vector2Int Wrap(Vector2Int axial) => Wraps ? HexMetrics.WrapAxial(axial, Width) : axial;
+    public int Distance(Vector2Int a, Vector2Int b) =>
+        Wraps ? HexMetrics.WrappedDistance(a, b, Width) : HexMetrics.AxialDistance(a, b);
+
+    public bool TryGetTileAxial(Vector2Int axial, out HexTile tile) => Tiles.TryGetValue(Wrap(axial), out tile);
 
     public IEnumerable<HexTile> AllTiles => Tiles.Values;
 
@@ -180,22 +186,28 @@ public class HexGrid : MonoBehaviour
     {
         var cells = new List<Vector2Int>();
         foreach (var axial in HexMetrics.AxialRange(center, radius))
-            if (Tiles.ContainsKey(axial)) cells.Add(axial);
+        {
+            var w = Wrap(axial);
+            if (Tiles.ContainsKey(w) && !cells.Contains(w)) cells.Add(w);
+        }
         return cells;
     }
 
     // Cases existantes vues depuis center dans un rayon, selon la ligne de vue (relief, forêts).
+    // Les lignes de vue sont tracées sans ramener les cases dans la carte (droites même à travers la couture) ;
+    // seules les hauteurs et le résultat passent par Wrap.
     public List<Vector2Int> CellsInSight(Vector2Int center, int radius)
     {
         int eye = Tiles.TryGetValue(center, out HexTile from) ? MapRules.SightHeight(from.Relief) : 0;
-        return LineOfSight.Visible(center, CellsInRange(center, radius), ObstacleAt, SurfaceAt, eye);
+        var range = HexMetrics.AxialRange(center, radius).Where(a => Tiles.ContainsKey(Wrap(a)));
+        return LineOfSight.Visible(center, range, ObstacleAt, SurfaceAt, eye).Select(Wrap).Distinct().ToList();
     }
 
     private int ObstacleAt(Vector2Int axial) =>
-        Tiles.TryGetValue(axial, out HexTile tile) ? MapRules.ObstacleHeight(tile.Relief, tile.Biome) : 0;
+        Tiles.TryGetValue(Wrap(axial), out HexTile tile) ? MapRules.ObstacleHeight(tile.Relief, tile.Biome) : 0;
 
     private int SurfaceAt(Vector2Int axial) =>
-        Tiles.TryGetValue(axial, out HexTile tile) ? MapRules.SightHeight(tile.Relief) : 0;
+        Tiles.TryGetValue(Wrap(axial), out HexTile tile) ? MapRules.SightHeight(tile.Relief) : 0;
 
     // Rectangle (x, z) couvrant les centres des cases, en coordonnées monde.
     public Rect WorldBounds
@@ -318,9 +330,10 @@ public class HexGrid : MonoBehaviour
             {
                 // Find the neighbor tile based on the direction
                 HexTile neighbor;
-                if (tiles.ContainsKey(neighbourCoordinate))
+                var key = Wrap(neighbourCoordinate);
+                if (tiles.ContainsKey(key))
                 {
-                    neighbor = tiles[neighbourCoordinate];
+                    neighbor = tiles[key];
                     neighbours.Add(neighbor);
                     neighborsFound++;
                 }
@@ -370,7 +383,7 @@ public class HexGrid : MonoBehaviour
         StartTiles.Clear();
 
         List<HexTile> candidates = Tiles.Values
-            .Where(t => t.IsLand() && !t.IsCloseToGridEdge(DefaultVisibleRadius, Width, Height))
+            .Where(t => t.IsLand() && !t.IsCloseToGridEdge(DefaultVisibleRadius, Width, Height, Wraps))
             .ToList();
 
         if (candidates.Count == 0)
@@ -387,7 +400,7 @@ public class HexGrid : MonoBehaviour
         // Bons départs seulement : sur une masse de terre assez grande, puis le tiers le mieux noté ;
         // toutes les terres s'il n'y en a pas assez.
         LoadRiverEdges();
-        var landmass = StartPositionPicker.LandmassSizes(Tiles.Values.Where(t => t.IsLand()).Select(t => t.AxialCoordinates));
+        var landmass = StartPositionPicker.LandmassSizes(Tiles.Values.Where(t => t.IsLand()).Select(t => t.AxialCoordinates), Wrap);
         int minLandmass = startMinLandmass > 0
             ? startMinLandmass
             : StartPositionPicker.SuggestedMinLandmass(landmass.Count, PlayerCount);
@@ -400,7 +413,7 @@ public class HexGrid : MonoBehaviour
             Debug.LogWarning($"DispatchPlayers : {good.Count} bons départs (masse de terre ≥ {minLandmass}) pour {PlayerCount} joueurs, placement sur toutes les terres.");
 
         var coordinates = candidates.Select(t => t.AxialCoordinates).ToList();
-        var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random(), minDistance);
+        var picks = StartPositionPicker.Pick(coordinates, PlayerCount, new System.Random(), minDistance, Distance);
 
         if (picks.Count < PlayerCount)
             Debug.LogWarning($"DispatchPlayers : {PlayerCount} joueurs demandés, {picks.Count} cases disponibles.");

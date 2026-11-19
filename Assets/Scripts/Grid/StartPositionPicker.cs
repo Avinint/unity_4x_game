@@ -41,8 +41,9 @@ public static class StartPositionPicker
 
     // Taille de la masse de terre de chaque case : cases de `land` reliées à pied par leurs voisines hexagonales
     // (la mer, les lacs, les fleuves et les montagnes, absents de `land`, coupent la marche).
-    public static Dictionary<Vector2Int, int> LandmassSizes(IEnumerable<Vector2Int> land)
+    public static Dictionary<Vector2Int, int> LandmassSizes(IEnumerable<Vector2Int> land, Func<Vector2Int, Vector2Int> wrap = null)
     {
+        wrap ??= v => v;
         var isLand = new HashSet<Vector2Int>(land);
         var size = new Dictionary<Vector2Int, int>();
         foreach (var start in isLand)
@@ -53,8 +54,11 @@ public static class StartPositionPicker
             var stack = new Stack<Vector2Int>();
             stack.Push(start);
             while (stack.Count > 0)
-                foreach (var n in HexMetrics.GetNeighbourCoordinatesList(stack.Pop()))
+                foreach (var raw in HexMetrics.GetNeighbourCoordinatesList(stack.Pop()))
+                {
+                    var n = wrap(raw);
                     if (isLand.Contains(n) && seen.Add(n)) { mass.Add(n); stack.Push(n); }
+                }
             foreach (var c in mass) size[c] = mass.Count;
         }
         return size;
@@ -81,8 +85,10 @@ public static class StartPositionPicker
 
     // 1er joueur au hasard, puis chacun au hasard parmi les candidats à au moins `minDistance` des joueurs déjà placés ;
     // s'il n'y en a aucun (ou si minDistance ≤ 0), parmi les 10 % de candidats les plus éloignés.
-    public static List<StartPick> Pick(IReadOnlyList<Vector2Int> candidates, int playerCount, System.Random rng, int minDistance = 0)
+    public static List<StartPick> Pick(IReadOnlyList<Vector2Int> candidates, int playerCount, System.Random rng, int minDistance = 0,
+        Func<Vector2Int, Vector2Int, int> distance = null)
     {
+        distance ??= HexMetrics.AxialDistance;
         var result = new List<StartPick>();
         int count = Math.Min(playerCount, candidates.Count);
         if (count <= 0) return result;
@@ -100,7 +106,7 @@ public static class StartPositionPicker
 
             for (int i = 0; i < candidates.Count; i++)
             {
-                int d = HexMetrics.AxialDistance(candidates[i], candidates[chosen]);
+                int d = distance(candidates[i], candidates[chosen]);
                 if (d < nearest[i]) nearest[i] = d;
             }
         }

@@ -7,6 +7,15 @@ public class HexTileTests
     private static HexTile NewTile() => new HexTile(new Vector2Int(2, 3), HexOrientation.PointyTop);
 
     [Test]
+    public void IsCloseToGridEdge_WrapX_IgnoresEastWest()
+    {
+        var tile = new HexTile(new Vector2Int(0, 10), HexOrientation.PointyTop);   // colonne 0, loin du nord et du sud
+
+        Assert.IsTrue(tile.IsCloseToGridEdge(2, 40, 25));
+        Assert.IsFalse(tile.IsCloseToGridEdge(2, 40, 25, wrapX: true));
+    }
+
+    [Test]
     public void NewTile_IsNeitherDiscoveredNorHovered()
     {
         var tile = NewTile();

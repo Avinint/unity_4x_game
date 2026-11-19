@@ -133,6 +133,20 @@ public class PathFinderTests
     }
 
     [Test]
+    public void FindPath_Wrap_CrossesSeam()
+    {
+        // Rangée de 10 cases (q = 0..9, r = 0) qui fait le tour : de 0 à 9, un seul pas par la couture.
+        Func<Vector2Int, Vector2Int> wrap = v => new Vector2Int(((v.x % 10) + 10) % 10, v.y);
+        Func<Vector2Int, Vector2Int, int> distance = (a, b) =>
+            Math.Min(HexMetrics.AxialDistance(a, b),
+                Math.Min(HexMetrics.AxialDistance(a, b + new Vector2Int(10, 0)), HexMetrics.AxialDistance(a, b - new Vector2Int(10, 0))));
+
+        var path = PathFinder.FindPath(new Vector2Int(0, 0), new Vector2Int(9, 0), Grid(10, 1), wrap, distance);
+
+        CollectionAssert.AreEqual(new[] { new Vector2Int(9, 0) }, path);
+    }
+
+    [Test]
     public void ReachableCount_StopsWhenPointsRunOut()
     {
         Assert.AreEqual(2, PathFinder.ReachableCount(new[] { 1, 1, 1 }, 2));

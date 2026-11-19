@@ -18,6 +18,8 @@ public class RiverView : MonoBehaviour
         foreach (var edge in edges)
         {
             if (!grid.TryGetTileAxial(edge.A, out HexTile a) || !grid.TryGetTileAxial(edge.B, out HexTile b)) continue;
+            // Arête à la couture : ses deux rives sont aux deux bouts de la carte (tracé avec l'affichage bouclé).
+            if (Vector3.Distance(a.CentrePosition, b.CentrePosition) > 3f * grid.HexSize) continue;
             var (p, q) = HexMetrics.SharedEdge(a.CentrePosition, b.CentrePosition, grid.HexSize, grid.Orientation);
             p.y = q.y = Mathf.Min(a.CentrePosition.y, b.CentrePosition.y) + heightOffset;   // rive la plus basse
 

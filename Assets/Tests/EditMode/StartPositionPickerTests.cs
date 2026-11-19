@@ -27,6 +27,17 @@ public class StartPositionPickerTests
     }
 
     [Test]
+    public void LandmassSizes_Wrap_JoinsBothEdges()
+    {
+        // Rangée de 10 colonnes (q = 0..9, r = 0) : terres aux deux bords, reliées seulement par la couture.
+        var land = new[] { new Vector2Int(0, 0), new Vector2Int(9, 0) };
+        System.Func<Vector2Int, Vector2Int> wrap = v => new Vector2Int(((v.x % 10) + 10) % 10, v.y);
+
+        Assert.AreEqual(1, StartPositionPicker.LandmassSizes(land)[new Vector2Int(0, 0)]);
+        Assert.AreEqual(2, StartPositionPicker.LandmassSizes(land, wrap)[new Vector2Int(0, 0)]);
+    }
+
+    [Test]
     public void SuggestedMinLandmass_QuarterOfShare() =>
         Assert.AreEqual(20, StartPositionPicker.SuggestedMinLandmass(400, 5));   // part 80, quart 20
 

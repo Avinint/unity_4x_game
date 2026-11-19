@@ -59,10 +59,11 @@ public static class Hydrology
     // Fleuve navigable : les plus forts débits, en proportion des terres (jamais en montagne).
     // Jamais sur le bord de la carte : l'eau ne peut pas en sortir, le bord collecte le débit de toute une région.
     // Les rivières plus petites sont sur les arêtes (RiverNetwork).
-    public static bool[,] Navigable(float[,] flow, Relief[,] relief, MapRulesSettings s)
+    // wrapX : le monde fait le tour, seuls le nord et le sud sont des bords.
+    public static bool[,] Navigable(float[,] flow, Relief[,] relief, MapRulesSettings s, bool wrapX = false)
     {
         int w = flow.GetLength(0), h = flow.GetLength(1);
-        bool OnEdge(int x, int y) => x == 0 || y == 0 || x == w - 1 || y == h - 1;
+        bool OnEdge(int x, int y) => y == 0 || y == h - 1 || (!wrapX && (x == 0 || x == w - 1));
         var landFlows = new List<float>();
         foreach (var (x, y) in Cells(w, h)) if (relief[x, y] != Relief.Water && !OnEdge(x, y)) landFlows.Add(flow[x, y]);
         float navigableAbove = MapRules.Percentile(landFlows, 1f - s.NavigableFraction);

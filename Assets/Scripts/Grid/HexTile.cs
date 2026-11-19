@@ -271,9 +271,10 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
                OffsetCoordinates.y > radius && OffsetCoordinates.y < gridHeight - radius;
     }
 
-    public bool IsCloseToGridEdge(int radius, int gridWidth, int gridHeight)
+    // wrapX : le monde fait le tour, seuls le nord et le sud sont des bords.
+    public bool IsCloseToGridEdge(int radius, int gridWidth, int gridHeight, bool wrapX = false)
     {
-        return OffsetCoordinates.x <= radius || OffsetCoordinates.x >= gridWidth - radius ||
+        return (!wrapX && (OffsetCoordinates.x <= radius || OffsetCoordinates.x >= gridWidth - radius)) ||
                OffsetCoordinates.y <= radius || OffsetCoordinates.y >= gridHeight - radius;
     }
 

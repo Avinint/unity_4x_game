@@ -3,6 +3,35 @@ using UnityEngine;
 
 public class HexMetricsTests
 {
+    [Test]
+    public void WrapAxial_BringsColumnBackIntoMap()
+    {
+        // Ligne paire puis impaire : la colonne -1 devient 39, la ligne ne change pas.
+        foreach (int row in new[] { 4, 5 })
+        {
+            var outside = HexMetrics.OffsetToAxial(-1, row, HexOrientation.PointyTop);
+            Assert.AreEqual(HexMetrics.OffsetToAxial(39, row, HexOrientation.PointyTop), HexMetrics.WrapAxial(outside, 40));
+        }
+    }
+
+    [Test]
+    public void WrapAxial_InsideMap_Unchanged()
+    {
+        var inside = HexMetrics.OffsetToAxial(12, 7, HexOrientation.PointyTop);
+
+        Assert.AreEqual(inside, HexMetrics.WrapAxial(inside, 40));
+    }
+
+    [Test]
+    public void WrappedDistance_AcrossSeam_IsOne()
+    {
+        var west = HexMetrics.OffsetToAxial(0, 6, HexOrientation.PointyTop);
+        var east = HexMetrics.OffsetToAxial(39, 6, HexOrientation.PointyTop);
+
+        Assert.AreEqual(1, HexMetrics.WrappedDistance(west, east, 40));
+        Assert.AreEqual(39, HexMetrics.AxialDistance(west, east));
+    }
+
     private const float HexSize = 5f;
 
     [Test]

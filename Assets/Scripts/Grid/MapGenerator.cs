@@ -190,7 +190,7 @@ public class MapGenerator : MonoBehaviour
 
         // Écoulement de case en case : case aval, débit (pluie = humidité), puis fleuves navigables.
         var (downstream, flow) = Hydrology.Flow(altitude, relief, humidity, (x, y) => Neighbours(x, y, orientation));
-        bool[,] navigable = Hydrology.Navigable(flow, relief, Rules);
+        bool[,] navigable = Hydrology.Navigable(flow, relief, Rules, WrapWorld);
         navigable = Hydrology.SingleWidth(navigable, flow, downstream, (x, y) => Neighbours(x, y, orientation));
         navigable = Hydrology.PruneShortTributaries(navigable, flow, downstream, Rules.TributaryMinLength);
         navigable = Hydrology.KeepLongRivers(navigable, downstream, lake, Rules.NavigableMinLength);
@@ -232,6 +232,8 @@ public class MapGenerator : MonoBehaviour
         // Rivières d'arêtes, sur la carte finale (fleuves navigables = eau, les rivières s'y jettent).
         Vector2Int Off(Vector2Int a) => HexMetrics.CubeToOffset(HexMetrics.AxialToCube(a), orientation);
         bool Exists(Vector2Int a) { var o = Off(a); return o.x >= 0 && o.x < Width && o.y >= 0 && o.y < Height; }
+        Vector2Int WrapAxial(Vector2Int a) =>
+            WrapWorld && orientation == HexOrientation.PointyTop ? HexMetrics.WrapAxial(a, Width) : a;
         var axialCells = new List<Vector2Int>();
         for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
@@ -240,7 +242,7 @@ public class MapGenerator : MonoBehaviour
             a => { var o = Off(a); return cells[o.x, o.y].Relief == Relief.Water; },
             a => { var o = Off(a); return altitude[o.x, o.y]; },
             a => { var o = Off(a); return humidity[o.x, o.y]; },
-            Rules.RiverFraction, Rules.RiverMinLength);
+            Rules.RiverFraction, Rules.RiverMinLength, WrapAxial);
 
         int navigableCount = 0;
         foreach (bool b in navigable) if (b) navigableCount++;

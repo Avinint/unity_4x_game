@@ -99,6 +99,16 @@ public class HydrologyTests
     }
 
     [Test]
+    public void Navigable_WrapX_EastWestColumnsAllowed()
+    {
+        // Le monde fait le tour : la colonne 4 (bord est) n'est plus un bord.
+        var s = new MapRulesSettings { NavigableFraction = 0.5f };
+        var navigable = Hydrology.Navigable(Framed(0f, 1f, 2f, 3f, 9f), FramedReliefs(W, F, F, F, F), s, wrapX: true);
+
+        Assert.IsTrue(navigable[4, 1]);
+    }
+
+    [Test]
     public void Navigable_DownstreamIsNavigableOrSea()
     {
         var reliefs = FramedReliefs(W, F, F, F, F, F);
