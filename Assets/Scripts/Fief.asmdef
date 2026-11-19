@@ -5,7 +5,8 @@
         "Unity.Cinemachine",
         "Unity.InputSystem",
         "UnityEngine.UI",
-        "Unity.Localization"
+        "Unity.Localization",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

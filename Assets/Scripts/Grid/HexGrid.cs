@@ -12,6 +12,8 @@ public class HexGrid : MonoBehaviour
     [field:SerializeField] public HexOrientation Orientation { get; private set; }
     [field:SerializeField, Range(10, 100)] public int Width { get; private set; }
     [field:SerializeField, Range(10, 100)] public int Height { get; private set; }
+    // Le monde fait le tour d'est en ouest (les pôles restent des bords) ; option de carte, décochée pour un scénario à bords fixes.
+    [field:SerializeField] public bool WrapWorld { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }
     [field: SerializeField] public int BatchSize { get; private set; }
     public List<Vector2> DefaultVisibleTiles { get; set; } = new List<Vector2> { new Vector2(0, 0) };

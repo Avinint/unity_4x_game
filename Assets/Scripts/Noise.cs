@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public static class Noise
 {
     public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, float scale, int seed, int octaves,
-        float persistence, float lacunarity, Vector2 offset)
+        float persistence, float lacunarity, Vector2 offset, bool wrapX = false)
     {
         System.Random prng = new System.Random(seed);
 
@@ -18,12 +19,23 @@ public static class Noise
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
         }
 
-        
+        // Décalages propres au bouclage, tirés après les autres : les cartes à bords fixes ne changent pas.
+        // Plus petits (±1000) : en 3D, de trop grandes coordonnées perdent en précision.
+        float3[] wrapOffsets = new float3[octaves];
+        if (wrapX)
+            for (int i = 0; i < octaves; i++)
+                wrapOffsets[i] = new float3(prng.Next(-1000, 1000), prng.Next(-1000, 1000), prng.Next(-1000, 1000));
+
         // division par scale donc 0 interdit
         if (scale <= 0)
         {
             scale = 0.0001f;
         }
+
+        // Bouclage est-ouest : chaque colonne devient un angle sur un cylindre de circonférence mapWidth / scale
+        // (une case = la même distance dans le bruit qu'en vertical) ; un bruit 3D lu sur ce cercle revient
+        // au même point après un tour, donc le bord ouest se raccorde au bord est.
+        float radius = mapWidth / (2f * Mathf.PI) / scale;
 
         // We keep track of the max and min noise heights so we can normalize the noise map later
         // WHY ?
@@ -45,15 +57,24 @@ public static class Noise
 
                 for (int i = 0; i < octaves; i++)
                 {
-                    float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i].x;
-                    float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i].y;
+                    float perlinValue;
+                    if (wrapX)
+                    {
+                        float angle = 2f * Mathf.PI * x / mapWidth;
+                        var p = new float3(math.cos(angle) * radius, math.sin(angle) * radius, (y - halfHeight) / scale);
+                        perlinValue = noise.cnoise(p * frequency + wrapOffsets[i]);   // déjà entre -1 et 1
+                    }
+                    else
+                    {
+                        float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i].x;
+                        float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i].y;
+                        perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
+                    }
 
-                    float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1;
-                    
                     noiseHeight += perlinValue * amplitude;
 
                     amplitude *= persistence;
-                    
+
                     frequency *= lacunarity;
                 }
 
@@ -69,12 +90,12 @@ public static class Noise
                 noiseMap[x, y] = noiseHeight;
             }
         }
-        
+
         NormalizeMap(noiseMap, maxNoiseHeight, minNoiseHeight);
 
         return noiseMap;
     }
-    
+
     public static void NormalizeMap(float[,] map, float maxHeight, float minHeight)
     {
         for(int y = 0; y < map.GetLength(1); y++)

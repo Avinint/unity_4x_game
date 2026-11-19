@@ -12,6 +12,7 @@ public class MapGenerator : MonoBehaviour
     // Taille de la carte : toujours celle de HexGrid (lue au lancement de la génération).
     public int Width { get; private set; }
     public int Height { get; private set; }
+    public bool WrapWorld { get; private set; }   // lu sur HexGrid.WrapWorld au lancement
 
     [Tooltip("The scale of the noise map")] public float NoiseScale = .5f;
 
@@ -84,6 +85,7 @@ public class MapGenerator : MonoBehaviour
         }
         Width = HexGrid.Width;
         Height = HexGrid.Height;
+        WrapWorld = HexGrid.WrapWorld;
 
         // En jeu : nouvelle carte à chaque partie ; la graine tirée est affichée pour pouvoir la rejouer.
         if (RandomSeed && Application.isPlaying)
@@ -164,10 +166,10 @@ public class MapGenerator : MonoBehaviour
     // Altitude → relief ; latitude + bruit + altitude → température ; bruit → humidité ; puis biome.
     private MapCell[,] BuildCells(HexOrientation orientation)
     {
-        float[,] altitude = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset);
-        float[,] humidity = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 1, Octaves, Persistence, Lacunarity, Offset);
-        float[,] heat = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 2, Octaves, Persistence, Lacunarity, Offset);
-        float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset);
+        float[,] altitude = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
+        float[,] humidity = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 1, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
+        float[,] heat = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 2, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
+        float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
 
         float sea = MapRules.Percentile(altitude, Rules.WaterFraction);
         altitude = MapRules.AddRidges(altitude, ridges, sea, Rules.RidgeWeight);
@@ -246,11 +248,14 @@ public class MapGenerator : MonoBehaviour
         return cells;
     }
 
-    // Voisins hexagonaux d'une case en coordonnées offset.
-    private static IEnumerable<Vector2Int> Neighbours(int x, int y, HexOrientation orientation)
+    // Voisins hexagonaux d'une case en coordonnées offset ; monde qui fait le tour : la colonne revient dans [0, Width).
+    private IEnumerable<Vector2Int> Neighbours(int x, int y, HexOrientation orientation)
     {
         foreach (var n in HexMetrics.GetNeighbourCoordinatesList(HexMetrics.OffsetToAxial(x, y, orientation)))
-            yield return HexMetrics.CubeToOffset(HexMetrics.AxialToCube(n), orientation);
+        {
+            var o = HexMetrics.CubeToOffset(HexMetrics.AxialToCube(n), orientation);
+            yield return WrapWorld ? new Vector2Int((o.x % Width + Width) % Width, o.y) : o;
+        }
     }
 
     private TerrainType TerrainFor(Biome biome)
