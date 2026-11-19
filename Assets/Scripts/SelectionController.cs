@@ -52,9 +52,11 @@ public class SelectionController : Singleton<SelectionController>
         // Clic sur une case sans unité : désélection.
         Unit unit = tile.GetFirstUnit(GameManager.Instance.LocalPlayer);
         if (unit == null) { Deselect(); return; }
+        bool changed = unit != SelectedUnit;
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
         SelectedUnit = unit;
         SelectedUnit.Select();
+        if (changed) CameraController.Instance.CenterOn(tile.CentrePosition);
 
         if (Grid.Selector != null)
         {

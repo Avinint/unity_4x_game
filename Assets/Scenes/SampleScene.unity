@@ -1273,6 +1273,7 @@ MonoBehaviour:
   fogColor: {r: 0.5176471, g: 0.5176471, b: 0.5176471, a: 1}
   fogAmount: 0.5
   riverCrossingCost: 3
+  riverWidth: 0.8
   <Selector>k__BackingField: {fileID: 2116262286}
   <HoverMarker>k__BackingField: {fileID: 1716819127}
 --- !u!4 &1001322750
@@ -1778,6 +1779,7 @@ MonoBehaviour:
   defaultMode: 0
   currentMode: 0
   isLocked: 0
+  centerDuration: 0.3
 --- !u!1 &1525122967
 GameObject:
   m_ObjectHideFlags: 0

@@ -73,6 +73,32 @@ public class CameraController : Singleton<CameraController>
     
     public GameObject CameraTarget { get => cameraTarget; }
 
+    [SerializeField] private float centerDuration = 0.3f;   // durée du glissement vers l'unité sélectionnée
+    private Coroutine centerCoroutine;
+
+    // Fait glisser la vue jusqu'à `position`, sans changer le zoom.
+    public void CenterOn(Vector3 position)
+    {
+        if (isLocked) return;
+        if (centerCoroutine != null) StopCoroutine(centerCoroutine);
+        Vector3 end = new Vector3(position.x, cameraTarget.transform.position.y, position.z);
+        centerCoroutine = StartCoroutine(GlideTo(end));
+    }
+
+    private IEnumerator GlideTo(Vector3 end)
+    {
+        Vector3 start = cameraTarget.transform.position;
+        for (float t = 0f; t < centerDuration; t += Time.deltaTime)
+        {
+            cameraTarget.transform.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t / centerDuration));
+            ClampTarget();
+            yield return null;
+        }
+        cameraTarget.transform.position = end;
+        ClampTarget();
+        centerCoroutine = null;
+    }
+
     void Start()
     {
         overheadFollow = OverheadCamera.GetComponent<Unity.Cinemachine.CinemachineFollow>();
@@ -126,6 +152,7 @@ public class CameraController : Singleton<CameraController>
         
         if (context.performed)
         {
+            if (centerCoroutine != null) StopCoroutine(centerCoroutine);
             if (panCoroutine != null)
             {
                 StopCoroutine(panCoroutine);
