@@ -79,11 +79,9 @@ public class SelectionController : Singleton<SelectionController>
         if (unit.Tile == SelectedTile && SelectedUnit != null)
             unit = tile.GetNextUnit(GameManager.Instance.LocalPlayer, SelectedUnit) ?? SelectedUnit;
         CancelAiming();
-        bool changed = unit != SelectedUnit;
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
         SelectedUnit = unit;
         SelectedUnit.Select();
-        if (changed) CameraController.Instance.CenterOn(tile.CentrePosition);
 
         if (Grid.Selector != null)
         {
