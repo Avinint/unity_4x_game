@@ -47,8 +47,16 @@ public class CameraController : Singleton<CameraController>
     private void Update()
     {
         if (isLocked || Mouse.current == null) return;
+        if (Mouse.current.middleButton.wasPressedThisFrame) CenterOnHovered();
         if (leftPressed) DragMap();
         else EdgeScroll();
+    }
+
+    // Clic du milieu (comme Civ 6) : la vue glisse jusqu'à la case survolée, découverte ou non.
+    private void CenterOnHovered()
+    {
+        HexGrid grid = GameManager.Instance != null ? GameManager.Instance.HexGrid : null;
+        if (grid != null && grid.HoveredTile != null) CenterOn(grid.HoveredTile.DisplayPosition);
     }
 
     // Clic gauche glissé : la carte suit la souris, le point saisi reste sous le curseur.
