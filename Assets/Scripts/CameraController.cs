@@ -109,7 +109,8 @@ public class CameraController : Singleton<CameraController>
     public event Action<Unity.Cinemachine.CinemachineCamera> onCameraChanged;
 
     public event Action onSelectAction;
-    public event Action onCommandAction;
+    public event Action onCommandStart;     // appui sur le clic droit : début de la visée
+    public event Action onCommandRelease;   // relâchement : l'ordre part
     public event Action onDeselectAction;
 
     [SerializeField] private bool isLocked = false;
@@ -244,10 +245,8 @@ public class CameraController : Singleton<CameraController>
 
     public void OnTriggerCommand(InputAction.CallbackContext context)
     {
-        if (context.performed)
-        {
-            onCommandAction?.Invoke();
-        }
+        if (context.started) onCommandStart?.Invoke();
+        else if (context.canceled) onCommandRelease?.Invoke();
     }
 
     // Clic gauche : bref = sélection au relâchement ; glissé = déplacement de la carte (DragMap), sans sélection.

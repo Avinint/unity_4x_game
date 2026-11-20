@@ -84,6 +84,37 @@ public static class HexMetrics
         return result;
     }
 
+    // Anneaux plats concentriques (centre à l'origine), juste au-dessus du sol, faces vers le haut.
+    // Chaque anneau : rayon extérieur et largeur. Sert au marqueur de sélection.
+    public static Mesh BuildRingMesh(int segments, params (float outer, float width)[] rings)
+    {
+        var vertices = new List<Vector3>();
+        var triangles = new List<int>();
+        foreach (var (outer, width) in rings)
+        {
+            float inner = outer - width;
+            int start = vertices.Count;
+            for (int i = 0; i < segments; i++)
+            {
+                float a = 2f * Mathf.PI * i / segments;
+                var dir = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                vertices.Add(dir * outer + Vector3.up * 0.05f);   // un peu au-dessus du sol : pas de scintillement
+                vertices.Add(dir * inner + Vector3.up * 0.05f);
+            }
+            for (int i = 0; i < segments; i++)
+            {
+                int o = start + 2 * i, n = start + 2 * ((i + 1) % segments);
+                triangles.AddRange(new[] { o, o + 1, n, o + 1, n + 1, n });   // sens horaire vu d'en haut
+            }
+        }
+        var mesh = new Mesh { name = "SelectionRings" };
+        mesh.SetVertices(vertices);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
     // Rectangle (x, z) couvrant les centres de toutes les cases d'une grille width × height (coordonnées locales).
     // Prisme hexagonal sans couvercle, de y = 0 à y = 1 (mis à l'échelle par case). Pointe en haut, comme les modèles.
     public static Mesh BuildPlinthMesh(float hexSize)

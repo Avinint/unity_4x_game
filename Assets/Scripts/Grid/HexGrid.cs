@@ -86,6 +86,13 @@ public class HexGrid : MonoBehaviour
 
     [field: SerializeField]
     public GameObject Selector { get; set; }
+    [Header("Marqueurs")]
+    [SerializeField] private Color selectorColor = Color.white;   // anneaux de l'unité sélectionnée
+    [field: SerializeField] public Color ReachableColor { get; private set; } = new Color(1f, 0.8f, 0.2f);       // doré
+    [field: SerializeField] public Color BeyondColor { get; private set; } = new Color(0.10f, 0.15f, 0.45f);     // bleu marine
+    [field: SerializeField] public Color ForbiddenColor { get; private set; } = new Color(0.85f, 0.15f, 0.10f);  // rouge
+    [field: SerializeField] public Color OutOfSightColor { get; private set; } = new Color(0.40f, 0.22f, 0.10f); // marron
+    private Material destinationMaterial;
 
     private void Awake()
     {
@@ -95,6 +102,51 @@ public class HexGrid : MonoBehaviour
         mapGenerator = FindAnyObjectByType<MapGenerator>();
         riverView = new GameObject("Rivers").AddComponent<RiverView>();
         riverView.transform.SetParent(transform, false);
+        SetupSelector();
+        SetupDestinationMarker();
+    }
+
+    // Cercle de destination (ancien marqueur de survol) : anneau plat, couleur selon l'état de la visée.
+    private void SetupDestinationMarker()
+    {
+        if (HoverMarker == null) return;
+        HoverMarker.GetComponent<MeshFilter>().sharedMesh = HexMetrics.BuildRingMesh(48, (HexSize * 0.78f, HexSize * 0.07f));
+        HoverMarker.transform.localScale = Vector3.one;
+        HoverMarker.transform.rotation = Quaternion.identity;
+        var renderer = HoverMarker.GetComponent<MeshRenderer>();
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        destinationMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        renderer.sharedMaterial = destinationMaterial;
+        HoverMarker.SetActive(false);
+    }
+
+    public void ShowDestination(HexTile tile, Color color)
+    {
+        if (HoverMarker == null) return;
+        destinationMaterial.SetColor("_BaseColor", color);
+        HoverMarker.transform.position = tile.DisplayPosition;
+        HoverMarker.SetActive(true);
+    }
+
+    public void HideDestination()
+    {
+        if (HoverMarker != null) HoverMarker.SetActive(false);
+    }
+
+    // Unité sélectionnée : deux anneaux blancs à plat (comme Civ 6) au lieu de l'ancien modèle vertical.
+    private void SetupSelector()
+    {
+        if (Selector == null) return;
+        Selector.GetComponent<MeshFilter>().sharedMesh = HexMetrics.BuildRingMesh(48,
+            (HexSize * 0.78f, HexSize * 0.05f), (HexSize * 0.66f, HexSize * 0.025f));
+        Selector.transform.localScale = Vector3.one;
+        Selector.transform.rotation = Quaternion.identity;
+        var renderer = Selector.GetComponent<MeshRenderer>();
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        // Matériau propre : l'ancien (SelectorForbidden) est transparent avec une texture rouge, illisible sur les anneaux.
+        var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        material.SetColor("_BaseColor", selectorColor);
+        renderer.sharedMaterial = material;
     }
 
     private void OnEnable()
@@ -266,17 +318,6 @@ public class HexGrid : MonoBehaviour
     
     [field: SerializeField] public GameObject HoverMarker { get; set; }
 
-    // Le marqueur de survol suit la case survolée (découverte) et se masque sinon.
-    public void UpdateHoverMarker()
-    {
-        if (HoverMarker == null) return;
-        // Pas de marqueur de survol sur la case sélectionnée (elle a déjà le sien).
-        HexTile selected = SelectionController.Instance != null ? SelectionController.Instance.SelectedTile : null;
-        bool show = _activeTile != null && _activeTile.IsHovered && _activeTile != selected;
-        HoverMarker.SetActive(show);
-        if (show) HoverMarker.transform.position = _activeTile.DisplayPosition;
-    }
-
     // La souris quitte la grille : le survol s'efface.
     private void OnMouseLeaveGrid()
     {
@@ -285,7 +326,6 @@ public class HexGrid : MonoBehaviour
 
         _activeTile.OnMouseExit();
         _activeTile = null;
-        UpdateHoverMarker();
     }
 
     private void OnMouseMove(RaycastHit hit)
@@ -307,7 +347,6 @@ public class HexGrid : MonoBehaviour
         if (_activeTile != null) _activeTile.OnMouseExit();
         _activeTile = tile;
         _activeTile.OnMouseEnter();
-        UpdateHoverMarker();
     }
 
     private void SetHexTileTerrainTypes(MapCell[,] cells)

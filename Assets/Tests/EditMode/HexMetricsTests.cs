@@ -23,6 +23,26 @@ public class HexMetricsTests
     }
 
     [Test]
+    public void BuildRingMesh_RadiiWithinRing()
+    {
+        var mesh = HexMetrics.BuildRingMesh(16, (4f, 1f));
+        foreach (var v in mesh.vertices)
+        {
+            float r = new Vector2(v.x, v.z).magnitude;
+            Assert.That(r, Is.InRange(2.999f, 4.001f));
+        }
+    }
+
+    [Test]
+    public void BuildRingMesh_FacesUp()
+    {
+        var mesh = HexMetrics.BuildRingMesh(16, (4f, 1f), (2f, 0.5f));
+        var v = mesh.vertices; var t = mesh.triangles;
+        for (int i = 0; i < t.Length; i += 3)
+            Assert.Greater(Vector3.Cross(v[t[i + 1]] - v[t[i]], v[t[i + 2]] - v[t[i]]).y, 0f);
+    }
+
+    [Test]
     public void WrapShift_NearColumnStays() => Assert.AreEqual(0f, HexMetrics.WrapShift(10f, 12f, 100f));
 
     [Test]

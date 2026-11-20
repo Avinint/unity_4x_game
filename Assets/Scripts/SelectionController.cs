@@ -11,6 +11,7 @@ public class SelectionController : Singleton<SelectionController>
     private HexGrid Grid => GameManager.Instance.HexGrid;
 
     private PathPreview preview;
+    private bool aiming;   // clic droit maintenu : on choisit la destination
 
     protected override void Init()
     {
@@ -22,7 +23,8 @@ public class SelectionController : Singleton<SelectionController>
     {
         var cam = CameraController.Instance;
         cam.onSelectAction += Select;
-        cam.onCommandAction += Command;
+        cam.onCommandStart += StartAiming;
+        cam.onCommandRelease += ReleaseAiming;
         cam.onDeselectAction += Deselect;
 
         // Le marqueur n'apparaît qu'avec une unité sélectionnée.
@@ -34,9 +36,23 @@ public class SelectionController : Singleton<SelectionController>
         var cam = CameraController.Instance;
         if (cam == null) return;
         cam.onSelectAction -= Select;
-        cam.onCommandAction -= Command;
+        cam.onCommandStart -= StartAiming;
+        cam.onCommandRelease -= ReleaseAiming;
         cam.onDeselectAction -= Deselect;
     }
+
+    // Appui droit : la visée commence, seulement pour une unité commandable.
+    private void StartAiming() => aiming = CanCommand();
+
+    // Relâchement droit : l'ordre part vers la case visée.
+    private void ReleaseAiming()
+    {
+        if (!aiming) return;
+        aiming = false;
+        Command();
+    }
+
+    private void CancelAiming() => aiming = false;
 
     // Case survolée, explorée ou non.
     private HexTile HoveredTile()
@@ -53,6 +69,7 @@ public class SelectionController : Singleton<SelectionController>
         // Clic sur une case sans unité : désélection.
         Unit unit = tile.GetFirstUnit(GameManager.Instance.LocalPlayer);
         if (unit == null) { Deselect(); return; }
+        CancelAiming();
         bool changed = unit != SelectedUnit;
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
         SelectedUnit = unit;
@@ -64,8 +81,6 @@ public class SelectionController : Singleton<SelectionController>
             Grid.Selector.transform.position = tile.CentrePosition;
             Grid.Selector.SetActive(true);
         }
-
-        Grid.UpdateHoverMarker();
     }
 
     // Déplacement par chemin (terre découverte) de l'unité sélectionnée.
@@ -89,7 +104,6 @@ public class SelectionController : Singleton<SelectionController>
 
         // L'unité change de case elle-même (réservée dès le départ, corrigée si elle s'arrête plus tôt).
         SelectedUnit.MoveAlong(steps);
-        Grid.UpdateHoverMarker();
     }
 
     // Selon la connaissance du propriétaire de l'unité, pas selon l'affichage.
@@ -161,7 +175,6 @@ public class SelectionController : Singleton<SelectionController>
         {
             HexTile target = HoveredTile();
             if (target != null && target.CanStop(SelectedUnit)) SelectedUnit.Teleport(target);
-            Grid.UpdateHoverMarker();
         }
         if (keyboard.f10Key.wasPressedThisFrame) SelectedUnit.ResetMovementPoints();
     }
@@ -170,10 +183,10 @@ public class SelectionController : Singleton<SelectionController>
     private int previewPoints = -1;
     private int previewShift = -1;
 
-    // Aperçu du trajet vers la case survolée ; recalculé seulement si la cible, l'origine ou les points changent.
+    // Aperçu pendant la visée seulement ; recalculé si la cible, l'origine, les points ou les décalages changent.
     private void UpdatePreview()
     {
-        HexTile target = CanCommand() ? HoveredTile() : null;
+        HexTile target = aiming && CanCommand() ? HoveredTile() : null;
         int points = SelectedUnit != null ? SelectedUnit.MovementPoints : 0;
         if (target == previewTarget && SelectedTile == previewOrigin && points == previewPoints
             && Grid.ShiftVersion == previewShift) return;
@@ -182,17 +195,15 @@ public class SelectionController : Singleton<SelectionController>
         previewOrigin = SelectedTile;
         previewPoints = points;
 
-        List<Vector2Int> path = target != null ? PathTo(target) : null;
-        bool forbidden = false;
-        if (path == null && target != null && target != SelectedTile)
+        if (target == null || target == SelectedTile) { preview.Hide(); Grid.HideDestination(); return; }
+        List<Vector2Int> path = PathTo(target);
+        var state = PathPreview.StateFor(path != null, Sees(target.AxialCoordinates));
+        if (state == DestinationState.Forbidden)
         {
-            // Case interdite (eau, montagne) : chemin jusqu'à elle, affiché en rouge.
-            path = PathFinder.FindPath(SelectedTile.AxialCoordinates, target.AxialCoordinates,
-                a => a == target.AxialCoordinates || IsWalkable(a), Grid.Wrap, Grid.Distance);
-            forbidden = path != null && path.Count > 0;
-            if (!forbidden) path = null;
+            preview.Hide();   // interdite : cercle rouge, pas de trait
+            Grid.ShowDestination(target, Grid.ForbiddenColor);
+            return;
         }
-        if (path == null) { preview.Hide(); return; }
         // Chaque pas pris à la copie la plus proche du précédent : pas de trait à travers la carte à la couture.
         var steps = new List<Vector3>();
         Vector3 previous = SelectedTile.DisplayPosition;
@@ -202,18 +213,27 @@ public class SelectionController : Singleton<SelectionController>
             previous = Grid.NearestCopy(step.DisplayPosition, previous);
             steps.Add(previous);
         }
-        if (forbidden) preview.ShowForbidden(SelectedTile.DisplayPosition, steps);
-        else preview.Show(SelectedTile.DisplayPosition, steps, StopCount(path, points));
+        if (state == DestinationState.OutOfSight)
+        {
+            // Trajet estimé (cases inconnues comptées à 1) : tout en marron, sans découpage par tour.
+            preview.Show(SelectedTile.DisplayPosition, steps, steps.Count, Grid.OutOfSightColor, Grid.OutOfSightColor);
+            Grid.ShowDestination(target, Grid.OutOfSightColor);
+        }
+        else
+        {
+            preview.Show(SelectedTile.DisplayPosition, steps, StopCount(path, points), Grid.ReachableColor, Grid.BeyondColor);
+            Grid.ShowDestination(target, Grid.ReachableColor);
+        }
     }
 
+    // Échap / Retour arrière : annule d'abord une visée en cours, sinon désélectionne.
     private void Deselect()
     {
+        if (aiming) { CancelAiming(); return; }
         if (SelectedUnit == null) return;
         SelectedUnit.Deselect();
         SelectedUnit = null;
 
         if (Grid.Selector != null) Grid.Selector.SetActive(false);
-
-        Grid.UpdateHoverMarker();
     }
 }
