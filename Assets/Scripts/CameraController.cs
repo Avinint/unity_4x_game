@@ -39,10 +39,50 @@ public class CameraController : Singleton<CameraController>
     // Vitesse de défilement proportionnelle au zoom : cameraSpeed à la distance par défaut.
     private float PanSpeed => cameraSpeed * distance / distanceDefault;
 
-    // Souris près d'un bord de la fenêtre : la vue glisse dans cette direction.
+    [SerializeField] private float dragThreshold = 6f;   // pixels : en deçà, c'est un clic (sélection)
+    private bool leftPressed, dragging;
+    private Vector2 pressScreen;
+    private Vector3 grabPoint;
+
     private void Update()
     {
-        if (!edgeScroll || isLocked || !Application.isFocused || Mouse.current == null) return;
+        if (isLocked || Mouse.current == null) return;
+        if (leftPressed) DragMap();
+        else EdgeScroll();
+    }
+
+    // Clic gauche glissé : la carte suit la souris, le point saisi reste sous le curseur.
+    private void DragMap()
+    {
+        Vector2 mouse = Mouse.current.position.ReadValue();
+        if (!dragging && (mouse - pressScreen).magnitude < dragThreshold) return;
+        if (!dragging)
+        {
+            dragging = true;
+            if (centerCoroutine != null) { StopCoroutine(centerCoroutine); centerCoroutine = null; }
+        }
+        if (!TryGroundPoint(mouse, out Vector3 current)) return;
+        Vector3 delta = grabPoint - current;
+        cameraTarget.transform.position += new Vector3(delta.x, 0f, delta.z);
+        ClampTarget();
+    }
+
+    // Point du sol (plan de la grille) sous une position de l'écran.
+    private static bool TryGroundPoint(Vector2 screen, out Vector3 point)
+    {
+        point = default;
+        HexGrid grid = GameManager.Instance != null ? GameManager.Instance.HexGrid : null;
+        if (Camera.main == null || grid == null) return false;
+        Ray ray = Camera.main.ScreenPointToRay(screen);
+        if (!new Plane(Vector3.up, grid.transform.position).Raycast(ray, out float enter)) return false;
+        point = ray.GetPoint(enter);
+        return true;
+    }
+
+    // Souris près d'un bord de la fenêtre : la vue glisse dans cette direction.
+    private void EdgeScroll()
+    {
+        if (!edgeScroll || !Application.isFocused) return;
         Vector2 direction = CameraMath.EdgeScrollDirection(
             Mouse.current.position.ReadValue(), new Vector2(Screen.width, Screen.height), edgeScrollMargin);
         if (direction == Vector2.zero) return;
@@ -202,9 +242,21 @@ public class CameraController : Singleton<CameraController>
         }
     }
 
+    // Clic gauche : bref = sélection au relâchement ; glissé = déplacement de la carte (DragMap), sans sélection.
     public void OnFocusChanged(InputAction.CallbackContext context)
     {
-        if (context.performed) onSelectAction?.Invoke();
+        if (context.started && Mouse.current != null)
+        {
+            pressScreen = Mouse.current.position.ReadValue();
+            leftPressed = TryGroundPoint(pressScreen, out grabPoint);
+            dragging = false;
+        }
+        else if (context.canceled)
+        {
+            bool wasDrag = dragging;
+            leftPressed = dragging = false;
+            if (!wasDrag) onSelectAction?.Invoke();
+        }
     }
     
     public void OnZoomChanged(InputAction.CallbackContext context)
