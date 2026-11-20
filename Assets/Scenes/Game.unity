@@ -1415,6 +1415,7 @@ MonoBehaviour:
   Lacunarity: 2.3
   Seed: 796013
   RandomSeed: 1
+  MapType: 2
   Offset: {x: 0, y: 0}
   AutoUpdate: 0
   GenerateMapOnStart: 1
@@ -1424,6 +1425,7 @@ MonoBehaviour:
     HillFraction: 0.25
     MountainFraction: 0.08
     RidgeWeight: 0.7
+    ShapeWeight: 0.8
     LatitudeWeight: 0.8
     AltitudeCooling: 0.2
     FrozenFraction: 0.05
@@ -1433,6 +1435,7 @@ MonoBehaviour:
     DryFraction: 0.25
     WetFraction: 0.25
     MarshFraction: 0.08
+    IceEdgeFraction: 0.5
     FrozenBelow: 0.15
     TundraBelow: 0.25
     ColdBelow: 0.35
@@ -1785,7 +1788,6 @@ MonoBehaviour:
   distanceMin: 40
   distanceMax: 250
   fitMapOnMaxZoom: 1
-  recenterFrom: 0.6
   distanceDefault: 120
   distanceZoomSpeed: 2.5
   scrollZoomStep: 0.15

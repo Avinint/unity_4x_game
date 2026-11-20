@@ -179,7 +179,7 @@ public class MapGenerator : MonoBehaviour
         float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
 
         // Forme du type de carte, avant le niveau de la mer : elle décide où sont les terres.
-        float[,] shape = MapShape.Mask(MapType, Width, Height, PolarIceRows, WrapWorld);
+        float[,] shape = MapShape.Mask(MapType, Width, Height, PolarIceRows, WrapWorld, new System.Random(Seed + 4));
         if (shape != null)
             for (int y = 0; y < Height; y++)
                 for (int x = 0; x < Width; x++)
@@ -196,6 +196,16 @@ public class MapGenerator : MonoBehaviour
             if (MapRules.IsPolar(y, Height, PolarIceRows))
                 for (int x = 0; x < Width; x++)
                     altitude[x, y] = Mathf.Min(altitude[x, y], sea - 0.001f);
+        // Continents : chenal d'océan entre continents voisins, sinon le bruit les reliait parfois.
+        // Même graine que le masque, donc mêmes centres.
+        if (MapType == MapType.Continents)
+        {
+            var centres = MapShape.ContinentCentres(Width, Height, PolarIceRows, WrapWorld, new System.Random(Seed + 4));
+            bool[] channels = MapShape.OceanChannels(Width, centres, WrapWorld);
+            for (int y = 0; y < Height; y++)
+                for (int x = 0; x < Width; x++)
+                    if (channels[x]) altitude[x, y] = Mathf.Min(altitude[x, y], sea - 0.001f);
+        }
         altitude = MapRules.AddRidges(altitude, ridges, sea, Rules.RidgeWeight);
         ReliefMap = altitude;
         var land = new List<float>();
