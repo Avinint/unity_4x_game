@@ -139,10 +139,18 @@ public class GameManager : Singleton<GameManager>
     }
 
     // Entrée : fin du tour du joueur local.
+    // Ignorée tant qu'une de ses unités est en marche : un tour n'est fini qu'une fois tous ses mouvements terminés.
     public void ChangeTurn(InputAction.CallbackContext context)
     {
-        if (!context.performed || CurrentPlayer != LocalPlayer) return;
+        if (!context.performed || CurrentPlayer != LocalPlayer || HasMovingUnit(CurrentPlayer)) return;
         EndPlayerTurn();
+    }
+
+    private static bool HasMovingUnit(Player player)
+    {
+        foreach (var go in player.units)
+            if (go != null && go.TryGetComponent(out Unit unit) && unit.IsMoving) return true;
+        return false;
     }
 
     // Passe au joueur suivant ; nouvelle manche après le dernier.

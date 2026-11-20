@@ -112,6 +112,27 @@ public class CameraController : Singleton<CameraController>
         OverheadCamera.Lens.FieldOfView = fieldOfView;
         SetDistance(distanceDefault);
         ChangeCamera(defaultMode);
+        if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
+    }
+
+    private void OnDestroy()
+    {
+        if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart -= OnPlayerTurnStart;
+    }
+
+    // Monde qui fait le tour : en défilant toujours dans le même sens, x grandit et la précision des float baisse.
+    // Au début du tour du joueur local, tout est à l'arrêt (la fin de tour attend les mouvements) : la cible est
+    // ramenée près du centre d'un nombre entier de largeurs ; les colonnes se replacent, la vue reste identique.
+    private void OnPlayerTurnStart(Player player)
+    {
+        HexGrid grid = GameManager.Instance.HexGrid;
+        if (player != GameManager.Instance.LocalPlayer || grid == null || !grid.Wraps) return;
+        Vector3 p = cameraTarget.transform.position;
+        float shift = HexMetrics.WrapShift(grid.WorldBounds.center.x, p.x, grid.WorldWidth);
+        if (shift == 0f) return;
+        if (centerCoroutine != null) { StopCoroutine(centerCoroutine); centerCoroutine = null; }
+        cameraTarget.transform.position = p - Vector3.right * shift;
+        grid.RefreshWrapShifts();
     }
 
     // Place la caméra à `distance` de la cible, côté sud ; l'inclinaison varie de pitchNear à pitchFar avec la distance.

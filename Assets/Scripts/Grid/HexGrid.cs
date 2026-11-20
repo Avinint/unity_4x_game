@@ -195,12 +195,17 @@ public class HexGrid : MonoBehaviour
     public int ShiftVersion { get; private set; }
     private float lastShiftCameraX = float.NaN;
 
+    private void LateUpdate() => UpdateWrapShifts(false);
+
+    // Recalcul immédiat (la caméra vient d'être recentrée) : sans attendre l'image suivante.
+    public void RefreshWrapShifts() => UpdateWrapShifts(true);
+
     // Monde qui fait le tour : chaque colonne s'affiche à la copie la plus proche de la caméra.
-    private void LateUpdate()
+    private void UpdateWrapShifts(bool force)
     {
         if (!Wraps || Tiles == null || CameraController.Instance == null) return;
         float camX = CameraController.Instance.CameraTarget.transform.position.x;
-        if (!float.IsNaN(lastShiftCameraX) && Mathf.Abs(camX - lastShiftCameraX) < HexSize) return;   // pas besoin à chaque image
+        if (!force && !float.IsNaN(lastShiftCameraX) && Mathf.Abs(camX - lastShiftCameraX) < HexSize) return;   // pas besoin à chaque image
         lastShiftCameraX = camX;
 
         bool changed = false;
