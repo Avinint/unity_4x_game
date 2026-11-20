@@ -11,12 +11,15 @@ public class SelectionController : Singleton<SelectionController>
     private HexGrid Grid => GameManager.Instance.HexGrid;
 
     private PathPreview preview;
+    private ReachableOutline outline;
     private bool aiming;   // clic droit maintenu : on choisit la destination
 
     protected override void Init()
     {
         preview = new GameObject("PathPreview").AddComponent<PathPreview>();
         preview.transform.SetParent(transform, false);
+        outline = new GameObject("ReachableOutline").AddComponent<ReachableOutline>();
+        outline.transform.SetParent(transform, false);
     }
 
     private void OnEnable()
@@ -63,12 +66,18 @@ public class SelectionController : Singleton<SelectionController>
 
     private void Select()
     {
-        HexTile tile = HoveredTile();
+        // Clic sur le modèle d'une unité visible : c'est elle (avec la caméra inclinée, le sol sous la souris
+        // est souvent la case derrière l'unité). Sinon : une unité de la case survolée.
+        Unit unit = UnitUnderMouse();
+        HexTile tile = unit != null ? unit.Tile : HoveredTile();
         if (tile == null || !tile.IsDiscovered) return;   // on ne sélectionne rien sous le brouillard
+        if (unit == null) unit = tile.GetFirstUnit(GameManager.Instance.LocalPlayer);
 
         // Clic sur une case sans unité : désélection.
-        Unit unit = tile.GetFirstUnit(GameManager.Instance.LocalPlayer);
         if (unit == null) { Deselect(); return; }
+        // Reclic sur la case de l'unité déjà sélectionnée : on passe à l'autre unité du joueur local sur la case.
+        if (unit.Tile == SelectedTile && SelectedUnit != null)
+            unit = tile.GetNextUnit(GameManager.Instance.LocalPlayer, SelectedUnit) ?? SelectedUnit;
         CancelAiming();
         bool changed = unit != SelectedUnit;
         if (SelectedUnit != null && SelectedUnit != unit) SelectedUnit.Deselect();
@@ -81,6 +90,23 @@ public class SelectionController : Singleton<SelectionController>
             Grid.Selector.transform.position = tile.CentrePosition;
             Grid.Selector.SetActive(true);
         }
+    }
+
+    // Unité visible la plus proche sous le curseur (collider de son modèle).
+    private static Unit UnitUnderMouse()
+    {
+        if (Camera.main == null || Mouse.current == null) return null;
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Unit best = null;
+        float bestDistance = float.MaxValue;
+        foreach (var hit in Physics.RaycastAll(ray))
+        {
+            var unit = hit.collider.GetComponentInParent<Unit>();
+            if (unit == null || !unit.IsVisible || unit.Tile == null || hit.distance >= bestDistance) continue;
+            best = unit;
+            bestDistance = hit.distance;
+        }
+        return best;
     }
 
     // Déplacement par chemin (terre découverte) de l'unité sélectionnée.
@@ -163,6 +189,30 @@ public class SelectionController : Singleton<SelectionController>
         if (SelectedUnit != null && Grid.Selector != null)
             Grid.Selector.transform.position = SelectedUnit.transform.position;
         UpdatePreview();
+        UpdateOutline();
+    }
+
+    private Unit outlineUnit;
+    private HexTile outlineOrigin;
+    private int outlinePoints = -1, outlineShift = -1;
+
+    // Contour de la zone atteignable ce tour-ci : unité commandable, à l'arrêt, avec au moins un point.
+    // Recalculé seulement si l'unité, sa case, ses points ou les décalages d'affichage changent.
+    private void UpdateOutline()
+    {
+        bool show = CanCommand() && SelectedUnit.MovementPoints > 0;
+        Unit unit = show ? SelectedUnit : null;
+        HexTile origin = show ? SelectedTile : null;
+        int points = show ? SelectedUnit.MovementPoints : 0;
+        if (unit == outlineUnit && origin == outlineOrigin && points == outlinePoints
+            && Grid.ShiftVersion == outlineShift) return;
+        outlineUnit = unit; outlineOrigin = origin; outlinePoints = points; outlineShift = Grid.ShiftVersion;
+        if (!show || origin == null) { outline.Hide(); return; }
+
+        // Mêmes règles que le chemin (connaissance du propriétaire, rivières) ; seulement les cases où s'arrêter.
+        var zone = PathFinder.Reachable(origin.AxialCoordinates, IsWalkable, StepCost, points, Grid.Wrap);
+        zone.RemoveWhere(a => a != origin.AxialCoordinates && !CanStopAt(a));
+        outline.Show(Grid, HexMetrics.BoundaryEdges(zone, Grid.Wrap), Grid.OutlineColor);
     }
 
     // Touches de débogage lues directement : pas d'action dans PlayerControls pour un outil provisoire.
@@ -221,8 +271,10 @@ public class SelectionController : Singleton<SelectionController>
         }
         else
         {
-            preview.Show(SelectedTile.DisplayPosition, steps, StopCount(path, points), Grid.ReachableColor, Grid.BeyondColor);
-            Grid.ShowDestination(target, Grid.ReachableColor);
+            int reachable = StopCount(path, points);
+            preview.Show(SelectedTile.DisplayPosition, steps, reachable, Grid.ReachableColor, Grid.BeyondColor);
+            // Le cercle prend la couleur de la fin du trait : doré si l'unité y arrive ce tour-ci, bleu marine sinon.
+            Grid.ShowDestination(target, reachable >= path.Count ? Grid.ReachableColor : Grid.BeyondColor);
         }
     }
 

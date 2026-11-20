@@ -226,6 +226,41 @@ public class HexTileTests
     }
 
     [Test]
+    public void GetNextUnit_CyclesOwnUnits()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        NewUnit();
+        var a = unitObject.GetComponent<Unit>();
+        a.Owner = me;
+        tile.AddUnit(unitObject);
+        NewUnit();
+        var b = unitObject.GetComponent<Unit>();
+        b.Owner = me;
+        tile.AddUnit(unitObject);
+
+        Assert.AreSame(b, tile.GetNextUnit(me, a));
+        Assert.AreSame(a, tile.GetNextUnit(me, b));
+    }
+
+    [Test]
+    public void GetNextUnit_SingleOwnUnit_IsNull()
+    {
+        var tile = NewTile();
+        var me = NewPlayer();
+        var other = NewPlayer();
+        NewUnit();
+        var mine = unitObject.GetComponent<Unit>();
+        mine.Owner = me;
+        tile.AddUnit(unitObject);
+        NewUnit();
+        unitObject.GetComponent<Unit>().Owner = other;
+        tile.AddUnit(unitObject);
+
+        Assert.IsNull(tile.GetNextUnit(me, mine));
+    }
+
+    [Test]
     public void GetFirstUnit_NoOwnUnit_ReturnsFirst()
     {
         var tile = NewTile();

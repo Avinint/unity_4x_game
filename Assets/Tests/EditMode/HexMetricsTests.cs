@@ -43,6 +43,14 @@ public class HexMetricsTests
     }
 
     [Test]
+    public void BoundaryEdges_SingleCell_SixEdges() =>
+        Assert.AreEqual(6, HexMetrics.BoundaryEdges(new[] { new Vector2Int(3, 3) }).Count);
+
+    [Test]
+    public void BoundaryEdges_TwoNeighbours_TenEdges() =>
+        Assert.AreEqual(10, HexMetrics.BoundaryEdges(new[] { new Vector2Int(3, 3), new Vector2Int(4, 3) }).Count);
+
+    [Test]
     public void WrapShift_NearColumnStays() => Assert.AreEqual(0f, HexMetrics.WrapShift(10f, 12f, 100f));
 
     [Test]

@@ -92,7 +92,17 @@ public class HexGrid : MonoBehaviour
     [field: SerializeField] public Color BeyondColor { get; private set; } = new Color(0.10f, 0.15f, 0.45f);     // bleu marine
     [field: SerializeField] public Color ForbiddenColor { get; private set; } = new Color(0.85f, 0.15f, 0.10f);  // rouge
     [field: SerializeField] public Color OutOfSightColor { get; private set; } = new Color(0.40f, 0.22f, 0.10f); // marron
+    // Zone atteignable : #66FFF0 (cyan clair ; un cyan plus soutenu se confondait avec les côtes). À revoir avec les cases détaillées.
+    [field: SerializeField] public Color OutlineColor { get; private set; } = new Color(0.4f, 1f, 0.941f);
     private Material destinationMaterial;
+
+    // Vecteur monde d'une case vers une autre (coordonnées telles quelles, même hors de la carte).
+    public Vector3 AxialToWorldDelta(Vector2Int from, Vector2Int to)
+    {
+        Vector2Int a = HexMetrics.CubeToOffset(HexMetrics.AxialToCube(from), Orientation);
+        Vector2Int b = HexMetrics.CubeToOffset(HexMetrics.AxialToCube(to), Orientation);
+        return HexMetrics.Center(HexSize, b.x, b.y, Orientation) - HexMetrics.Center(HexSize, a.x, a.y, Orientation);
+    }
 
     private void Awake()
     {

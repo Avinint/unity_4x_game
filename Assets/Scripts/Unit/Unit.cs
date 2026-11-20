@@ -69,6 +69,9 @@ public class Unit : MonoBehaviour
         if (player == Owner) ResetMovementPoints();
     }
 
+    // Affichée pour le joueur local (brouillard) : une unité cachée ne se sélectionne pas d'un clic.
+    public bool IsVisible => isVisible;
+
     // Affiche ou masque les modèles de l'unité (brouillard) ; l'objet reste actif.
     public void SetVisible(bool visible)
     {

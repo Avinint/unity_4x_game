@@ -351,6 +351,18 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         }
         return first;
     }
+
+    // Unité suivante de `owner` sur la case après `current`, en boucle ; null s'il n'y en a pas d'autre.
+    // Reclic sur la case de l'unité sélectionnée : on passe à l'autre (civil / militaire).
+    public Unit GetNextUnit(Player owner, Unit current)
+    {
+        var own = new List<Unit>();
+        foreach (var go in units)
+            if (go != null && go.TryGetComponent(out Unit unit) && unit.Owner == owner) own.Add(unit);
+        int index = own.IndexOf(current);
+        if (own.Count < 2 || index < 0) return null;
+        return own[(index + 1) % own.Count];
+    }
     
     
     

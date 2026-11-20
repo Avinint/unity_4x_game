@@ -81,6 +81,34 @@ public static class PathFinder
         return null;
     }
 
+    // Cases atteignables ce tour-ci avec `points` (origine comprise), selon la règle du déplacement :
+    // on entre dans une case tant qu'il reste au moins un point, les points ne descendent pas sous 0.
+    // On garde pour chaque case le plus de points restants (une case revue avec plus de points est rouverte).
+    public static HashSet<Vector2Int> Reachable(Vector2Int origin, Func<Vector2Int, bool> isPassable,
+        Func<Vector2Int, Vector2Int, int> stepCost, int points, Func<Vector2Int, Vector2Int> wrap = null)
+    {
+        wrap ??= v => v;
+        var best = new Dictionary<Vector2Int, int> { [origin] = points };
+        var queue = new Queue<Vector2Int>();
+        queue.Enqueue(origin);
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            int left = best[current];
+            if (left <= 0) continue;
+            foreach (var dir in Directions)
+            {
+                var next = wrap(current + dir);
+                if (!isPassable(next)) continue;
+                int after = Math.Max(0, left - stepCost(current, next));
+                if (best.TryGetValue(next, out int known) && known >= after) continue;
+                best[next] = after;
+                queue.Enqueue(next);
+            }
+        }
+        return new HashSet<Vector2Int>(best.Keys);
+    }
+
     // Nombre de cases du chemin parcourues avec `points` : on peut entrer dans une case
     // tant qu'il reste au moins un point ; une case plus chère que les points restants les consomme tous.
     public static int ReachableCount(IReadOnlyList<int> stepCosts, int points)

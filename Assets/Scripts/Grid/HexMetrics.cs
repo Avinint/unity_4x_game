@@ -408,6 +408,20 @@ public static class HexMetrics
         return new Vector2Int(a.x + wrapped - col, a.y);
     }
 
+    // Bords d'une zone : arêtes entre une case de la zone et une voisine hors de la zone.
+    // La voisine est rendue telle quelle (non ramenée), pour placer l'arête du bon côté à la couture.
+    public static List<(Vector2Int cell, Vector2Int outside)> BoundaryEdges(
+        ICollection<Vector2Int> zone, Func<Vector2Int, Vector2Int> wrap = null)
+    {
+        wrap ??= v => v;
+        var set = new HashSet<Vector2Int>(zone);
+        var edges = new List<(Vector2Int, Vector2Int)>();
+        foreach (var cell in set)
+            foreach (var n in GetNeighbourCoordinatesList(cell))
+                if (!set.Contains(wrap(n))) edges.Add((cell, n));
+        return edges;
+    }
+
     // Monde qui fait le tour : décalage (multiple de worldWidth) qui place une colonne d'abscisse x
     // à la copie la plus proche de `nearX` (la caméra).
     public static float WrapShift(float x, float nearX, float worldWidth) =>

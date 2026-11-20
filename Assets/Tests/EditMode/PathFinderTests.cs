@@ -147,6 +147,25 @@ public class PathFinderTests
     }
 
     [Test]
+    public void Reachable_TwoPoints_TwoStepsEachWay()
+    {
+        var zone = PathFinder.Reachable(new Vector2Int(5, 0), Grid(10, 1), (_, _) => 1, 2);
+
+        CollectionAssert.AreEquivalent(
+            new[] { new Vector2Int(3, 0), new Vector2Int(4, 0), new Vector2Int(5, 0), new Vector2Int(6, 0), new Vector2Int(7, 0) },
+            zone);
+    }
+
+    [Test]
+    public void Reachable_ExpensiveStep_EntersThenStops()
+    {
+        // Coût 3 avec 2 points : on entre dans la voisine (il reste un point), pas plus loin.
+        var zone = PathFinder.Reachable(new Vector2Int(0, 0), Grid(10, 1), (_, _) => 3, 2);
+
+        CollectionAssert.AreEquivalent(new[] { new Vector2Int(0, 0), new Vector2Int(1, 0) }, zone);
+    }
+
+    [Test]
     public void ReachableCount_StopsWhenPointsRunOut()
     {
         Assert.AreEqual(2, PathFinder.ReachableCount(new[] { 1, 1, 1 }, 2));
