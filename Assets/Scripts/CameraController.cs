@@ -332,17 +332,20 @@ public class CameraController : Singleton<CameraController>
         if (grid == null) return;
         // Garde ce que l'écran montre au sol dans la carte (cases entières), pas seulement le point visé :
         // avec la vue inclinée, une cible sur la dernière rangée montrait tout le vide au-delà.
+        // Bords sans dents (cases à sommet pointu) : au nord et au sud, la ligne des deux sommets latéraux
+        // (à une demi-taille du centre, pas la pointe) ; à l'est et à l'ouest, les rangées décalées d'une
+        // demi-case font que le bord plein passe par le centre des cases extrêmes.
         Rect map = grid.WorldBounds;
-        float halfW = grid.HexSize * Mathf.Sqrt(3f) * 0.5f, halfH = grid.HexSize;   // cases à sommet pointu
+        float edgeZ = grid.HexSize * 0.5f;
         float pitch = CameraMath.Pitch(distance, distanceMin, MaxDistance, pitchNear, pitchFar);
         var (south, north) = CameraMath.GroundExtent(distance, pitch, fieldOfView);
         Vector3 p = cameraTarget.transform.position;
         if (!grid.Wraps && Camera.main != null)   // monde qui fait le tour : est-ouest libre
         {
             float halfView = distance * Mathf.Tan(fieldOfView * 0.5f * Mathf.Deg2Rad) * Camera.main.aspect;   // largeur au niveau de la cible
-            p.x = CameraMath.ClampSpan(p.x, map.xMin - halfW, map.xMax + halfW, halfView, halfView);
+            p.x = CameraMath.ClampSpan(p.x, map.xMin, map.xMax, halfView, halfView);
         }
-        p.z = CameraMath.ClampSpan(p.z, map.yMin - halfH, map.yMax + halfH, south, north);
+        p.z = CameraMath.ClampSpan(p.z, map.yMin - edgeZ, map.yMax + edgeZ, south, north);
         cameraTarget.transform.position = p;
     }
 
