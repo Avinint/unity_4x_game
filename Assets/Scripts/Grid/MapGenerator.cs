@@ -33,6 +33,9 @@ public class MapGenerator : MonoBehaviour
     [Tooltip("Nouvelle graine au hasard à chaque partie (décocher pour rejouer la graine ci-dessus)")]
     public bool RandomSeed = true;
 
+    [Tooltip("Forme des terres (Fractal : bruit seul, sans forme imposée)")]
+    public MapType MapType = MapType.Fractal;
+
     [Tooltip("The offset of the noise map")]
     public Vector2 Offset = Vector2.zero;
 
@@ -174,6 +177,13 @@ public class MapGenerator : MonoBehaviour
         float[,] humidity = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 1, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
         float[,] heat = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 2, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
         float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
+
+        // Forme du type de carte, avant le niveau de la mer : elle décide où sont les terres.
+        float[,] shape = MapShape.Mask(MapType, Width, Height, PolarIceRows, WrapWorld);
+        if (shape != null)
+            for (int y = 0; y < Height; y++)
+                for (int x = 0; x < Width; x++)
+                    altitude[x, y] = Mathf.Lerp(altitude[x, y], shape[x, y], Rules.ShapeWeight);
 
         // Niveau de la mer sur les seules terres jouables : la banquise ne compte pas dans la part d'eau.
         var playable = new List<float>();

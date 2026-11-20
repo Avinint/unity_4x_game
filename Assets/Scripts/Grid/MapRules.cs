@@ -21,6 +21,7 @@ public class MapRulesSettings
     [Range(0f, 1f)] public float HillFraction = 0.25f;        // part des terres en colline
     [Range(0f, 1f)] public float MountainFraction = 0.08f;    // part des terres en montagne
     [Range(0f, 1f)] public float RidgeWeight = 0.7f;         // part des crêtes dans l'altitude des terres : chaînes plutôt que blocs
+    [Range(0f, 1f)] public float ShapeWeight = 0.5f;          // part du masque du type de carte dans l'altitude
     [Range(0f, 1f)] public float LatitudeWeight = 0.8f;       // part de la latitude dans la température (le reste : bruit)
     [Range(0f, 1f)] public float AltitudeCooling = 0.2f;      // refroidissement au sommet des terres
 
