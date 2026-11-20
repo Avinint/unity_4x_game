@@ -30,51 +30,16 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377217720221773
-  - m_Id: 44775460864
-    m_Key: biome.plain
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221774
   - m_Id: 44817403904
     m_Key: biome.desert
     m_Metadata:
       m_Items:
       - rid: 7013377217720221775
-  - m_Id: 44817403905
-    m_Key: biome.forest
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221776
-  - m_Id: 44817403906
-    m_Key: biome.taiga
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221777
-  - m_Id: 44817403907
-    m_Key: biome.jungle
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221778
   - m_Id: 44817403908
     m_Key: biome.tundra
     m_Metadata:
       m_Items:
       - rid: 7013377217720221779
-  - m_Id: 44817403909
-    m_Key: biome.snow
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221780
-  - m_Id: 44817403910
-    m_Key: biome.marsh
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221781
-  - m_Id: 44817403911
-    m_Key: biome.river
-    m_Metadata:
-      m_Items:
-      - rid: 7013377217720221782
   - m_Id: 44817403912
     m_Key: biome.lake
     m_Metadata:
@@ -90,6 +55,46 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377217720221785
+  - m_Id: 32594923311104
+    m_Key: biome.plains
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221794
+  - m_Id: 32595351130112
+    m_Key: biome.tropical
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221795
+  - m_Id: 32595351130113
+    m_Key: feature.forest
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221796
+  - m_Id: 32595351130114
+    m_Key: feature.taiga
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221797
+  - m_Id: 32595351130115
+    m_Key: feature.rainforest
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221798
+  - m_Id: 32595351130116
+    m_Key: feature.marsh
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221799
+  - m_Id: 32595351130117
+    m_Key: feature.snow
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221800
+  - m_Id: 32595351130118
+    m_Key: relief.navigable_river
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221801
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -113,23 +118,7 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221774
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
     - rid: 7013377217720221775
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221776
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221777
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221778
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
@@ -137,18 +126,6 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221780
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221781
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome"
-    - rid: 7013377217720221782
-      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
-      data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : nom du biome ; case de fleuve navigable (\xE0 distinguer de la rivi\xE8re qui borde une case)"
     - rid: 7013377217720221783
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
@@ -156,8 +133,40 @@ MonoBehaviour:
     - rid: 7013377217720221784
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
-        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : relief (seulement colline ou montagne)"
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : relief ; relief accident\xE9 (collines et autres terrains irr\xE9guliers)"
     - rid: 7013377217720221785
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : relief (seulement colline ou montagne)"
+    - rid: 7013377217720221794
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : sol (biome)"
+    - rid: 7013377217720221795
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : sol (biome)"
+    - rid: 7013377217720221796
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : caract\xE9ristique pos\xE9e sur le sol"
+    - rid: 7013377217720221797
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : caract\xE9ristique pos\xE9e sur le sol"
+    - rid: 7013377217720221798
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : caract\xE9ristique pos\xE9e sur le sol"
+    - rid: 7013377217720221799
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : caract\xE9ristique pos\xE9e sur le sol"
+    - rid: 7013377217720221800
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : caract\xE9ristique pos\xE9e sur le sol"
+    - rid: 7013377217720221801
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : relief ; fleuve navigable (la case garde son sol)"

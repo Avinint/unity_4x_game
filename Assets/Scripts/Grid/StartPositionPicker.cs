@@ -17,26 +17,28 @@ public readonly struct StartPick
 
 public static class StartPositionPicker
 {
-    // Qualité d'un départ. La case de départ elle-même : plate ou en colline, dans un climat où l'on peut vivre.
-    public static bool IsGoodStart(Relief relief, Biome biome) =>
-        (relief == Relief.Flat || relief == Relief.Hill) &&
-        (biome == Biome.Grassland || biome == Biome.Plain || biome == Biome.Forest || biome == Biome.Jungle);
+    // Qualité d'un départ : plat ou accidenté, sur prairie, plaines ou plaine tropicale, hors marais.
+    public static bool IsGoodStart(Relief relief, Biome biome, Feature feature) =>
+        MapRules.IsPassable(relief) && feature != Feature.Marsh &&
+        (biome == Biome.Grassland || biome == Biome.Plains || biome == Biome.Tropical);
 
     public const int FreshWaterBonus = 4;
 
     // Valeur d'une case autour d'un départ : terres cultivables d'abord, un peu d'eau utile, montagne et neige gênent.
-    public static int CellValue(Relief relief, Biome biome)
+    public static int CellValue(Relief relief, Biome biome, Feature feature)
     {
         if (relief == Relief.Mountain) return -1;
+        if (relief == Relief.NavigableRiver) return 1;   // eau douce
         int value;
         switch (biome)
         {
-            case Biome.Grassland: case Biome.Plain: value = 2; break;
-            case Biome.Forest: case Biome.Jungle: case Biome.Coast: case Biome.Lake: case Biome.River: value = 1; break;
-            case Biome.Snow: value = -1; break;
-            default: value = 0; break;   // désert, toundra, taïga, marais, océan
+            case Biome.Grassland: case Biome.Plains: case Biome.Tropical:
+                value = feature == Feature.None ? 2 : feature == Feature.Marsh ? 0 : 1; break;
+            case Biome.Coast: case Biome.Lake: value = 1; break;
+            case Biome.Tundra: value = feature == Feature.Snow ? -1 : 0; break;
+            default: value = 0; break;   // désert, océan
         }
-        return relief == Relief.Hill ? Mathf.Min(value, 1) : value;   // colline : +1 au plus
+        return relief == Relief.Hill ? Mathf.Min(value, 1) : value;   // accidenté : +1 au plus
     }
 
     // Taille de la masse de terre de chaque case : cases de `land` reliées à pied par leurs voisines hexagonales
@@ -70,8 +72,8 @@ public static class StartPositionPicker
         playerCount <= 0 ? 0 : landCount / (4 * playerCount);
 
     // Note d'un départ : valeur des cases autour, plus un bonus si la case de départ touche de l'eau douce.
-    public static int Score(IEnumerable<(Relief relief, Biome biome)> around, bool freshWater) =>
-        around.Sum(c => CellValue(c.relief, c.biome)) + (freshWater ? FreshWaterBonus : 0);
+    public static int Score(IEnumerable<(Relief relief, Biome biome, Feature feature)> around, bool freshWater) =>
+        around.Sum(c => CellValue(c.relief, c.biome, c.feature)) + (freshWater ? FreshWaterBonus : 0);
 
     // Distance conseillée entre joueurs : chacun dispose d'environ landCount / playerCount cases,
     // soit un disque hexagonal de rayon r ≈ √(cases / 3) ; deux joueurs sont à environ 2r.

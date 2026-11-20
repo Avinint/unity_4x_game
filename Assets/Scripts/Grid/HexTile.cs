@@ -257,9 +257,10 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     public Relief Relief { get; set; }
     public Biome Biome { get; set; }
+    public Feature Feature { get; set; }
 
-    // Coût du biome, +1 en colline.
-    public int MovementCost => (TerrainType != null ? TerrainType.MovementCost : 1) + (Relief == Relief.Hill ? 1 : 0);
+    // 1, +1 pour une caractéristique, +1 en relief accidenté (MapRules.MovementCost).
+    public int MovementCost => MapRules.MovementCost(Relief, Feature);
 
     // Selon ce que sait le joueur : une case inexplorée est supposée praticable, au coût 1 ;
     // une unité d'un autre joueur ne bloque que si la case est vue en ce moment (sinon le joueur ne la connaît pas).
@@ -270,7 +271,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     public bool IsNotLand()
     {
-        return Relief == Relief.Water || Relief == Relief.Mountain;   // plus de dépendance au nom des assets
+        return !MapRules.IsPassable(Relief);   // eau, fleuve navigable, montagne
     }
 
     public bool IsLand()

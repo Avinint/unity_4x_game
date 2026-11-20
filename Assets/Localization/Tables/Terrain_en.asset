@@ -30,40 +30,12 @@ MonoBehaviour:
     m_Localized: Grassland
     m_Metadata:
       m_Items: []
-  - m_Id: 44775460864
-    m_Localized: Plains
-    m_Metadata:
-      m_Items: []
   - m_Id: 44817403904
     m_Localized: Desert
     m_Metadata:
       m_Items: []
-  - m_Id: 44817403905
-    m_Localized: Forest
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403906
-    m_Localized: Taiga
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403907
-    m_Localized: Jungle
-    m_Metadata:
-      m_Items: []
   - m_Id: 44817403908
     m_Localized: Tundra
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403909
-    m_Localized: Snow
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403910
-    m_Localized: Marsh
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403911
-    m_Localized: Navigable river
     m_Metadata:
       m_Items: []
   - m_Id: 44817403912
@@ -71,11 +43,43 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 44817403913
-    m_Localized: Hills
+    m_Localized: Rough
     m_Metadata:
       m_Items: []
   - m_Id: 44817403914
     m_Localized: Mountain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32594923311104
+    m_Localized: Plains
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130112
+    m_Localized: Tropical
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130113
+    m_Localized: Forest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130114
+    m_Localized: Taiga
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130115
+    m_Localized: Rainforest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130116
+    m_Localized: Marsh
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130117
+    m_Localized: Snow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130118
+    m_Localized: Navigable river
     m_Metadata:
       m_Items: []
   references:

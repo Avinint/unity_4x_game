@@ -150,7 +150,7 @@ public class HUD : MonoBehaviour
     {
         bool river = tile.Neighbours != null
                      && tile.Neighbours.Exists(n => grid.HasRiver(tile.AxialCoordinates, n.AxialCoordinates));
-        var lines = TileInfo.Describe(tile.Relief, tile.Biome, tile.MovementCost, river, grid.HasFreshWater(tile));
+        var lines = TileInfo.Describe(tile.Relief, tile.Biome, tile.Feature, tile.MovementCost, river, grid.HasFreshWater(tile));
         tileInfo.Clear();
         for (int i = 0; i < lines.Count; i++)
         {

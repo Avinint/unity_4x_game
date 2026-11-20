@@ -53,39 +53,61 @@ public class MapRulesTests
         Assert.Less(summit, shore);
     }
 
-    [TestCase(Frozen, Dry, Biome.Snow)]
-    [TestCase(Frozen, Medium, Biome.Snow)]
-    [TestCase(Frozen, Wet, Biome.Snow)]
-    [TestCase(VeryCold, Dry, Biome.Tundra)]
-    [TestCase(VeryCold, Medium, Biome.Tundra)]
-    [TestCase(VeryCold, Wet, Biome.Tundra)]
-    [TestCase(Cold, Dry, Biome.Tundra)]
-    [TestCase(Cold, Wet, Biome.Taiga)]
-    [TestCase(Temperate, Dry, Biome.Plain)]
-    [TestCase(Temperate, Medium, Biome.Grassland)]
-    [TestCase(Temperate, Wet, Biome.Forest)]
-    [TestCase(Hot, Dry, Biome.Desert)]
-    [TestCase(Hot, Medium, Biome.Plain)]
-    [TestCase(Hot, Wet, Biome.Jungle)]
-    public void LandBiome_WhittakerTable(float temperature, float humidity, Biome expected)
+    [TestCase(Frozen, Dry, Biome.Tundra, Feature.Snow)]
+    [TestCase(Frozen, Medium, Biome.Tundra, Feature.Snow)]
+    [TestCase(Frozen, Wet, Biome.Tundra, Feature.Snow)]
+    [TestCase(VeryCold, Dry, Biome.Tundra, Feature.None)]
+    [TestCase(VeryCold, Medium, Biome.Tundra, Feature.None)]
+    [TestCase(VeryCold, Wet, Biome.Tundra, Feature.None)]
+    [TestCase(Cold, Dry, Biome.Tundra, Feature.None)]
+    [TestCase(Cold, Wet, Biome.Tundra, Feature.Taiga)]
+    [TestCase(Temperate, Dry, Biome.Plains, Feature.None)]
+    [TestCase(Temperate, Medium, Biome.Grassland, Feature.None)]
+    [TestCase(Temperate, Wet, Biome.Grassland, Feature.Forest)]
+    [TestCase(Hot, Dry, Biome.Desert, Feature.None)]
+    [TestCase(Hot, Medium, Biome.Tropical, Feature.None)]
+    [TestCase(Hot, Wet, Biome.Tropical, Feature.Rainforest)]
+    public void LandBiome_WhittakerTable(float temperature, float humidity, Biome biome, Feature feature)
     {
-        Assert.AreEqual(expected, MapRules.LandBiome(temperature, humidity, Relief.Flat, false, S));
+        Assert.AreEqual((biome, feature), MapRules.LandBiome(temperature, humidity, Relief.Flat, false, S));
     }
 
     [Test]
     public void LandBiome_ColdMediumHumidity_IsTaiga()
     {
-        Assert.AreEqual(Biome.Taiga, MapRules.LandBiome(Cold, Medium, Relief.Flat, false, S));
+        Assert.AreEqual((Biome.Tundra, Feature.Taiga), MapRules.LandBiome(Cold, Medium, Relief.Flat, false, S));
     }
 
     [Test]
     public void LandBiome_Marsh_OnlyFlatLowWetNotCold()
     {
-        Assert.AreEqual(Biome.Marsh, MapRules.LandBiome(Temperate, Soaked, Relief.Flat, true, S));
-        Assert.AreNotEqual(Biome.Marsh, MapRules.LandBiome(Temperate, Soaked, Relief.Hill, true, S));    // pas plat
-        Assert.AreNotEqual(Biome.Marsh, MapRules.LandBiome(Temperate, Soaked, Relief.Flat, false, S));   // pas bas
-        Assert.AreNotEqual(Biome.Marsh, MapRules.LandBiome(Temperate, Wet, Relief.Flat, true, S));       // pas assez humide
-        Assert.AreNotEqual(Biome.Marsh, MapRules.LandBiome(Cold, Soaked, Relief.Flat, true, S));         // trop froid
+        var marsh = (Biome.Grassland, Feature.Marsh);
+        Assert.AreEqual(marsh, MapRules.LandBiome(Temperate, Soaked, Relief.Flat, true, S));
+        Assert.AreNotEqual(marsh, MapRules.LandBiome(Temperate, Soaked, Relief.Hill, true, S));    // pas plat
+        Assert.AreNotEqual(marsh, MapRules.LandBiome(Temperate, Soaked, Relief.Flat, false, S));   // pas bas
+        Assert.AreNotEqual(marsh, MapRules.LandBiome(Temperate, Wet, Relief.Flat, true, S));       // pas assez humide
+        Assert.AreNotEqual(marsh, MapRules.LandBiome(Cold, Soaked, Relief.Flat, true, S));         // trop froid
+    }
+
+    [Test]
+    public void MovementCost_FeatureAndRoughAddOne()
+    {
+        Assert.AreEqual(1, MapRules.MovementCost(Relief.Flat, Feature.None));
+        Assert.AreEqual(2, MapRules.MovementCost(Relief.Flat, Feature.Forest));
+        Assert.AreEqual(2, MapRules.MovementCost(Relief.Flat, Feature.Snow));
+        Assert.AreEqual(2, MapRules.MovementCost(Relief.Hill, Feature.None));
+        Assert.AreEqual(3, MapRules.MovementCost(Relief.Hill, Feature.Taiga));
+    }
+
+    [Test]
+    public void IsWater_IsPassable_NavigableRiver()
+    {
+        Assert.IsTrue(MapRules.IsWater(Relief.NavigableRiver));
+        Assert.IsTrue(MapRules.IsWater(Relief.Water));
+        Assert.IsFalse(MapRules.IsWater(Relief.Hill));
+        Assert.IsFalse(MapRules.IsPassable(Relief.NavigableRiver));
+        Assert.IsFalse(MapRules.IsPassable(Relief.Mountain));
+        Assert.IsTrue(MapRules.IsPassable(Relief.Hill));
     }
 
     [Test]
@@ -187,11 +209,12 @@ public class MapRulesTests
     [Test]
     public void ObstacleHeight_ReliefPlusDenseVegetation()
     {
-        Assert.AreEqual(0, MapRules.ObstacleHeight(Relief.Flat, Biome.Plain));
-        Assert.AreEqual(1, MapRules.ObstacleHeight(Relief.Flat, Biome.Forest));
-        Assert.AreEqual(2, MapRules.ObstacleHeight(Relief.Hill, Biome.Plain));
-        Assert.AreEqual(3, MapRules.ObstacleHeight(Relief.Hill, Biome.Taiga));
-        Assert.AreEqual(4, MapRules.ObstacleHeight(Relief.Mountain, Biome.Plain));
+        Assert.AreEqual(0, MapRules.ObstacleHeight(Relief.Flat, Feature.None));
+        Assert.AreEqual(1, MapRules.ObstacleHeight(Relief.Flat, Feature.Forest));
+        Assert.AreEqual(0, MapRules.ObstacleHeight(Relief.Flat, Feature.Marsh));   // le marais ne cache rien
+        Assert.AreEqual(2, MapRules.ObstacleHeight(Relief.Hill, Feature.None));
+        Assert.AreEqual(3, MapRules.ObstacleHeight(Relief.Hill, Feature.Taiga));
+        Assert.AreEqual(4, MapRules.ObstacleHeight(Relief.Mountain, Feature.None));
     }
 
     [Test]

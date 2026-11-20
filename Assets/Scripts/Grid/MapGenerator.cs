@@ -46,7 +46,9 @@ public class MapGenerator : MonoBehaviour
     [Header("Règles de génération")]
     public MapRulesSettings Rules = new MapRulesSettings();
     public List<BiomeTerrain> BiomeTerrains = new List<BiomeTerrain>();   // Biome → TerrainType affiché
+    public List<FeatureTerrain> FeatureTerrains = new List<FeatureTerrain>();   // Caractéristique → TerrainType affiché (prioritaire sur le biome)
     public TerrainType MountainTerrain;
+    public TerrainType RiverTerrain;   // fleuve navigable
 
     public float [,] ReliefMap { get; private set; }
 
@@ -215,17 +217,16 @@ public class MapGenerator : MonoBehaviour
         for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
             {
-                // Fleuve navigable : la case devient de l'eau douce (hauteur 0, infranchissable à pied).
+                // Fleuve navigable : relief à part (eau douce, hauteur 0, infranchissable à pied) ;
+                // la case garde le sol et la végétation de ses rives (rives, rendements).
                 bool isNavigable = navigable[x, y];
-                Relief r = isNavigable ? Relief.Water : relief[x, y];
+                Relief r = isNavigable ? Relief.NavigableRiver : relief[x, y];
                 Biome biome;
-                if (isNavigable) biome = Biome.River;
-                else if (lake[x, y]) biome = Biome.Lake;
-                else if (r == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
-                else
-                    biome = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
-                TerrainType terrain = r == Relief.Mountain ? MountainTerrain : TerrainFor(biome);
-                cells[x, y] = new MapCell { Relief = r, Biome = biome, Terrain = terrain,
+                Feature feature = Feature.None;
+                if (lake[x, y]) biome = Biome.Lake;
+                else if (relief[x, y] == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
+                else (biome, feature) = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
+                cells[x, y] = new MapCell { Relief = r, Biome = biome, Feature = feature, Terrain = TerrainFor(r, biome, feature),
                                             Flow = flow[x, y], Downstream = downstream[x, y], Navigable = isNavigable };
             }
 
@@ -239,7 +240,7 @@ public class MapGenerator : MonoBehaviour
             for (int x = 0; x < Width; x++)
                 axialCells.Add(HexMetrics.OffsetToAxial(x, y, orientation));
         RiverEdges = RiverNetwork.Rivers(axialCells, Exists,
-            a => { var o = Off(a); return cells[o.x, o.y].Relief == Relief.Water; },
+            a => { var o = Off(a); return MapRules.IsWater(cells[o.x, o.y].Relief); },
             a => { var o = Off(a); return altitude[o.x, o.y]; },
             a => { var o = Off(a); return humidity[o.x, o.y]; },
             Rules.RiverFraction, Rules.RiverMinLength, WrapAxial);
@@ -260,10 +261,15 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private TerrainType TerrainFor(Biome biome)
+    // Terrain affiché : montagne, puis fleuve, puis caractéristique, sinon le sol.
+    private TerrainType TerrainFor(Relief relief, Biome biome, Feature feature)
     {
+        if (relief == Relief.Mountain) return MountainTerrain;
+        if (relief == Relief.NavigableRiver) return RiverTerrain;
+        if (feature != Feature.None)
+            foreach (var ft in FeatureTerrains) if (ft.Feature == feature) return ft.Terrain;
         foreach (var bt in BiomeTerrains) if (bt.Biome == biome) return bt.Terrain;
-        Debug.LogWarning($"MapGenerator : aucun TerrainType pour le biome {biome}.");
+        Debug.LogWarning($"MapGenerator : aucun TerrainType pour {biome} / {feature}.");
         return null;
     }
 
@@ -297,11 +303,19 @@ public struct BiomeTerrain
     public TerrainType Terrain;
 }
 
+[Serializable]
+public struct FeatureTerrain
+{
+    public Feature Feature;
+    public TerrainType Terrain;
+}
+
 // Ce que la génération produit pour chaque case.
 public struct MapCell
 {
     public Relief Relief;
     public Biome Biome;
+    public Feature Feature;
     public TerrainType Terrain;
     public float Flow;              // débit cumulé (pluie = humidité)
     public Vector2Int Downstream;   // case aval (offset), Hydrology.NoDownstream si aucune

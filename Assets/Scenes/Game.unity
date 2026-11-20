@@ -1452,28 +1452,30 @@ MonoBehaviour:
   - Biome: 1
     Terrain: {fileID: 11400000, guid: 7b2f4ddb8b85c09469131d7af56f6804, type: 2}
   - Biome: 2
-    Terrain: {fileID: 11400000, guid: 281ef413810d11f498884b8aabdcfd2c, type: 2}
-  - Biome: 3
-    Terrain: {fileID: 11400000, guid: 9f1f12d435e08cf49bcfc7bf38d53b9c, type: 2}
-  - Biome: 4
-    Terrain: {fileID: 11400000, guid: 402e624d78840b54b9dd225c3b77845d, type: 2}
-  - Biome: 5
-    Terrain: {fileID: 11400000, guid: 5c2e40d1ce278b346a9cb1624fbbf1be, type: 2}
-  - Biome: 6
-    Terrain: {fileID: 11400000, guid: a5cd5a41028f8f94fb98ee32456b39dc, type: 2}
-  - Biome: 7
-    Terrain: {fileID: 11400000, guid: 3e8d895fc2b6d934ca5f36288103152f, type: 2}
-  - Biome: 8
-    Terrain: {fileID: 11400000, guid: 3fb88077f07634348aeb417fb4856a1a, type: 2}
-  - Biome: 9
-    Terrain: {fileID: 11400000, guid: 3c7556386b0ba224cae610f0a05cd41b, type: 2}
-  - Biome: 10
-    Terrain: {fileID: 11400000, guid: 7c7e6c8dcb69fd246af471ae3993888b, type: 2}
-  - Biome: 11
-    Terrain: {fileID: 11400000, guid: ed8aefbe5b8bc2f468054fa8dc9a9b41, type: 2}
-  - Biome: 12
     Terrain: {fileID: 11400000, guid: d304e24107b633248a768e57ce69b736, type: 2}
+  - Biome: 3
+    Terrain: {fileID: 11400000, guid: 3fb88077f07634348aeb417fb4856a1a, type: 2}
+  - Biome: 4
+    Terrain: {fileID: 11400000, guid: 281ef413810d11f498884b8aabdcfd2c, type: 2}
+  - Biome: 5
+    Terrain: {fileID: 11400000, guid: 9f1f12d435e08cf49bcfc7bf38d53b9c, type: 2}
+  - Biome: 6
+    Terrain: {fileID: 11400000, guid: 402e624d78840b54b9dd225c3b77845d, type: 2}
+  - Biome: 7
+    Terrain: {fileID: 11400000, guid: d668c76255026d04e8dfcc34fca17425, type: 2}
+  FeatureTerrains:
+  - Feature: 1
+    Terrain: {fileID: 11400000, guid: 5c2e40d1ce278b346a9cb1624fbbf1be, type: 2}
+  - Feature: 2
+    Terrain: {fileID: 11400000, guid: a5cd5a41028f8f94fb98ee32456b39dc, type: 2}
+  - Feature: 3
+    Terrain: {fileID: 11400000, guid: 3e8d895fc2b6d934ca5f36288103152f, type: 2}
+  - Feature: 4
+    Terrain: {fileID: 11400000, guid: 7c7e6c8dcb69fd246af471ae3993888b, type: 2}
+  - Feature: 5
+    Terrain: {fileID: 11400000, guid: 3c7556386b0ba224cae610f0a05cd41b, type: 2}
   MountainTerrain: {fileID: 11400000, guid: c2cd1b213f826614ca761d8ab454d63a, type: 2}
+  RiverTerrain: {fileID: 11400000, guid: ed8aefbe5b8bc2f468054fa8dc9a9b41, type: 2}
 --- !u!1001 &1406913779
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1821,6 +1823,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3394129f2703adc4c86af319cefd6866, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fief::HUD
+  tileInfoDelay: 0.4
 --- !u!114 &1525122969
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -310,7 +310,7 @@ public class HexGrid : MonoBehaviour
     }
 
     private int ObstacleAt(Vector2Int axial) =>
-        Tiles.TryGetValue(Wrap(axial), out HexTile tile) ? MapRules.ObstacleHeight(tile.Relief, tile.Biome) : 0;
+        Tiles.TryGetValue(Wrap(axial), out HexTile tile) ? MapRules.ObstacleHeight(tile.Relief, tile.Feature) : 0;
 
     private int SurfaceAt(Vector2Int axial) =>
         Tiles.TryGetValue(Wrap(axial), out HexTile tile) ? MapRules.SightHeight(tile.Relief) : 0;
@@ -398,6 +398,7 @@ public class HexGrid : MonoBehaviour
                 tile.SetTerrainType(cells[x, y].Terrain);
                 tile.Relief = cells[x, y].Relief;
                 tile.Biome = cells[x, y].Biome;
+                tile.Feature = cells[x, y].Feature;
                 hexTiles.Add(tile.AxialCoordinates, tile);
             }
         }
@@ -499,7 +500,7 @@ public class HexGrid : MonoBehaviour
             ? startMinLandmass
             : StartPositionPicker.SuggestedMinLandmass(landmass.Count, PlayerCount);
         var good = candidates.Where(t => landmass[t.AxialCoordinates] >= minLandmass
-                                         && StartPositionPicker.IsGoodStart(t.Relief, t.Biome))
+                                         && StartPositionPicker.IsGoodStart(t.Relief, t.Biome, t.Feature))
             .OrderByDescending(StartScore).ToList();
         if (good.Count >= PlayerCount)
             candidates = good.Take(Mathf.Max(PlayerCount, Mathf.CeilToInt(good.Count * startBestFraction))).ToList();
@@ -525,17 +526,17 @@ public class HexGrid : MonoBehaviour
 
     private int StartScore(HexTile tile)
     {
-        var around = new List<(Relief, Biome)>();
+        var around = new List<(Relief, Biome, Feature)>();
         foreach (var a in CellsInRange(tile.AxialCoordinates, 2))
             if (a != tile.AxialCoordinates && TryGetTileAxial(a, out HexTile cell))
-                around.Add((cell.Relief, cell.Biome));
+                around.Add((cell.Relief, cell.Biome, cell.Feature));
         return StartPositionPicker.Score(around, HasFreshWater(tile));
     }
 
     // Rivière sur une arête de la case, ou lac / fleuve voisin.
     public bool HasFreshWater(HexTile tile) =>
         tile.Neighbours != null && tile.Neighbours.Any(n =>
-            n.Biome == Biome.Lake || n.Biome == Biome.River || HasRiver(tile.AxialCoordinates, n.AxialCoordinates));
+            n.Biome == Biome.Lake || n.Relief == Relief.NavigableRiver || HasRiver(tile.AxialCoordinates, n.AxialCoordinates));
 
     public Dictionary<Vector2Int, HexTile> GetStartingArea(HexTile startingTile)
     {

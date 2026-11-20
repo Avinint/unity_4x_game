@@ -30,40 +30,12 @@ MonoBehaviour:
     m_Localized: Prairie
     m_Metadata:
       m_Items: []
-  - m_Id: 44775460864
-    m_Localized: Plaine
-    m_Metadata:
-      m_Items: []
   - m_Id: 44817403904
     m_Localized: "D\xE9sert"
     m_Metadata:
       m_Items: []
-  - m_Id: 44817403905
-    m_Localized: "For\xEAt"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403906
-    m_Localized: "Ta\xEFga"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403907
-    m_Localized: Jungle
-    m_Metadata:
-      m_Items: []
   - m_Id: 44817403908
     m_Localized: Toundra
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403909
-    m_Localized: Neige
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403910
-    m_Localized: Marais
-    m_Metadata:
-      m_Items: []
-  - m_Id: 44817403911
-    m_Localized: Fleuve
     m_Metadata:
       m_Items: []
   - m_Id: 44817403912
@@ -71,11 +43,43 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 44817403913
-    m_Localized: Colline
+    m_Localized: "Accident\xE9"
     m_Metadata:
       m_Items: []
   - m_Id: 44817403914
     m_Localized: Montagne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32594923311104
+    m_Localized: Plaines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130112
+    m_Localized: Plaine tropicale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130113
+    m_Localized: "For\xEAt"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130114
+    m_Localized: "Ta\xEFga"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130115
+    m_Localized: "For\xEAt tropicale"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130116
+    m_Localized: Marais
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130117
+    m_Localized: Neige
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32595351130118
+    m_Localized: Fleuve navigable
     m_Metadata:
       m_Items: []
   references:

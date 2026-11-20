@@ -2,9 +2,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Relief { Water, Flat, Hill, Mountain }
+// NavigableRiver : fleuve navigable, eau pour le déplacement, la case garde son biome (rives, rendements).
+public enum Relief { Water, Flat, Hill, Mountain, NavigableRiver }
 
-public enum Biome { Ocean, Coast, Grassland, Plain, Desert, Forest, Taiga, Jungle, Tundra, Snow, Marsh, River, Lake }   // nouveaux biomes à la fin (numéros enregistrés)
+// Sol de la case (comme Civ 7) ; la végétation, le marais et la neige sont des caractéristiques.
+// Nouveaux biomes à la fin : la liste BiomeTerrains de la scène est enregistrée par numéro.
+public enum Biome { Ocean, Coast, Lake, Tundra, Grassland, Plains, Desert, Tropical }
+
+// Caractéristique posée sur le sol : végétation (Forest, Taiga, Rainforest), zone humide (Marsh), neige (Snow).
+// Nouvelles valeurs à la fin (liste FeatureTerrains de la scène).
+public enum Feature { None, Forest, Taiga, Rainforest, Marsh, Snow }
 
 // Seuils de génération (réglables dans l'Inspector de MapGenerator).
 [Serializable]
@@ -95,21 +102,35 @@ public static class MapRules
     {
         float equator = 1f - Mathf.Abs(2f * latitude - 1f);          // 1 à l'équateur, 0 aux pôles
         float t = Mathf.Lerp(noise, equator, s.LatitudeWeight);
-        return Mathf.Clamp01(t - s.AltitudeCooling * Mathf.Clamp01(altitudeAboveSea));
+        // Pas de borne : les seuils de climat sont des centiles ; borner à 0 créait des ex aequo aux pôles
+        // (plus de 5 % des terres à 0) et plus aucune case n'était sous le seuil de la neige.
+        return t - s.AltitudeCooling * Mathf.Clamp01(altitudeAboveSea);
     }
 
-    // Biome d'une terre (le relief eau est traité à part : Ocean / Coast).
-    public static Biome LandBiome(float temperature, float humidity, Relief relief, bool lowland, MapRulesSettings s)
+    // Sol et caractéristique d'une terre (l'eau est traitée à part : Ocean / Coast / Lake).
+    public static (Biome biome, Feature feature) LandBiome(float temperature, float humidity, Relief relief, bool lowland, MapRulesSettings s)
     {
         bool cold = temperature < s.ColdBelow;
-        if (temperature < s.FrozenBelow) return Biome.Snow;
-        if (temperature < s.TundraBelow) return Biome.Tundra;
-        if (relief == Relief.Flat && lowland && humidity > s.MarshAbove && !cold) return Biome.Marsh;
+        if (temperature < s.FrozenBelow) return (Biome.Tundra, Feature.Snow);
+        if (temperature < s.TundraBelow) return (Biome.Tundra, Feature.None);
+        if (relief == Relief.Flat && lowland && humidity > s.MarshAbove && !cold) return (Biome.Grassland, Feature.Marsh);
         bool dry = humidity < s.DryBelow, wet = humidity > s.WetAbove;
-        if (cold) return dry ? Biome.Tundra : Biome.Taiga;
-        if (temperature > s.HotAbove) return dry ? Biome.Desert : wet ? Biome.Jungle : Biome.Plain;
-        return dry ? Biome.Plain : wet ? Biome.Forest : Biome.Grassland;
+        if (cold) return (Biome.Tundra, dry ? Feature.None : Feature.Taiga);
+        if (temperature > s.HotAbove)
+            return dry ? (Biome.Desert, Feature.None) : (Biome.Tropical, wet ? Feature.Rainforest : Feature.None);
+        return dry ? (Biome.Plains, Feature.None) : (Biome.Grassland, wet ? Feature.Forest : Feature.None);
     }
+
+    // Eau pour le déplacement et l'hydrologie (mer, côte, lac, fleuve navigable).
+    public static bool IsWater(Relief relief) => relief == Relief.Water || relief == Relief.NavigableRiver;
+
+    // Praticable à pied : plat ou accidenté (ni eau, ni fleuve, ni montagne).
+    public static bool IsPassable(Relief relief) => relief == Relief.Flat || relief == Relief.Hill;
+
+    // Coût pour entrer dans une case praticable : 1, +1 pour une caractéristique (végétation, marais, neige),
+    // +1 en relief accidenté. Mêmes valeurs qu'avant (forêt 2, neige 2, forêt accidentée 3).
+    public static int MovementCost(Relief relief, Feature feature) =>
+        1 + (feature != Feature.None ? 1 : 0) + (relief == Relief.Hill ? 1 : 0);
 
     // Seuils absolus tirés des proportions, sur les températures et humidités des terres. Ne modifie pas `s`.
     public static MapRulesSettings WithClimateThresholds(MapRulesSettings s, List<float> temperatures, List<float> humidities)
@@ -133,12 +154,12 @@ public static class MapRules
         relief == Relief.Hill ? 2 : relief == Relief.Mountain ? 4 : 0;
 
     // Végétation dense : cache ce qui est derrière.
-    public static bool BlocksSight(Biome biome) =>
-        biome == Biome.Forest || biome == Biome.Taiga || biome == Biome.Jungle;
+    public static bool BlocksSight(Feature feature) =>
+        feature == Feature.Forest || feature == Feature.Taiga || feature == Feature.Rainforest;
 
     // Hauteur d'une case comme obstacle à la vue.
-    public static int ObstacleHeight(Relief relief, Biome biome) =>
-        SightHeight(relief) + (BlocksSight(biome) ? 1 : 0);
+    public static int ObstacleHeight(Relief relief, Feature feature) =>
+        SightHeight(relief) + (BlocksSight(feature) ? 1 : 0);
 
     public static Biome WaterBiome(bool touchesLand) => touchesLand ? Biome.Coast : Biome.Ocean;
 

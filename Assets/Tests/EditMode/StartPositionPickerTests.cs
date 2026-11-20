@@ -8,11 +8,14 @@ public class StartPositionPickerTests
     [Test]
     public void IsGoodStart_OnlyLivableFlatOrHill()
     {
-        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Grassland));
-        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Hill, Biome.Forest));
-        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Desert));
-        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Tundra));
-        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Mountain, Biome.Grassland));
+        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Grassland, Feature.None));
+        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Hill, Biome.Grassland, Feature.Forest));
+        Assert.IsTrue(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Tropical, Feature.Rainforest));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Grassland, Feature.Marsh));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Desert, Feature.None));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Flat, Biome.Tundra, Feature.Taiga));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.Mountain, Biome.Grassland, Feature.None));
+        Assert.IsFalse(StartPositionPicker.IsGoodStart(Relief.NavigableRiver, Biome.Grassland, Feature.None));
     }
 
     [Test]
@@ -44,15 +47,20 @@ public class StartPositionPickerTests
     [Test]
     public void Score_SumsCellValues()
     {
-        var around = new[] { (Relief.Flat, Biome.Grassland), (Relief.Flat, Biome.Forest), (Relief.Mountain, Biome.Plain) };
+        var around = new[]
+        {
+            (Relief.Flat, Biome.Grassland, Feature.None), (Relief.Flat, Biome.Grassland, Feature.Forest),
+            (Relief.Mountain, Biome.Plains, Feature.None), (Relief.NavigableRiver, Biome.Desert, Feature.None),
+            (Relief.Flat, Biome.Tundra, Feature.Snow)
+        };
 
-        Assert.AreEqual(2 + 1 - 1, StartPositionPicker.Score(around, false));
+        Assert.AreEqual(2 + 1 - 1 + 1 - 1, StartPositionPicker.Score(around, false));
     }
 
     [Test]
     public void Score_FreshWaterBonus_HillCapped()
     {
-        var around = new[] { (Relief.Hill, Biome.Grassland) };   // colline : 1, pas 2
+        var around = new[] { (Relief.Hill, Biome.Grassland, Feature.None) };   // accidenté : 1, pas 2
 
         Assert.AreEqual(1 + StartPositionPicker.FreshWaterBonus, StartPositionPicker.Score(around, true));
     }
