@@ -166,6 +166,22 @@ public class PathFinderTests
     }
 
     [Test]
+    public void TurnEnds_TwoTurns() =>
+        CollectionAssert.AreEqual(new[] { (1, 1), (3, 2) }, PathFinder.TurnEnds(new[] { 1, 1, 1, 1 }, 2, 2));
+
+    [Test]
+    public void TurnEnds_ExpensiveStepUsesLastPoints() =>
+        CollectionAssert.AreEqual(new[] { (0, 1), (1, 2) }, PathFinder.TurnEnds(new[] { 3, 1 }, 2, 2));
+
+    [Test]
+    public void TurnEnds_NoPointsLeft_FirstBadgeIsTwo() =>
+        CollectionAssert.AreEqual(new[] { (1, 2) }, PathFinder.TurnEnds(new[] { 1, 1 }, 0, 2));
+
+    [Test]
+    public void TurnEnds_ReachedThisTurn_SingleBadge() =>
+        CollectionAssert.AreEqual(new[] { (0, 1) }, PathFinder.TurnEnds(new[] { 1 }, 2, 2));
+
+    [Test]
     public void ReachableCount_StopsWhenPointsRunOut()
     {
         Assert.AreEqual(2, PathFinder.ReachableCount(new[] { 1, 1, 1 }, 2));

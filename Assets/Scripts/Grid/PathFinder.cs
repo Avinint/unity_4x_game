@@ -109,6 +109,27 @@ public static class PathFinder
         return new HashSet<Vector2Int>(best.Keys);
     }
 
+    // Pastilles de tours : pour chaque tour, la dernière case atteinte (index dans le chemin) et son numéro
+    // (1 = ce tour-ci) ; la destination porte toujours le sien. Même règle que le déplacement :
+    // entrée tant qu'il reste un point, plancher 0, nouveau tour = maxPoints.
+    public static List<(int index, int turn)> TurnEnds(IReadOnlyList<int> stepCosts, int startPoints, int maxPoints)
+    {
+        var ends = new List<(int, int)>();
+        int turn = 1, points = startPoints;
+        for (int i = 0; i < stepCosts.Count; i++)
+        {
+            if (points <= 0)
+            {
+                if (i > 0) ends.Add((i - 1, turn));
+                turn++;
+                points = Math.Max(1, maxPoints);
+            }
+            points = Math.Max(0, points - stepCosts[i]);
+        }
+        if (stepCosts.Count > 0) ends.Add((stepCosts.Count - 1, turn));
+        return ends;
+    }
+
     // Nombre de cases du chemin parcourues avec `points` : on peut entrer dans une case
     // tant qu'il reste au moins un point ; une case plus chère que les points restants les consomme tous.
     public static int ReachableCount(IReadOnlyList<int> stepCosts, int points)

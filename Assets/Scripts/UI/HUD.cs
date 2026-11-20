@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Localization;
@@ -21,6 +22,9 @@ public class HUD : MonoBehaviour
     private float tileInfoSince;
     private bool tileInfoFilled;
 
+    private VisualElement pathBadges;
+    private readonly List<Label> badgeLabels = new();
+
     private void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
@@ -30,6 +34,7 @@ public class HUD : MonoBehaviour
         unitMoveLabel = root.Q<Label>("unitMoveLabel");
         playerSwatch = root.Q("playerSwatch");
         tileInfo = root.Q("tileInfo");
+        pathBadges = root.Q("pathBadges");
         lastUnitText = null;
         GameManager.Instance.TurnChange += Refresh;
         GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
@@ -70,6 +75,7 @@ public class HUD : MonoBehaviour
     private void Update()
     {
         UpdateTileInfo();
+        UpdatePathBadges();
         if (unitPanel == null) return;
         Unit unit = SelectionController.Instance.SelectedUnit;
         string name = unit == null ? "" : unit.type == null ? unit.name
@@ -109,6 +115,35 @@ public class HUD : MonoBehaviour
         if (top + height > area.height) top = p.y - 16f - height;    // trop bas : au-dessus du curseur
         tileInfo.style.left = left;
         tileInfo.style.top = top;
+    }
+
+    // Pastilles de tours sur le chemin visé : rond numéroté sur la case, doré pour ce tour, bleu marine ensuite.
+    private void UpdatePathBadges()
+    {
+        if (pathBadges == null || Camera.main == null || SelectionController.Instance == null) return;
+        var badges = SelectionController.Instance.Badges;
+        while (badgeLabels.Count < badges.Count)
+        {
+            var label = new Label { pickingMode = PickingMode.Ignore };
+            label.AddToClassList("path-badge");
+            pathBadges.Add(label);
+            badgeLabels.Add(label);
+        }
+        for (int i = 0; i < badgeLabels.Count; i++)
+        {
+            var label = badgeLabels[i];
+            Vector3 screen = i < badges.Count ? Camera.main.WorldToScreenPoint(badges[i].position) : Vector3.back;
+            label.style.display = screen.z > 0f ? DisplayStyle.Flex : DisplayStyle.None;   // derrière la caméra : caché
+            if (screen.z <= 0f) continue;
+            Vector2 p = RuntimePanelUtils.ScreenToPanel(label.panel, new Vector2(screen.x, Screen.height - screen.y));
+            label.style.left = p.x - 13f;
+            label.style.top = p.y - 13f;
+            label.text = badges[i].turn.ToString();
+            Color background = badges[i].color;
+            label.style.backgroundColor = background;
+            // Texte lisible : foncé sur un fond clair (doré), blanc sur un fond foncé (bleu marine).
+            label.style.color = background.grayscale > 0.5f ? new Color(0.1f, 0.08f, 0.05f) : Color.white;
+        }
     }
 
     private void FillTileInfo(HexGrid grid, HexTile tile)

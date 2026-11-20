@@ -60,6 +60,26 @@
   color: rgb(235, 220, 190);
 }
 
+.path-badges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.path-badge {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  border-width: 2px;
+  border-color: rgb(235, 220, 190);
+  -unity-text-align: middle-center;
+  font-size: 15px;
+  -unity-font-style: bold;
+}
+
 .tile-info {
   position: absolute;
   padding: 6px 12px;

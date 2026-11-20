@@ -227,6 +227,9 @@ public class SelectionController : Singleton<SelectionController>
         if (keyboard.f10Key.wasPressedThisFrame) SelectedUnit.ResetMovementPoints();
     }
 
+    // Pastilles de tours du chemin visé (position affichée, numéro du tour, couleur), lues par le HUD.
+    public readonly List<(Vector3 position, int turn, Color color)> Badges = new();
+
     private HexTile previewTarget, previewOrigin;
     private int previewPoints = -1;
     private int previewShift = -1;
@@ -242,6 +245,7 @@ public class SelectionController : Singleton<SelectionController>
         previewTarget = target;
         previewOrigin = SelectedTile;
         previewPoints = points;
+        Badges.Clear();
 
         if (target == null || target == SelectedTile) { preview.Hide(); Grid.HideDestination(); return; }
         List<Vector2Int> path = PathTo(target);
@@ -266,6 +270,9 @@ public class SelectionController : Singleton<SelectionController>
             // Trajet estimé (cases inconnues comptées à 1) : tout en marron, sans découpage par tour.
             preview.Show(SelectedTile.DisplayPosition, steps, steps.Count, Grid.OutOfSightColor, Grid.OutOfSightColor);
             Grid.ShowDestination(target, Grid.OutOfSightColor);
+            // Estimation : pastilles marron comme le trait (cases inconnues comptées à 1).
+            foreach (var (index, turn) in PathFinder.TurnEnds(StepCosts(path), points, SelectedUnit.type.MovementPoints))
+                Badges.Add((steps[index], turn, Grid.OutOfSightColor));
         }
         else
         {
@@ -273,6 +280,8 @@ public class SelectionController : Singleton<SelectionController>
             preview.Show(SelectedTile.DisplayPosition, steps, reachable, Grid.ReachableColor, Grid.BeyondColor);
             // Le cercle prend la couleur de la fin du trait : doré si l'unité y arrive ce tour-ci, bleu marine sinon.
             Grid.ShowDestination(target, reachable >= path.Count ? Grid.ReachableColor : Grid.BeyondColor);
+            foreach (var (index, turn) in PathFinder.TurnEnds(StepCosts(path), points, SelectedUnit.type.MovementPoints))
+                Badges.Add((steps[index], turn, turn == 1 ? Grid.ReachableColor : Grid.BeyondColor));
         }
     }
 
