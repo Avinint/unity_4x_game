@@ -24,6 +24,8 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private float distanceMin = 40f;
     [SerializeField] private float distanceMax = 250f;          // plancher du zoom maximal
     [SerializeField] private bool fitMapOnMaxZoom = true;       // le zoom maximal montre toute la carte
+    // Monde qui boucle : part de la largeur du monde montrée au dézoom complet (au-delà de 1, le bord vide apparaît).
+    [SerializeField, Range(0.5f, 1f)] private float wrapMaxZoomFraction = 0.9f;
     [SerializeField] private float distanceDefault = 120f;
     [SerializeField] private float distanceZoomSpeed = 2.5f;
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
@@ -202,7 +204,7 @@ public class CameraController : Singleton<CameraController>
             // Monde qui fait le tour : chaque colonne n'a qu'une copie, la vue ne doit pas dépasser 90 % du monde.
             if (grid != null && grid.Wraps && Camera.main != null)
                 return Mathf.Max(distanceMin,
-                    CameraMath.FitDistance(new Vector2(grid.WorldWidth, 0f), fieldOfView, Camera.main.aspect, pitchFar, 0.9f));
+                    CameraMath.FitDistance(new Vector2(grid.WorldWidth, 0f), fieldOfView, Camera.main.aspect, pitchFar, wrapMaxZoomFraction));
             if (!fitMapOnMaxZoom || grid == null || Camera.main == null) return distanceMax;
             Vector2 size = grid.WorldBounds.size + Vector2.one * 2f * grid.HexSize;   // cases entières, pas seulement leurs centres
             return Mathf.Max(distanceMax, CameraMath.FitDistance(size, fieldOfView, Camera.main.aspect, pitchFar));
