@@ -1278,6 +1278,12 @@ MonoBehaviour:
   riverCrossingCost: 3
   riverWidth: 1
   <Selector>k__BackingField: {fileID: 2116262286}
+  selectorColor: {r: 1, g: 1, b: 1, a: 1}
+  <ReachableColor>k__BackingField: {r: 1, g: 0.8, b: 0.2, a: 1}
+  <BeyondColor>k__BackingField: {r: 0.1, g: 0.15, b: 0.45, a: 1}
+  <ForbiddenColor>k__BackingField: {r: 0.85, g: 0.15, b: 0.1, a: 1}
+  <OutOfSightColor>k__BackingField: {r: 0.4, g: 0.22, b: 0.1, a: 1}
+  <OutlineColor>k__BackingField: {r: 0.39999998, g: 1, b: 0.94083714, a: 1}
   <HoverMarker>k__BackingField: {fileID: 1716819127}
 --- !u!4 &1001322750
 Transform:
@@ -1780,6 +1786,7 @@ MonoBehaviour:
   scrollZoomStep: 0.15
   edgeScroll: 1
   edgeScrollMargin: 15
+  dragThreshold: 6
   defaultMode: 0
   currentMode: 0
   isLocked: 0

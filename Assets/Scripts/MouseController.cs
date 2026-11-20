@@ -61,22 +61,36 @@ public class MouseController : Singleton<MouseController>
         }
     }
 
-    // Premier collider portant le tag "Grid" sur le rayon : le terrain sous une unité reste atteignable.
-    // Sinon (case inexplorée d'une copie décalée, hors du maillage plat de Grid) : point du rayon sur le plan du sol.
+    // Case visée : si le rayon touche d'abord le modèle d'une unité visible, sa case (la caméra est inclinée :
+    // le sol derrière le modèle est la case voisine) ; sinon le collider « Grid » le plus proche ;
+    // sinon (case inexplorée d'une copie décalée, hors du maillage plat de Grid) : point du rayon sur le plan du sol.
     private static bool TryRaycastGrid(Ray ray, out RaycastHit gridHit)
     {
         gridHit = default;
         bool found = false;
         float best = float.MaxValue;
+        float unitDistance = float.MaxValue;
+        Unit unit = null;
 
         foreach (RaycastHit hit in Physics.RaycastAll(ray, Mathf.Infinity))
         {
+            var u = hit.collider.GetComponentInParent<Unit>();
+            if (u != null && u.IsVisible && u.Tile != null && hit.distance < unitDistance)
+            {
+                unit = u;
+                unitDistance = hit.distance;
+            }
             if (hit.collider.CompareTag("Grid") && hit.distance < best)
             {
                 best = hit.distance;
                 gridHit = hit;
                 found = true;
             }
+        }
+        if (unit != null && unitDistance < best)
+        {
+            gridHit.point = unit.Tile.CentrePosition;   // HexGrid retrouve la case à partir du point
+            return true;
         }
         if (found) return true;
         var grid = GameManager.Instance != null ? GameManager.Instance.HexGrid : null;
