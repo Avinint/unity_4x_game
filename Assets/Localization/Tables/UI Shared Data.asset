@@ -40,6 +40,26 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377159152795720
+  - m_Id: 1087985476128768
+    m_Key: tooltip.movement_cost
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221786
+  - m_Id: 1087985551626240
+    m_Key: tooltip.impassable
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221787
+  - m_Id: 1087985551626241
+    m_Key: tooltip.river
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221788
+  - m_Id: 1087985551626242
+    m_Key: tooltip.fresh_water
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221789
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -71,3 +91,19 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "{0} = num\xE9ro du joueur ; nom provisoire avant les noms de nations"
+    - rid: 7013377217720221786
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations : {0} = co\xFBt en points de mouvement pour entrer dans la case"
+    - rid: 7013377217720221787
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations : case o\xF9 une unit\xE9 terrestre ne peut pas entrer (eau, montagne)"
+    - rid: 7013377217720221788
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations : une rivi\xE8re borde la case (sur une ar\xEAte)"
+    - rid: 7013377217720221789
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations : rivi\xE8re, lac ou fleuve au contact de la case"

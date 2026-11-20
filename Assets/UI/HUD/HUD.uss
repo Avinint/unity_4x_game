@@ -60,6 +60,21 @@
   color: rgb(235, 220, 190);
 }
 
+.tile-info {
+  position: absolute;
+  padding: 6px 12px;
+}
+
+.tile-info-line {
+  font-size: 16px;
+  color: rgb(235, 220, 190);
+}
+
+.tile-info-title {
+  font-size: 18px;
+  -unity-font-style: bold;
+}
+
 .hidden {
   visibility: hidden;
 }

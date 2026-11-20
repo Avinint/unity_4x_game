@@ -11,5 +11,6 @@
         <ui:Label name="unitMoveLabel" class="unit-move" picking-mode="Ignore" />
       </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="tileInfo" class="panel tile-info hidden" picking-mode="Ignore" />
   </ui:VisualElement>
 </ui:UXML>

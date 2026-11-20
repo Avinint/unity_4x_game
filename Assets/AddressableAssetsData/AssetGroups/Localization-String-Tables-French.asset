@@ -21,6 +21,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-fr
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 899ce042f85f2f6458a0d3585685b7f5
+    m_Address: Terrain_fr
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-fr
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9e4fc8b816f072244b5f43b42b741196
     m_Address: Units_fr
     m_ReadOnly: 1

@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Terrain_fr
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: fr
+  m_SharedData: {fileID: 11400000, guid: 1e4c1d24ed02286448f88ca8599c52d0, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 34159677440
+    m_Localized: "Oc\xE9an"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44771266560
+    m_Localized: "C\xF4te"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44771266561
+    m_Localized: Prairie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44775460864
+    m_Localized: Plaine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403904
+    m_Localized: "D\xE9sert"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403905
+    m_Localized: "For\xEAt"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403906
+    m_Localized: "Ta\xEFga"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403907
+    m_Localized: Jungle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403908
+    m_Localized: Toundra
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403909
+    m_Localized: Neige
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403910
+    m_Localized: Marais
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403911
+    m_Localized: Fleuve
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403912
+    m_Localized: Lac
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403913
+    m_Localized: Colline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44817403914
+    m_Localized: Montagne
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

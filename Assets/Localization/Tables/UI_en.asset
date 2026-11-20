@@ -38,6 +38,22 @@ MonoBehaviour:
     m_Localized: Player {0}
     m_Metadata:
       m_Items: []
+  - m_Id: 1087985476128768
+    m_Localized: 'Movement: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1087985551626240
+    m_Localized: Impassable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1087985551626241
+    m_Localized: River
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1087985551626242
+    m_Localized: Fresh water
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

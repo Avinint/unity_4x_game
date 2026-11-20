@@ -41,6 +41,7 @@ public class CameraController : Singleton<CameraController>
 
     [SerializeField] private float dragThreshold = 6f;   // pixels : en deçà, c'est un clic (sélection)
     private bool leftPressed, dragging;
+    public bool IsDragging => dragging;   // glissé de carte en cours (la fenêtre d'informations se cache)
     private Vector2 pressScreen;
     private Vector3 grabPoint;
 

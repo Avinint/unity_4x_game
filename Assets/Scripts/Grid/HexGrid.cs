@@ -533,7 +533,7 @@ public class HexGrid : MonoBehaviour
     }
 
     // Rivière sur une arête de la case, ou lac / fleuve voisin.
-    private bool HasFreshWater(HexTile tile) =>
+    public bool HasFreshWater(HexTile tile) =>
         tile.Neighbours != null && tile.Neighbours.Any(n =>
             n.Biome == Biome.Lake || n.Biome == Biome.River || HasRiver(tile.AxialCoordinates, n.AxialCoordinates));
 

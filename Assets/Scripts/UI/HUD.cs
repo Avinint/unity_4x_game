@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UIElements;
@@ -14,6 +15,12 @@ public class HUD : MonoBehaviour
     private VisualElement playerSwatch;
     private string lastUnitText;
 
+    [SerializeField] private float tileInfoDelay = 0.4f;   // secondes sans changer de case avant d'afficher
+    private VisualElement tileInfo;
+    private HexTile tileInfoTile;
+    private float tileInfoSince;
+    private bool tileInfoFilled;
+
     private void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
@@ -22,6 +29,7 @@ public class HUD : MonoBehaviour
         unitNameLabel = root.Q<Label>("unitNameLabel");
         unitMoveLabel = root.Q<Label>("unitMoveLabel");
         playerSwatch = root.Q("playerSwatch");
+        tileInfo = root.Q("tileInfo");
         lastUnitText = null;
         GameManager.Instance.TurnChange += Refresh;
         GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
@@ -40,7 +48,11 @@ public class HUD : MonoBehaviour
     private void OnPlayerTurnStart(Player player) => Refresh();
 
     // Langue changée : réécrit le tour (le panneau d'unité est recalculé à chaque image).
-    private void OnLocaleChanged(Locale locale) => Refresh();
+    private void OnLocaleChanged(Locale locale)
+    {
+        Refresh();
+        tileInfoFilled = false;
+    }
 
     private void Refresh()
     {
@@ -57,6 +69,7 @@ public class HUD : MonoBehaviour
     // Unité sélectionnée et points restants ; texte réécrit seulement s'il change.
     private void Update()
     {
+        UpdateTileInfo();
         if (unitPanel == null) return;
         Unit unit = SelectionController.Instance.SelectedUnit;
         string name = unit == null ? "" : unit.type == null ? unit.name
@@ -69,6 +82,48 @@ public class HUD : MonoBehaviour
         unitNameLabel.text = name;
         unitMoveLabel.text = move;
         unitPanel.EnableInClassList("hidden", unit == null);
+    }
+
+    // Fenêtre d'informations de la case survolée : case explorée, fenêtre du jeu active, pas de glissé de carte,
+    // après tileInfoDelay sans changer de case ; à côté du curseur, gardée dans l'écran.
+    private void UpdateTileInfo()
+    {
+        if (tileInfo == null) return;
+        HexGrid grid = GameManager.Instance.HexGrid;
+        HexTile tile = grid != null ? grid.HoveredTile : null;
+        if (tile != tileInfoTile) { tileInfoTile = tile; tileInfoSince = Time.unscaledTime; tileInfoFilled = false; }
+
+        bool show = tile != null && tile.IsDiscovered && Application.isFocused && Mouse.current != null
+                    && !CameraController.Instance.IsDragging && Time.unscaledTime - tileInfoSince >= tileInfoDelay;
+        tileInfo.EnableInClassList("hidden", !show);
+        if (!show) return;
+        if (!tileInfoFilled) { FillTileInfo(grid, tile); tileInfoFilled = true; }
+
+        // Écran (origine en bas à gauche) → panneau (origine en haut à gauche, 1920×1080 mis à l'échelle).
+        Vector2 mouse = Mouse.current.position.ReadValue();
+        Vector2 p = RuntimePanelUtils.ScreenToPanel(tileInfo.panel, new Vector2(mouse.x, Screen.height - mouse.y));
+        var area = tileInfo.parent.layout;
+        float width = tileInfo.resolvedStyle.width, height = tileInfo.resolvedStyle.height;
+        float left = p.x + 16f, top = p.y + 16f;
+        if (left + width > area.width) left = p.x - 16f - width;     // trop à droite : à gauche du curseur
+        if (top + height > area.height) top = p.y - 16f - height;    // trop bas : au-dessus du curseur
+        tileInfo.style.left = left;
+        tileInfo.style.top = top;
+    }
+
+    private void FillTileInfo(HexGrid grid, HexTile tile)
+    {
+        bool river = tile.Neighbours != null
+                     && tile.Neighbours.Exists(n => grid.HasRiver(tile.AxialCoordinates, n.AxialCoordinates));
+        var lines = TileInfo.Describe(tile.Relief, tile.Biome, tile.MovementCost, river, grid.HasFreshWater(tile));
+        tileInfo.Clear();
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var label = new Label(L10n.Get(lines[i].table, lines[i].key, lines[i].args)) { pickingMode = PickingMode.Ignore };
+            label.AddToClassList("tile-info-line");
+            if (i == 0) label.AddToClassList("tile-info-title");   // première ligne : le terrain
+            tileInfo.Add(label);
+        }
     }
 
     // Nom provisoire traduit, « Joueur 1 »… (numéro dans GameManager.Players), en attendant les noms de nations.
