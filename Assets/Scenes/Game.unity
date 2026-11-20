@@ -1202,7 +1202,7 @@ MonoBehaviour:
   - {fileID: 1437649289}
   localPlayer: {fileID: 0}
   RevealAllPlayers: 0
-  RevealWholeMap: 0
+  RevealWholeMap: 1
   <HexGrid>k__BackingField: {fileID: 0}
   DefaultVisibleTiles:
   - {x: -1, y: -1}
@@ -1262,7 +1262,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <Orientation>k__BackingField: 1
   <Width>k__BackingField: 40
-  <Height>k__BackingField: 25
+  <MapHeight>k__BackingField: 25
+  <PolarIceRows>k__BackingField: 2
   <WrapWorld>k__BackingField: 1
   <HexSize>k__BackingField: 5
   <BatchSize>k__BackingField: 10
@@ -1474,6 +1475,8 @@ MonoBehaviour:
     Terrain: {fileID: 11400000, guid: 7c7e6c8dcb69fd246af471ae3993888b, type: 2}
   - Feature: 5
     Terrain: {fileID: 11400000, guid: 3c7556386b0ba224cae610f0a05cd41b, type: 2}
+  - Feature: 6
+    Terrain: {fileID: 11400000, guid: 0c64a58ca5d76fd45b8078cfdd00cb26, type: 2}
   MountainTerrain: {fileID: 11400000, guid: c2cd1b213f826614ca761d8ab454d63a, type: 2}
   RiverTerrain: {fileID: 11400000, guid: ed8aefbe5b8bc2f468054fa8dc9a9b41, type: 2}
 --- !u!1001 &1406913779

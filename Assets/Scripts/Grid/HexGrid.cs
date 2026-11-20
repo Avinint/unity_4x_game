@@ -11,7 +11,12 @@ public class HexGrid : MonoBehaviour
 {
     [field:SerializeField] public HexOrientation Orientation { get; private set; }
     [field:SerializeField, Range(10, 100)] public int Width { get; private set; }
-    [field:SerializeField, Range(10, 100)] public int Height { get; private set; }
+    // Hauteur réglée = terres jouables ; la grille ajoute la banquise au nord et au sud.
+    [field:SerializeField, Range(10, 100), FormerlySerializedAs("<Height>k__BackingField")]
+    public int MapHeight { get; private set; }
+    // Rangées de banquise ajoutées à chaque pôle (0 : aucune, carte régionale ou scénario).
+    [field:SerializeField, Range(0, 4)] public int PolarIceRows { get; private set; } = 2;
+    public int Height => MapHeight + 2 * PolarIceRows;
     // Le monde fait le tour d'est en ouest (les pôles restent des bords) ; option de carte, décochée pour un scénario à bords fixes.
     [field:SerializeField] public bool WrapWorld { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }

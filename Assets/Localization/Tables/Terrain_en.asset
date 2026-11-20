@@ -82,6 +82,10 @@ MonoBehaviour:
     m_Localized: Navigable river
     m_Metadata:
       m_Items: []
+  - m_Id: 50064274968576
+    m_Localized: Ice
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

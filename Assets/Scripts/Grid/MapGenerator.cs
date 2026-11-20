@@ -13,6 +13,7 @@ public class MapGenerator : MonoBehaviour
     public int Width { get; private set; }
     public int Height { get; private set; }
     public bool WrapWorld { get; private set; }   // lu sur HexGrid.WrapWorld au lancement
+    public int PolarIceRows { get; private set; }   // lu sur HexGrid.PolarIceRows au lancement
 
     [Tooltip("The scale of the noise map")] public float NoiseScale = .5f;
 
@@ -88,6 +89,7 @@ public class MapGenerator : MonoBehaviour
         Width = HexGrid.Width;
         Height = HexGrid.Height;
         WrapWorld = HexGrid.WrapWorld;
+        PolarIceRows = HexGrid.PolarIceRows;
 
         // En jeu : nouvelle carte à chaque partie ; la graine tirée est affichée pour pouvoir la rejouer.
         if (RandomSeed && Application.isPlaying)
@@ -173,7 +175,17 @@ public class MapGenerator : MonoBehaviour
         float[,] heat = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 2, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
         float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
 
-        float sea = MapRules.Percentile(altitude, Rules.WaterFraction);
+        // Niveau de la mer sur les seules terres jouables : la banquise ne compte pas dans la part d'eau.
+        var playable = new List<float>();
+        for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+                if (!MapRules.IsPolar(y, Height, PolarIceRows)) playable.Add(altitude[x, y]);
+        float sea = MapRules.Percentile(playable, Rules.WaterFraction);
+        // Rangées polaires sous la mer avant tout le reste : côtes, lacs et hydrologie les voient comme de l'eau.
+        for (int y = 0; y < Height; y++)
+            if (MapRules.IsPolar(y, Height, PolarIceRows))
+                for (int x = 0; x < Width; x++)
+                    altitude[x, y] = Mathf.Min(altitude[x, y], sea - 0.001f);
         altitude = MapRules.AddRidges(altitude, ridges, sea, Rules.RidgeWeight);
         ReliefMap = altitude;
         var land = new List<float>();
@@ -213,6 +225,20 @@ public class MapGenerator : MonoBehaviour
             }
         MapRulesSettings climate = MapRules.WithClimateThresholds(Rules, landTemps, landHums);
 
+        // La rangée qui touche la banquise gèle sur ses cases d'eau les plus froides : la limite suit le bruit
+        // de chaleur au lieu d'une ligne droite. Seuil propre à cette rangée : celui de la neige vient des hautes
+        // terres (refroidies par l'altitude), la mer au niveau 0 ne l'atteignait jamais.
+        float EdgeTemperature(int x, int y) => MapRules.Temperature((float)y / (Height - 1), heat[x, y], 0f, Rules);
+        var edgeTemps = new List<float>();
+        for (int y = 0; y < Height; y++)
+            if (MapRules.IsIceEdge(y, Height, PolarIceRows))
+                for (int x = 0; x < Width; x++)
+                    if (relief[x, y] == Relief.Water) edgeTemps.Add(EdgeTemperature(x, y));
+        float iceEdgeBelow = MapRules.Percentile(edgeTemps, Rules.IceEdgeFraction);
+        bool IsIce(int x, int y) =>
+            MapRules.IsPolar(y, Height, PolarIceRows)
+            || (MapRules.IsIceEdge(y, Height, PolarIceRows) && EdgeTemperature(x, y) < iceEdgeBelow);
+
         var cells = new MapCell[Width, Height];
         for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
@@ -224,7 +250,11 @@ public class MapGenerator : MonoBehaviour
                 Biome biome;
                 Feature feature = Feature.None;
                 if (lake[x, y]) biome = Biome.Lake;
-                else if (relief[x, y] == Relief.Water) biome = MapRules.WaterBiome(coast[x, y]);
+                else if (relief[x, y] == Relief.Water)
+                {
+                    biome = MapRules.WaterBiome(coast[x, y]);
+                    if (IsIce(x, y)) feature = Feature.Ice;
+                }
                 else (biome, feature) = MapRules.LandBiome(temperature[x, y], humidity[x, y], relief[x, y], altitude[x, y] < lowland, climate);
                 cells[x, y] = new MapCell { Relief = r, Biome = biome, Feature = feature, Terrain = TerrainFor(r, biome, feature),
                                             Flow = flow[x, y], Downstream = downstream[x, y], Navigable = isNavigable };

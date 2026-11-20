@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -21,6 +22,23 @@ public class MapRulesTests
         int below = 0;
         foreach (float v in values) if (v < level) below++;
         Assert.AreEqual(65, below);
+    }
+
+    [Test]
+    public void IsPolar_TwoRowsEachSide()
+    {
+        // Hauteur 10, 2 rangées : 0, 1 au sud, 8, 9 au nord.
+        var polar = Enumerable.Range(0, 10).Where(y => MapRules.IsPolar(y, 10, 2)).ToArray();
+        CollectionAssert.AreEqual(new[] { 0, 1, 8, 9 }, polar);
+        Assert.IsFalse(Enumerable.Range(0, 10).Any(y => MapRules.IsPolar(y, 10, 0)));
+    }
+
+    [Test]
+    public void IsIceEdge_RowNextToIce()
+    {
+        var edge = Enumerable.Range(0, 10).Where(y => MapRules.IsIceEdge(y, 10, 2)).ToArray();
+        CollectionAssert.AreEqual(new[] { 2, 7 }, edge);
+        Assert.IsFalse(Enumerable.Range(0, 10).Any(y => MapRules.IsIceEdge(y, 10, 0)));
     }
 
     [Test]

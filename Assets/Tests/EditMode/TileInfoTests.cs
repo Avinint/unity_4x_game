@@ -34,6 +34,11 @@ public class TileInfoTests
             Keys(Relief.Water, Biome.Ocean, Feature.None, 1, false, false));
 
     [Test]
+    public void IceOnOcean_Impassable() =>
+        CollectionAssert.AreEqual(new[] { "biome.ocean", "feature.ice", "tooltip.impassable" },
+            Keys(Relief.Water, Biome.Ocean, Feature.Ice, 1, false, false));
+
+    [Test]
     public void NavigableRiver_KeepsBiome_Impassable() =>
         CollectionAssert.AreEqual(new[] { "biome.grassland", "relief.navigable_river", "tooltip.impassable" },
             Keys(Relief.NavigableRiver, Biome.Grassland, Feature.None, 1, false, false));

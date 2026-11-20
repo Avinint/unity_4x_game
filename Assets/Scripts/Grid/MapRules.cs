@@ -9,9 +9,9 @@ public enum Relief { Water, Flat, Hill, Mountain, NavigableRiver }
 // Nouveaux biomes à la fin : la liste BiomeTerrains de la scène est enregistrée par numéro.
 public enum Biome { Ocean, Coast, Lake, Tundra, Grassland, Plains, Desert, Tropical }
 
-// Caractéristique posée sur le sol : végétation (Forest, Taiga, Rainforest), zone humide (Marsh), neige (Snow).
-// Nouvelles valeurs à la fin (liste FeatureTerrains de la scène).
-public enum Feature { None, Forest, Taiga, Rainforest, Marsh, Snow }
+// Caractéristique posée sur le sol : végétation (Forest, Taiga, Rainforest), zone humide (Marsh), neige (Snow),
+// banquise (Ice, sur l'eau). Nouvelles valeurs à la fin (liste FeatureTerrains de la scène).
+public enum Feature { None, Forest, Taiga, Rainforest, Marsh, Snow, Ice }
 
 // Seuils de génération (réglables dans l'Inspector de MapGenerator).
 [Serializable]
@@ -32,6 +32,7 @@ public class MapRulesSettings
     [Range(0f, 1f)] public float DryFraction = 0.25f;         // les plus sèches
     [Range(0f, 1f)] public float WetFraction = 0.25f;         // les plus humides
     [Range(0f, 1f)] public float MarshFraction = 0.08f;       // les plus humides de toutes : marais possible
+    [Range(0f, 1f)] public float IceEdgeFraction = 0.5f;      // part de la mer qui gèle dans la rangée qui touche la banquise
 
     // Seuils absolus, calculés à chaque génération par MapRules.WithClimateThresholds.
     [HideInInspector] public float FrozenBelow = 0.15f, TundraBelow = 0.25f, ColdBelow = 0.35f, HotAbove = 0.7f;
@@ -90,6 +91,13 @@ public static class MapRules
         int index = Mathf.Clamp(Mathf.FloorToInt(fraction * sorted.Count + 1e-4f), 0, sorted.Count - 1);
         return sorted[index];
     }
+
+    // Rangées de banquise ajoutées à chaque pôle.
+    public static bool IsPolar(int y, int height, int rows) => y < rows || y >= height - rows;
+
+    // Rangée qui touche la banquise : elle y gèle par endroits (limite irrégulière).
+    public static bool IsIceEdge(int y, int height, int rows) =>
+        rows > 0 && (y == rows || y == height - 1 - rows);
 
     public static Relief ReliefAt(float altitude, float seaLevel, float hillLevel, float mountainLevel) =>
         altitude < seaLevel ? Relief.Water

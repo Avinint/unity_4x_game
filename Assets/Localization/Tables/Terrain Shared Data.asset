@@ -95,6 +95,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377217720221801
+  - m_Id: 50064274968576
+    m_Key: feature.ice
+    m_Metadata:
+      m_Items:
+      - rid: 7013377217720221802
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -170,3 +175,7 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : relief ; fleuve navigable (la case garde son sol)"
+    - rid: 7013377217720221802
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Fen\xEAtre d'informations de la case survol\xE9e : caract\xE9ristique ; banquise (glace de mer aux p\xF4les)"
