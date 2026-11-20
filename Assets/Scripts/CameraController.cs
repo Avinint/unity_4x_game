@@ -24,7 +24,6 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private float distanceMin = 40f;
     [SerializeField] private float distanceMax = 250f;          // plancher du zoom maximal
     [SerializeField] private bool fitMapOnMaxZoom = true;       // le zoom maximal montre toute la carte
-    [SerializeField, Range(0f, 1f)] private float recenterFrom = 0.6f;   // à partir de cette part du zoom max, la vue se recentre
     [SerializeField] private float distanceDefault = 120f;
     [SerializeField] private float distanceZoomSpeed = 2.5f;
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
@@ -191,7 +190,7 @@ public class CameraController : Singleton<CameraController>
         float max = MaxDistance;
         distance = Mathf.Clamp(value, distanceMin, max);
         overheadFollow.FollowOffset = CameraMath.TiltedOffset(distance, distanceMin, max, pitchNear, pitchFar);
-        ClampTarget();   // en dézoomant, la zone autorisée se resserre vers le centre
+        ClampTarget();   // en dézoomant, la vue s'élargit : elle peut dépasser le bord de la carte
     }
 
     // Distance maximale : au moins de quoi voir toute la carte (recalculée, l'écran peut changer de taille).
@@ -331,10 +330,19 @@ public class CameraController : Singleton<CameraController>
     {
         HexGrid grid = GameManager.Instance.HexGrid;
         if (grid == null) return;
-        Rect bounds = CameraMath.ShrinkRect(grid.WorldBounds, CameraMath.PanFreedom(distance, MaxDistance, recenterFrom));
+        // Garde ce que l'écran montre au sol dans la carte (cases entières), pas seulement le point visé :
+        // avec la vue inclinée, une cible sur la dernière rangée montrait tout le vide au-delà.
+        Rect map = grid.WorldBounds;
+        float halfW = grid.HexSize * Mathf.Sqrt(3f) * 0.5f, halfH = grid.HexSize;   // cases à sommet pointu
+        float pitch = CameraMath.Pitch(distance, distanceMin, MaxDistance, pitchNear, pitchFar);
+        var (south, north) = CameraMath.GroundExtent(distance, pitch, fieldOfView);
         Vector3 p = cameraTarget.transform.position;
-        if (!grid.Wraps) p.x = Mathf.Clamp(p.x, bounds.xMin, bounds.xMax);   // monde qui fait le tour : est-ouest libre
-        p.z = Mathf.Clamp(p.z, bounds.yMin, bounds.yMax);
+        if (!grid.Wraps && Camera.main != null)   // monde qui fait le tour : est-ouest libre
+        {
+            float halfView = distance * Mathf.Tan(fieldOfView * 0.5f * Mathf.Deg2Rad) * Camera.main.aspect;   // largeur au niveau de la cible
+            p.x = CameraMath.ClampSpan(p.x, map.xMin - halfW, map.xMax + halfW, halfView, halfView);
+        }
+        p.z = CameraMath.ClampSpan(p.z, map.yMin - halfH, map.yMax + halfH, south, north);
         cameraTarget.transform.position = p;
     }
 

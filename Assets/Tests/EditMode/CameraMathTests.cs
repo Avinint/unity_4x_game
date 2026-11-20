@@ -84,38 +84,38 @@ public class CameraMathTests
         Assert.AreEqual(0f, CameraMath.FitDistance(Vector2.zero, 30f, 16f / 9f, 70f), 0.0001f);
     }
 
-    private static readonly Rect Map = new Rect(10f, 20f, 100f, 60f);
-
     [Test]
-    public void ShrinkRect_FactorOne_Unchanged()
+    public void GroundExtent_TopDown_Symmetric()
     {
-        Assert.AreEqual(Map, CameraMath.ShrinkRect(Map, 1f));
+        var (south, north) = CameraMath.GroundExtent(100f, 90f, 30f);
+
+        float expected = 100f * Mathf.Tan(15f * Mathf.Deg2Rad);
+        Assert.AreEqual(expected, north, 0.01f);
+        Assert.AreEqual(expected, south, 0.01f);
     }
 
     [Test]
-    public void ShrinkRect_FactorZero_IsCenterPoint()
+    public void GroundExtent_Tilted_SeesFartherNorth()
     {
-        Rect r = CameraMath.ShrinkRect(Map, 0f);
+        var (south, north) = CameraMath.GroundExtent(100f, 40f, 30f);
 
-        Assert.AreEqual(Vector2.zero, r.size);
-        Assert.AreEqual(Map.center, r.center);
+        Assert.Greater(south, 0f);
+        Assert.Greater(north, south);
     }
 
     [Test]
-    public void ShrinkRect_Half_KeepsCenter()
+    public void ClampSpan_KeepsViewInside()
     {
-        Rect r = CameraMath.ShrinkRect(Map, 0.5f);
-
-        Assert.AreEqual(Map.size * 0.5f, r.size);
-        Assert.AreEqual(Map.center, r.center);
+        Assert.AreEqual(15f, CameraMath.ClampSpan(0f, 0f, 100f, 15f, 30f), 0.0001f);     // bord sud
+        Assert.AreEqual(70f, CameraMath.ClampSpan(95f, 0f, 100f, 15f, 30f), 0.0001f);    // bord nord
+        Assert.AreEqual(40f, CameraMath.ClampSpan(40f, 0f, 100f, 15f, 30f), 0.0001f);    // libre
     }
 
     [Test]
-    public void PanFreedom_FullBelowStart_ZeroAtMax()
+    public void ClampSpan_ViewLargerThanMap_Centred()
     {
-        Assert.AreEqual(1f, CameraMath.PanFreedom(100f, 400f, 0.6f), 0.0001f);   // 100 < 240
-        Assert.AreEqual(0.5f, CameraMath.PanFreedom(320f, 400f, 0.6f), 0.0001f); // à mi-chemin entre 240 et 400
-        Assert.AreEqual(0f, CameraMath.PanFreedom(400f, 400f, 0.6f), 0.0001f);
+        // Vue de 60 au sud et 80 au nord sur une carte de 100 : chaque côté dépasse de 20.
+        Assert.AreEqual(40f, CameraMath.ClampSpan(10f, 0f, 100f, 60f, 80f), 0.0001f);
     }
 
     [Test]

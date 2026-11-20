@@ -17,17 +17,25 @@ public static class CameraMath
         return Mathf.Max(dx, dz) * margin;
     }
 
-    // Rectangle réduit autour de son centre : factor 1 = inchangé, 0 = réduit au centre.
-    public static Rect ShrinkRect(Rect rect, float factor)
+    // Étendue au sol de la vue (vers le sud, vers le nord), mesurée depuis la cible, pour une caméra
+    // inclinée de `pitchDeg` à `distance` de la cible : rayons du bas et du haut de l'écran jusqu'au sol.
+    public static (float south, float north) GroundExtent(float distance, float pitchDeg, float verticalFovDeg)
     {
-        factor = Mathf.Clamp01(factor);
-        Vector2 size = rect.size * factor;
-        return new Rect(rect.center - size * 0.5f, size);
+        float pitch = pitchDeg * Mathf.Deg2Rad, half = verticalFovDeg * 0.5f * Mathf.Deg2Rad;
+        float height = distance * Mathf.Sin(pitch), back = distance * Mathf.Cos(pitch);
+        // Distance horizontale caméra → sol pour un rayon incliné de `a` sous l'horizontale (négative au-delà de 90°).
+        float Reach(float a) => height * Mathf.Cos(a) / Mathf.Max(Mathf.Sin(a), 1e-4f);
+        float north = Mathf.Min(Reach(pitch - half), 10000f) - back;   // rayon du haut proche de l'horizon : borné
+        float south = back - Reach(pitch + half);
+        return (south, north);
     }
 
-    // Part de la carte où la vue peut aller : 1 jusqu'à startFraction × max, puis jusqu'à 0 à la distance max.
-    public static float PanFreedom(float distance, float maxDistance, float startFraction) =>
-        1f - Mathf.InverseLerp(startFraction * maxDistance, maxDistance, distance);
+    // Valeur gardée pour que [value − below, value + above] reste dans [min, max] ; centrée si la vue est plus grande.
+    public static float ClampSpan(float value, float min, float max, float below, float above)
+    {
+        float lo = min + below, hi = max - above;
+        return lo <= hi ? Mathf.Clamp(value, lo, hi) : (lo + hi) * 0.5f;
+    }
 
     // Direction de défilement quand la souris est à moins de `margin` pixels d'un bord de l'écran.
     // Zéro au centre ou si la souris est hors de la fenêtre ; normalisée dans les coins.
