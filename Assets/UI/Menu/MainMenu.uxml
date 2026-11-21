@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <Style src="MainMenu.uss" />
+  <ui:VisualElement name="menuRoot" class="menu-root">
+    <ui:Label name="title" class="menu-title" text="Fief" />
+    <ui:VisualElement class="menu-panel">
+      <ui:Button name="newGame" class="menu-button" text="Nouvelle partie" />
+      <ui:Button name="load" class="menu-button" text="Charger" />
+      <ui:Button name="options" class="menu-button" text="Options" />
+      <ui:Button name="quit" class="menu-button" text="Quitter" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>
