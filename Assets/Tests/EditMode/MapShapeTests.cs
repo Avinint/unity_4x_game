@@ -83,6 +83,40 @@ public class MapShapeTests
     }
 
     [Test]
+    public void IslandCount_OnePer80Cells_AtLeastFour()
+    {
+        Assert.AreEqual(12, MapShape.IslandCount(40, 29, 2));   // 40 × 25 = 1000 cases jouables
+        Assert.AreEqual(4, MapShape.IslandCount(10, 10, 2));
+    }
+
+    [Test]
+    public void IslandBumps_CountAndInsidePlayableBand([Values(false, true)] bool wrap)
+    {
+        var islands = MapShape.IslandBumps(40, 29, 2, wrap, 0.35f, new System.Random(1));
+
+        Assert.AreEqual(12, islands.Count);
+        foreach (var (c, _) in islands)
+        {
+            Assert.That(c.x, Is.InRange(0f, 40f));
+            Assert.That(c.y, Is.InRange(2f, 26f));
+        }
+    }
+
+    [Test]
+    public void IslandBumps_SpreadApart()
+    {
+        var islands = MapShape.IslandBumps(40, 29, 2, true, 0.35f, new System.Random(1));
+        float rx = Mathf.Sqrt(40 * 25 * 0.35f / (12 * Mathf.PI));
+        for (int a = 0; a < islands.Count; a++)
+            for (int b = a + 1; b < islands.Count; b++)
+                Assert.GreaterOrEqual(MapShape.Gap(islands[a].centre, islands[b].centre, 40f), 2f * rx, $"îles {a} et {b}");
+    }
+
+    [Test]
+    public void Gap_Wrap_ShortestAcrossSeam() =>
+        Assert.AreEqual(2f, MapShape.Gap(new Vector2(39f, 5f), new Vector2(1f, 5f), 40f), 1e-4f);
+
+    [Test]
     public void Mask_Continents_SameRandom_SameMask()
     {
         var a = MapShape.Mask(MapType.Continents, 40, 29, 2, true, new System.Random(9));

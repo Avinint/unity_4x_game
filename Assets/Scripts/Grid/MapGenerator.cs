@@ -179,7 +179,8 @@ public class MapGenerator : MonoBehaviour
         float[,] ridges = Noise.GenerateNoiseMap(Width, Height, NoiseScale, Seed + 3, Octaves, Persistence, Lacunarity, Offset, WrapWorld);
 
         // Forme du type de carte, avant le niveau de la mer : elle décide où sont les terres.
-        float[,] shape = MapShape.Mask(MapType, Width, Height, PolarIceRows, WrapWorld, new System.Random(Seed + 4));
+        float waterFraction = MapType == MapType.Archipelago ? Rules.ArchipelagoWaterFraction : Rules.WaterFraction;
+        float[,] shape = MapShape.Mask(MapType, Width, Height, PolarIceRows, WrapWorld, new System.Random(Seed + 4), 1f - waterFraction);
         if (shape != null)
             for (int y = 0; y < Height; y++)
                 for (int x = 0; x < Width; x++)
@@ -190,7 +191,7 @@ public class MapGenerator : MonoBehaviour
         for (int y = 0; y < Height; y++)
             for (int x = 0; x < Width; x++)
                 if (!MapRules.IsPolar(y, Height, PolarIceRows)) playable.Add(altitude[x, y]);
-        float sea = MapRules.Percentile(playable, Rules.WaterFraction);
+        float sea = MapRules.Percentile(playable, waterFraction);
         // Rangées polaires sous la mer avant tout le reste : côtes, lacs et hydrologie les voient comme de l'eau.
         for (int y = 0; y < Height; y++)
             if (MapRules.IsPolar(y, Height, PolarIceRows))

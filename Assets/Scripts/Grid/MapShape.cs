@@ -19,8 +19,10 @@ public static class MapShape
         return 1f - Mathf.SmoothStep(0f, 1f, d);
     }
 
-    // Masque par case, ou null sans masque (Fractal ; Archipel viendra ensuite). `rng` place les continents.
-    public static float[,] Mask(MapType type, int width, int height, int polarRows, bool wrapX, System.Random rng = null)
+    // Masque par case, ou null sans masque (Fractal). `rng` place les continents et les îles ;
+    // `landFraction` donne la taille des îles.
+    public static float[,] Mask(MapType type, int width, int height, int polarRows, bool wrapX, System.Random rng = null,
+                                float landFraction = 0.35f)
     {
         float playable = height - 2 * polarRows;
         var bumps = new List<(Vector2 centre, Vector2 radius)>();
@@ -35,6 +37,8 @@ public static class MapShape
                 // couvraient plus que la part des terres : la mer tombait à leur bord et le bruit reliait les continents.
                 bumps.Add((c, new Vector2(spacing * 0.35f, playable * 0.4f)));
         }
+        else if (type == MapType.Archipelago)
+            bumps.AddRange(IslandBumps(width, height, polarRows, wrapX, landFraction, rng ?? new System.Random(0)));
         if (bumps.Count == 0) return null;
 
         var mask = new float[width, height];
@@ -67,6 +71,57 @@ public static class MapShape
             }
         }
         return channels;
+    }
+
+    // Archipel : une île pour 80 cases jouables, au moins 4.
+    public static int IslandCount(int width, int height, int polarRows) =>
+        Mathf.Max(4, Mathf.RoundToInt(width * (height - 2 * polarRows) / 80f));
+
+    // Îles de tailles variées (0,7 à 1,3 fois le rayon moyen), placées au hasard dans la bande jouable,
+    // chacune à au moins deux rayons moyens des autres si un des 50 essais le permet (sinon le plus éloigné).
+    // Rayon moyen : les îles couvrent à peu près la part des terres. Un archipel de petites îles d'une case
+    // (bruit plus fin) ne laissait aucune masse assez grande pour un départ.
+    public static List<(Vector2 centre, Vector2 radius)> IslandBumps(int width, int height, int polarRows, bool wrapX,
+                                                                      float landFraction, System.Random rng)
+    {
+        int count = IslandCount(width, height, polarRows);
+        float playable = height - 2 * polarRows;
+        float rx = Mathf.Sqrt(width * playable * landFraction / (count * Mathf.PI));
+        float ry = rx * RowsPerColumn;
+        float wrapWidth = wrapX ? width : 0f;
+        var islands = new List<(Vector2 centre, Vector2 radius)>();
+        for (int i = 0; i < count; i++)
+        {
+            Vector2 best = default;
+            float bestGap = -1f;
+            for (int attempt = 0; attempt < 50; attempt++)
+            {
+                // Bords fixes : une demi-île de marge à l'ouest et à l'est ; toujours au nord et au sud.
+                float x = wrapX ? (float)rng.NextDouble() * width
+                                : rx * 0.5f + (float)rng.NextDouble() * Mathf.Max(0f, width - 1 - rx);
+                float y = polarRows + ry * 0.5f + (float)rng.NextDouble() * Mathf.Max(0f, playable - 1 - ry);
+                var p = new Vector2(x, y);
+                float gap = float.MaxValue;
+                foreach (var (c, _) in islands) gap = Mathf.Min(gap, Gap(p, c, wrapWidth));
+                if (gap > bestGap) { best = p; bestGap = gap; }
+                if (gap >= 2f * rx) break;
+            }
+            float scale = 0.7f + 0.6f * (float)rng.NextDouble();
+            islands.Add((best, new Vector2(rx * scale, ry * scale)));
+        }
+        return islands;
+    }
+
+    // Une colonne fait 1,73 de large, une rangée 1,5 de haut : un rayon de n colonnes vaut ~1,15 n rangées.
+    private const float RowsPerColumn = 1.15f;
+
+    // Écart entre deux centres, en colonnes (y ramené à l'échelle de x), à travers la couture si wrapWidth > 0.
+    public static float Gap(Vector2 a, Vector2 b, float wrapWidth = 0f)
+    {
+        float dx = a.x - b.x;
+        if (wrapWidth > 0f) dx -= Mathf.Round(dx / wrapWidth) * wrapWidth;
+        float dy = (a.y - b.y) / RowsPerColumn;
+        return Mathf.Sqrt(dx * dx + dy * dy);
     }
 
     // 2 continents, 3 sur une carte large.
