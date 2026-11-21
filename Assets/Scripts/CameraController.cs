@@ -31,7 +31,6 @@ public class CameraController : Singleton<CameraController>
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
 
     [Header("Défilement par les bords")]
-    [SerializeField] private bool edgeScroll = true;
     [SerializeField] private float edgeScrollMargin = 15f;   // pixels
 
     private float distance;
@@ -92,7 +91,7 @@ public class CameraController : Singleton<CameraController>
     // Souris près d'un bord de la fenêtre : la vue glisse dans cette direction.
     private void EdgeScroll()
     {
-        if (!edgeScroll || !Application.isFocused) return;
+        if (!UserOptionsStore.Current.EdgeScroll || !Application.isFocused) return;
         Vector2 direction = CameraMath.EdgeScrollDirection(
             Mouse.current.position.ReadValue(), new Vector2(Screen.width, Screen.height), edgeScrollMargin);
         if (direction == Vector2.zero) return;
@@ -277,7 +276,8 @@ public class CameraController : Singleton<CameraController>
         if (context.control?.device is Mouse)
         {
             if (context.performed)
-                SetDistance(distance * (1f + Mathf.Sign(context.ReadValue<float>()) * scrollZoomStep));
+                SetDistance(distance * CameraMath.WheelZoomFactor(context.ReadValue<float>(), scrollZoomStep,
+                                                                  UserOptionsStore.Current.InvertWheel));
             return;
         }
 

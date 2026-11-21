@@ -6,6 +6,7 @@
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.Localization",
+        "Unity.ResourceManager",
         "Unity.Mathematics"
     ],
     "includePlatforms": [],

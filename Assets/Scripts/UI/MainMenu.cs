@@ -16,13 +16,15 @@ public class MainMenu : MonoBehaviour
     // Ordre affiché des types, celui par défaut (Fractale) en premier.
     private static readonly MapType[] TypeOrder = { MapType.Fractal, MapType.Continents, MapType.Pangaea, MapType.Archipelago };
 
-    private VisualElement mainPanel, setupPanel;
-    private Button newGame, customize, load, options, quit, cancel, save;
-    private Label setupTitle, sizeInfo;
-    private DropdownField sizeField, typeField, playersField;
-    private Toggle wrapField;
+    private VisualElement mainPanel, setupPanel, optionsPanel;
+    private Button newGame, customize, load, options, quit, cancel, save, optionsCancel, optionsSave;
+    private Label setupTitle, sizeInfo, optionsTitle;
+    private DropdownField sizeField, typeField, playersField, languageField;
+    private Toggle wrapField, fullscreenField, edgeScrollField, invertWheelField;
     private TextField seedField;
     private GameSettings saved;
+    // Codes des langues proposées, dans l'ordre de la liste ; "" = langue du système.
+    private List<string> languageCodes = new List<string> { "" };
 
     private void OnEnable()
     {
@@ -43,19 +45,29 @@ public class MainMenu : MonoBehaviour
         playersField = root.Q<DropdownField>("playersField");
         wrapField = root.Q<Toggle>("wrapField");
         seedField = root.Q<TextField>("seedField");
+        optionsPanel = root.Q<VisualElement>("optionsPanel");
+        optionsTitle = root.Q<Label>("optionsTitle");
+        languageField = root.Q<DropdownField>("languageField");
+        fullscreenField = root.Q<Toggle>("fullscreenField");
+        edgeScrollField = root.Q<Toggle>("edgeScrollField");
+        invertWheelField = root.Q<Toggle>("invertWheelField");
+        optionsCancel = root.Q<Button>("optionsCancel");
+        optionsSave = root.Q<Button>("optionsSave");
 
         saved = GameSettingsStore.Load();
 
         newGame.clicked += OnNewGame;
         customize.clicked += OnCustomize;
+        options.clicked += OnOptions;
         quit.clicked += OnQuit;
         cancel.clicked += OnCancel;
         save.clicked += OnSave;
+        optionsCancel.clicked += OnCancel;
+        optionsSave.clicked += OnSaveOptions;
         sizeField.RegisterValueChangedCallback(OnShapeChanged);
         typeField.RegisterValueChangedCallback(OnShapeChanged);
-        // Pas encore faits : sauvegarde de partie et options.
+        // Pas encore faite : sauvegarde de partie.
         load.SetEnabled(false);
-        options.SetEnabled(false);
 
         WriteTexts();
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
@@ -65,18 +77,21 @@ public class MainMenu : MonoBehaviour
     {
         newGame.clicked -= OnNewGame;
         customize.clicked -= OnCustomize;
+        options.clicked -= OnOptions;
         quit.clicked -= OnQuit;
         cancel.clicked -= OnCancel;
         save.clicked -= OnSave;
+        optionsCancel.clicked -= OnCancel;
+        optionsSave.clicked -= OnSaveOptions;
         sizeField.UnregisterValueChangedCallback(OnShapeChanged);
         typeField.UnregisterValueChangedCallback(OnShapeChanged);
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
-    // Échap sur l'écran des paramètres : retour au menu sans enregistrer.
+    // Échap sur un écran (paramètres, options) : retour au menu sans enregistrer.
     private void Update()
     {
-        if (!setupPanel.ClassListContains("hidden") && Keyboard.current != null
+        if (mainPanel.ClassListContains("hidden") && Keyboard.current != null
             && Keyboard.current.escapeKey.wasPressedThisFrame) OnCancel();
     }
 
@@ -105,7 +120,22 @@ public class MainMenu : MonoBehaviour
         SetChoices(playersField, Enumerable.Range(GameSettings.MinPlayers, GameSettings.MaxPlayers - GameSettings.MinPlayers + 1)
             .Select(n => n.ToString()));
         UpdateSizeInfo();
+
+        optionsTitle.text = L10n.Get("Menu", "options.title");
+        languageField.label = L10n.Get("Menu", "options.language");
+        fullscreenField.label = L10n.Get("Menu", "options.fullscreen");
+        edgeScrollField.label = L10n.Get("Menu", "options.edge_scroll");
+        invertWheelField.label = L10n.Get("Menu", "options.invert_wheel");
+        optionsCancel.text = L10n.Get("Menu", "setup.cancel");
+        optionsSave.text = L10n.Get("Menu", "setup.save");
+        // Chaque langue sous son propre nom (Français, English).
+        var locales = LocalizationSettings.AvailableLocales.Locales;
+        languageCodes = new List<string> { "" }.Concat(locales.Select(l => l.Identifier.Code)).ToList();
+        SetChoices(languageField, new[] { L10n.Get("Menu", "options.system_language") }
+            .Concat(locales.Select(l => Capitalize(l.Identifier.CultureInfo?.NativeName ?? l.Identifier.Code))));
     }
+
+    private static string Capitalize(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s.Substring(1);
 
     private static void SetChoices(DropdownField field, IEnumerable<string> choices)
     {
@@ -129,10 +159,33 @@ public class MainMenu : MonoBehaviour
         wrapField.value = saved.WrapWorld;
         seedField.value = saved.Seed.HasValue ? saved.Seed.Value.ToString() : "";
         UpdateSizeInfo();
-        ShowSetup(true);
+        ShowPanel(setupPanel);
     }
 
-    private void OnCancel() => ShowSetup(false);
+    private void OnOptions()
+    {
+        UserOptions o = UserOptionsStore.Current;
+        languageField.index = Mathf.Max(0, languageCodes.IndexOf(o.Language));
+        fullscreenField.value = o.Fullscreen;
+        edgeScrollField.value = o.EdgeScroll;
+        invertWheelField.value = o.InvertWheel;
+        ShowPanel(optionsPanel);
+    }
+
+    // Enregistrer applique tout de suite ; la langue changée réécrit les textes (OnLocaleChanged).
+    private void OnSaveOptions()
+    {
+        UserOptionsStore.Save(new UserOptions
+        {
+            Language = languageCodes[Mathf.Max(0, languageField.index)],
+            Fullscreen = fullscreenField.value,
+            EdgeScroll = edgeScrollField.value,
+            InvertWheel = invertWheelField.value,
+        });
+        ShowPanel(mainPanel);
+    }
+
+    private void OnCancel() => ShowPanel(mainPanel);
 
     private void OnSave()
     {
@@ -145,13 +198,14 @@ public class MainMenu : MonoBehaviour
             Seed = GameSettings.ParseSeed(seedField.value),
         };
         GameSettingsStore.Save(saved);
-        ShowSetup(false);
+        ShowPanel(mainPanel);
     }
 
-    private void ShowSetup(bool show)
+    // Un seul des trois cadres à la fois.
+    private void ShowPanel(VisualElement panel)
     {
-        mainPanel.EnableInClassList("hidden", show);
-        setupPanel.EnableInClassList("hidden", !show);
+        foreach (var p in new[] { mainPanel, setupPanel, optionsPanel })
+            p.EnableInClassList("hidden", p != panel);
     }
 
     private void OnShapeChanged(ChangeEvent<string> _) => UpdateSizeInfo();

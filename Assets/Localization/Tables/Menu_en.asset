@@ -114,6 +114,30 @@ MonoBehaviour:
     m_Localized: Save
     m_Metadata:
       m_Items: []
+  - m_Id: 179306077835264
+    m_Localized: Options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 179306425962496
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 179306425962497
+    m_Localized: System language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 179306425962498
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 179306425962499
+    m_Localized: Edge scrolling
+    m_Metadata:
+      m_Items: []
+  - m_Id: 179306425962500
+    m_Localized: Invert mouse wheel
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

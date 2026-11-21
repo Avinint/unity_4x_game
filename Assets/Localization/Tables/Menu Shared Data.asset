@@ -135,6 +135,36 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377249734033499
+  - m_Id: 179306077835264
+    m_Key: options.title
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033500
+  - m_Id: 179306425962496
+    m_Key: options.language
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033501
+  - m_Id: 179306425962497
+    m_Key: options.system_language
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033502
+  - m_Id: 179306425962498
+    m_Key: options.fullscreen
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033503
+  - m_Id: 179306425962499
+    m_Key: options.edge_scroll
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033504
+  - m_Id: 179306425962500
+    m_Key: options.invert_wheel
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033505
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -242,3 +272,27 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "\xC9cran des param\xE8tres de partie : bouton qui enregistre les param\xE8tres (repris par Nouvelle partie) et revient au menu"
+    - rid: 7013377249734033500
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des options : titre"
+    - rid: 7013377249734033501
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des options : libell\xE9 de la liste des langues"
+    - rid: 7013377249734033502
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des options : premier choix de la liste : suivre la langue de l'ordinateur"
+    - rid: 7013377249734033503
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des options : case \xE0 cocher : jeu en plein \xE9cran (sinon en fen\xEAtre)"
+    - rid: 7013377249734033504
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des options : case \xE0 cocher : la vue glisse quand la souris touche un bord de la fen\xEAtre"
+    - rid: 7013377249734033505
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des options : case \xE0 cocher : molette vers le haut = rapprocher (par d\xE9faut : \xE9loigner)"

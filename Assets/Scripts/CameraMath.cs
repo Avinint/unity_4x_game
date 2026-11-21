@@ -48,6 +48,10 @@ public static class CameraMath
         return direction == Vector2.zero ? direction : direction.normalized;
     }
 
+    // Facteur de distance pour un cran de molette (positif = vers le haut) : vers le haut éloigne, sauf inversé.
+    public static float WheelZoomFactor(float wheel, float step, bool invert) =>
+        1f + Mathf.Sign(wheel) * step * (invert ? -1f : 1f);
+
     // Décalage caméra → cible : à `distance`, côté sud, inclinée selon Pitch.
     public static Vector3 TiltedOffset(float distance, float minDistance, float maxDistance, float pitchNear, float pitchFar)
     {

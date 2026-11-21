@@ -85,6 +85,14 @@ public class CameraMathTests
     }
 
     [Test]
+    public void WheelZoomFactor_UpMovesAway_UnlessInverted()
+    {
+        Assert.AreEqual(1.15f, CameraMath.WheelZoomFactor(120f, 0.15f, false), 1e-4f);
+        Assert.AreEqual(0.85f, CameraMath.WheelZoomFactor(-120f, 0.15f, false), 1e-4f);
+        Assert.AreEqual(0.85f, CameraMath.WheelZoomFactor(120f, 0.15f, true), 1e-4f);
+    }
+
+    [Test]
     public void GroundExtent_TopDown_Symmetric()
     {
         var (south, north) = CameraMath.GroundExtent(100f, 90f, 30f);
