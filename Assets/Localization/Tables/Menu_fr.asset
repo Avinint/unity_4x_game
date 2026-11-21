@@ -46,6 +46,74 @@ MonoBehaviour:
     m_Localized: Menu principal
     m_Metadata:
       m_Items: []
+  - m_Id: 152657672228864
+    m_Localized: "Param\xE8tres de partie"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887104
+    m_Localized: Taille de la carte
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887105
+    m_Localized: Petite
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887106
+    m_Localized: Moyenne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887107
+    m_Localized: Grande
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887108
+    m_Localized: "{0} \xD7 {1} cases"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887109
+    m_Localized: Type de carte
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887110
+    m_Localized: Fractale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887111
+    m_Localized: Continents
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887112
+    m_Localized: "Pang\xE9e"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887113
+    m_Localized: Archipel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887114
+    m_Localized: Joueurs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887115
+    m_Localized: Monde qui fait le tour
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887116
+    m_Localized: 'Graine (vide : au hasard)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154801049653248
+    m_Localized: Personnaliser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154801200648192
+    m_Localized: Annuler
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154801200648193
+    m_Localized: Enregistrer
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

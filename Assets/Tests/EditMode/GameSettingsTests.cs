@@ -18,6 +18,15 @@ public class GameSettingsTests
     }
 
     [Test]
+    public void ParseSeed_EmptyOrInvalidIsRandom_NumberKept()
+    {
+        Assert.IsNull(GameSettings.ParseSeed(""));
+        Assert.IsNull(GameSettings.ParseSeed(null));
+        Assert.IsNull(GameSettings.ParseSeed("abc"));
+        Assert.AreEqual(42, GameSettings.ParseSeed(" 42 "));
+    }
+
+    [Test]
     public void Dimensions_GrowWithSize()
     {
         var (sw, sh) = GameSettings.Dimensions(MapSize.Small, MapType.Fractal);

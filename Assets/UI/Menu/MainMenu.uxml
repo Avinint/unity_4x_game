@@ -3,11 +3,25 @@
   <Style src="MainMenu.uss" />
   <ui:VisualElement name="menuRoot" class="menu-root">
     <ui:Label name="title" class="menu-title" text="Fief" />
-    <ui:VisualElement class="menu-panel">
+    <ui:VisualElement name="mainPanel" class="menu-panel">
       <ui:Button name="newGame" class="menu-button" text="Nouvelle partie" />
+      <ui:Button name="customize" class="menu-button" text="Personnaliser" />
       <ui:Button name="load" class="menu-button" text="Charger" />
       <ui:Button name="options" class="menu-button" text="Options" />
       <ui:Button name="quit" class="menu-button" text="Quitter" />
+    </ui:VisualElement>
+    <ui:VisualElement name="setupPanel" class="menu-panel setup-panel hidden">
+      <ui:Label name="setupTitle" class="setup-title" />
+      <ui:DropdownField name="sizeField" class="setup-field" />
+      <ui:Label name="sizeInfo" class="setup-info" />
+      <ui:DropdownField name="typeField" class="setup-field" />
+      <ui:DropdownField name="playersField" class="setup-field" />
+      <ui:Toggle name="wrapField" class="setup-field" />
+      <ui:TextField name="seedField" class="setup-field" />
+      <ui:VisualElement class="setup-buttons">
+        <ui:Button name="cancel" class="menu-button setup-button" />
+        <ui:Button name="save" class="menu-button setup-button" />
+      </ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>

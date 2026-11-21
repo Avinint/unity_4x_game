@@ -46,6 +46,74 @@ MonoBehaviour:
     m_Localized: Main menu
     m_Metadata:
       m_Items: []
+  - m_Id: 152657672228864
+    m_Localized: Game settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887104
+    m_Localized: Map size
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887105
+    m_Localized: Small
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887106
+    m_Localized: Medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887107
+    m_Localized: Large
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887108
+    m_Localized: "{0} \xD7 {1} tiles"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887109
+    m_Localized: Map type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887110
+    m_Localized: Fractal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887111
+    m_Localized: Continents
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887112
+    m_Localized: Pangaea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887113
+    m_Localized: Archipelago
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887114
+    m_Localized: Players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887115
+    m_Localized: World wraps around
+    m_Metadata:
+      m_Items: []
+  - m_Id: 152657923887116
+    m_Localized: 'Seed (empty: random)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154801049653248
+    m_Localized: Customize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154801200648192
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 154801200648193
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

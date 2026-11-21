@@ -50,6 +50,91 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377239912022096
+  - m_Id: 152657672228864
+    m_Key: setup.title
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033479
+  - m_Id: 152657923887104
+    m_Key: setup.size
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033480
+  - m_Id: 152657923887105
+    m_Key: size.small
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033481
+  - m_Id: 152657923887106
+    m_Key: size.medium
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033482
+  - m_Id: 152657923887107
+    m_Key: size.large
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033483
+  - m_Id: 152657923887108
+    m_Key: setup.dimensions
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033484
+  - m_Id: 152657923887109
+    m_Key: setup.map_type
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033485
+  - m_Id: 152657923887110
+    m_Key: maptype.fractal
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033486
+  - m_Id: 152657923887111
+    m_Key: maptype.continents
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033487
+  - m_Id: 152657923887112
+    m_Key: maptype.pangaea
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033488
+  - m_Id: 152657923887113
+    m_Key: maptype.archipelago
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033489
+  - m_Id: 152657923887114
+    m_Key: setup.players
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033490
+  - m_Id: 152657923887115
+    m_Key: setup.wrap
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033491
+  - m_Id: 152657923887116
+    m_Key: setup.seed
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033492
+  - m_Id: 154801049653248
+    m_Key: menu.customize
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033497
+  - m_Id: 154801200648192
+    m_Key: setup.cancel
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033498
+  - m_Id: 154801200648193
+    m_Key: setup.save
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033499
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -89,3 +174,71 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: 'Menu de la partie : bouton qui quitte la partie et revient au menu principal'
+    - rid: 7013377249734033479
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des param\xE8tres de partie : titre"
+    - rid: 7013377249734033480
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : libell\xE9 de la liste des tailles"
+    - rid: 7013377249734033481
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : taille de carte (f\xE9minin : la carte)"
+    - rid: 7013377249734033482
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : taille de carte (f\xE9minin : la carte)"
+    - rid: 7013377249734033483
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : taille de carte (f\xE9minin : la carte)"
+    - rid: 7013377249734033484
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : taille de la carte en cases ; {0} = largeur, {1} = hauteur (sans la banquise)"
+    - rid: 7013377249734033485
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : libell\xE9 de la liste des types de carte"
+    - rid: 7013377249734033486
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : type de carte : terres au hasard, sans forme impos\xE9e (f\xE9minin : la carte)"
+    - rid: 7013377249734033487
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : type de carte : deux ou trois continents s\xE9par\xE9s par l'oc\xE9an"
+    - rid: 7013377249734033488
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : type de carte : un seul supercontinent"
+    - rid: 7013377249734033489
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : type de carte : nombreuses \xEEles moyennes"
+    - rid: 7013377249734033490
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : libell\xE9 du nombre de joueurs"
+    - rid: 7013377249734033491
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : case \xE0 cocher : l'est et l'ouest de la carte se rejoignent"
+    - rid: 7013377249734033492
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de cr\xE9ation de partie : champ de saisie : nombre qui fixe la carte g\xE9n\xE9r\xE9e"
+    - rid: 7013377249734033497
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Menu principal : bouton qui ouvre l'\xE9cran des param\xE8tres de partie"
+    - rid: 7013377249734033498
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des param\xE8tres de partie : bouton qui revient au menu sans enregistrer"
+    - rid: 7013377249734033499
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran des param\xE8tres de partie : bouton qui enregistre les param\xE8tres (repris par Nouvelle partie) et revient au menu"
