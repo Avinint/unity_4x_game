@@ -4,11 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+// Gestionnaire unique d'une scène. Il appartient à la scène Game et disparaît avec elle (retour au menu,
+// nouvelle partie) : un gestionnaire gardé d'une partie à l'autre pointerait sur une carte détruite.
 public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
     private static T _instance;
     private static readonly object _instanceLock = new object();
     private static bool _quitting = false;
+    // Image où l'instance a été détruite : pendant le déchargement de la scène, les OnDisable / OnDestroy des
+    // autres objets lisent encore Instance, qui ne doit pas recréer un gestionnaire vide.
+    private static int _destroyedFrame = -1;
 
     public static T Instance
     {
@@ -16,14 +21,13 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             lock (_instanceLock)
             {
-                if (_instance == null && !_quitting)
+                if (_instance == null && !_quitting && Time.frameCount != _destroyedFrame)
                 {
                     _instance = GameObject.FindAnyObjectByType<T>();
                     if (_instance == null)
                     {
                         GameObject go = new GameObject(typeof(T).ToString());
                         _instance = go.AddComponent<T>();
-                        if (_instance.transform.parent == null) DontDestroyOnLoad(_instance.gameObject);
                     }
                 }
 
@@ -36,16 +40,21 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (_instance == null) {
             _instance = gameObject.GetComponent<T>();
-            // DontDestroyOnLoad ne fonctionne que sur les objets à la racine
-            if (transform.parent == null) DontDestroyOnLoad(gameObject);
         }
         else if (_instance.GetEntityId() != GetEntityId())
         {
             Destroy(gameObject);
             throw new System.Exception(string.Format("Instance of {0} already exists, removing {1}", GetType().FullName, ToString()));
         }
-        
+
         Init();
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (_instance != this) return;
+        _instance = null;
+        _destroyedFrame = Time.frameCount;
     }
 
     protected virtual void OnApplicationQuit()

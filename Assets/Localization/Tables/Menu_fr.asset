@@ -34,6 +34,18 @@ MonoBehaviour:
     m_Localized: Quitter
     m_Metadata:
       m_Items: []
+  - m_Id: 1617488465920
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1617618489344
+    m_Localized: Reprendre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1617622683648
+    m_Localized: Menu principal
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

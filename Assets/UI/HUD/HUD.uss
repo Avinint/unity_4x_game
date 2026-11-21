@@ -95,6 +95,26 @@
   -unity-font-style: bold;
 }
 
+.hud-menu-button {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  width: 140px;
+  height: 40px;
+  font-size: 20px;
+}
+
+.pause-veil {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+}
+
 .hidden {
   visibility: hidden;
 }

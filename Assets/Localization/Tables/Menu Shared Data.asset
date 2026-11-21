@@ -35,6 +35,21 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377239912022093
+  - m_Id: 1617488465920
+    m_Key: menu.open
+    m_Metadata:
+      m_Items:
+      - rid: 7013377239912022094
+  - m_Id: 1617618489344
+    m_Key: menu.resume
+    m_Metadata:
+      m_Items:
+      - rid: 7013377239912022095
+  - m_Id: 1617622683648
+    m_Key: menu.main_menu
+    m_Metadata:
+      m_Items:
+      - rid: 7013377239912022096
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -62,3 +77,15 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: 'Menu principal : bouton qui ferme le jeu'
+    - rid: 7013377239912022094
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "Bouton du HUD, en haut \xE0 gauche, qui ouvre le menu de la partie"
+    - rid: 7013377239912022095
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Menu de la partie : bouton qui referme le menu et reprend la partie'
+    - rid: 7013377239912022096
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: 'Menu de la partie : bouton qui quitte la partie et revient au menu principal'

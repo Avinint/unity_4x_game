@@ -289,7 +289,12 @@ public class SelectionController : Singleton<SelectionController>
     private void Deselect()
     {
         if (aiming) { CancelAiming(); return; }
-        if (SelectedUnit == null) return;
+        // Rien à annuler : Échap ouvre le menu de la partie (Retour arrière, lié à la même action, ne l'ouvre pas).
+        if (SelectedUnit == null)
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) PauseMenu.Instance?.Open();
+            return;
+        }
         SelectedUnit.Deselect();
         SelectedUnit = null;
 

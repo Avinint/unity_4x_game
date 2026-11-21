@@ -166,9 +166,10 @@ public class CameraController : Singleton<CameraController>
         if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart -= OnPlayerTurnStart;
+        base.OnDestroy();
     }
 
     // Monde qui fait le tour : en défilant toujours dans le même sens, x grandit et la précision des float baisse.
