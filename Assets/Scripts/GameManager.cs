@@ -31,6 +31,7 @@ public class GameManager : Singleton<GameManager>
     public Player CurrentPlayer => turns.Current;
 
     public event System.Action GameStart;
+    public event System.Action MapReady;   // carte, joueurs, unités et caméra en place (fin de l'écran de chargement)
     public event System.Action TurnChange;                // nouvelle manche
     public event System.Action<Player> PlayerTurnStart;   // début du tour d'un joueur
 
@@ -108,6 +109,8 @@ public class GameManager : Singleton<GameManager>
                 tile.Discover();
                 tile.SetVisibleNow(true);
             }
+
+        MapReady?.Invoke();
     }
 
     // Ordre de jeu : le joueur local d'abord, puis les autres dans l'ordre de Players.

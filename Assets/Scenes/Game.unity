@@ -1266,7 +1266,7 @@ MonoBehaviour:
   <PolarIceRows>k__BackingField: 2
   <WrapWorld>k__BackingField: 1
   <HexSize>k__BackingField: 5
-  <BatchSize>k__BackingField: 10
+  <BatchSize>k__BackingField: 200
   unknownPrefab: {fileID: 6944534303261143973, guid: d9daf753b065e30439ccc588df9fa389, type: 3}
   debugPrefab: {fileID: -8679921383154817045, guid: 87e9dfbb746657e4e8c4e19b69c88dfd, type: 3}
   <PlayerSpawningMinDistance>k__BackingField: 0
@@ -1793,7 +1793,6 @@ MonoBehaviour:
   distanceDefault: 120
   distanceZoomSpeed: 2.5
   scrollZoomStep: 0.15
-  edgeScroll: 1
   edgeScrollMargin: 15
   dragThreshold: 6
   defaultMode: 0
@@ -1812,6 +1811,7 @@ GameObject:
   - component: {fileID: 1525122969}
   - component: {fileID: 1525122968}
   - component: {fileID: 1525122971}
+  - component: {fileID: 1525122972}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -1883,6 +1883,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fief::PauseMenu
   mainMenuScene: MainMenu
+--- !u!114 &1525122972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525122967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b949aeb4a8e201b4caed6b35ac79edb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fief::LoadingScreen
 --- !u!1 &1554858944
 GameObject:
   m_ObjectHideFlags: 0

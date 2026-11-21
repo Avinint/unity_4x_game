@@ -25,5 +25,12 @@
       </ui:VisualElement>
       <ui:Instance template="OptionsPanel" name="optionsPanel" />
     </ui:VisualElement>
+    <ui:VisualElement name="loadingScreen" class="loading-screen">
+      <ui:Label class="menu-title" text="Fief" />
+      <ui:Label name="loadingLabel" class="loading-label" />
+      <ui:VisualElement class="loading-bar">
+        <ui:VisualElement name="loadingFill" class="loading-fill" />
+      </ui:VisualElement>
+    </ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>

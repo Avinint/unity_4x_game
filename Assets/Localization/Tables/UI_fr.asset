@@ -54,6 +54,10 @@ MonoBehaviour:
     m_Localized: Eau douce
     m_Metadata:
       m_Items: []
+  - m_Id: 1562641786163200
+    m_Localized: "Cr\xE9ation de la carte\u2026 {0} %"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

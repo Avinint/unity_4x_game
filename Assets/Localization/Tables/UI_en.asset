@@ -54,6 +54,10 @@ MonoBehaviour:
     m_Localized: Fresh water
     m_Metadata:
       m_Items: []
+  - m_Id: 1562641786163200
+    m_Localized: "Creating the map\u2026 {0}%"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

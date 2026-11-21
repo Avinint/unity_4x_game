@@ -60,6 +60,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 7013377217720221789
+  - m_Id: 1562641786163200
+    m_Key: loading.map
+    m_Metadata:
+      m_Items:
+      - rid: 7013377249734033506
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
@@ -107,3 +112,7 @@ MonoBehaviour:
       type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_CommentText: "Fen\xEAtre d'informations : rivi\xE8re, lac ou fleuve au contact de la case"
+    - rid: 7013377249734033506
+      type: {class: Comment, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_CommentText: "\xC9cran de chargement d'une partie, sous la barre de progression ; {0} = avancement en pour cent"

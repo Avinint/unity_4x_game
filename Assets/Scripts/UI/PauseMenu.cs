@@ -87,7 +87,7 @@ public class PauseMenu : MonoBehaviour
         IsOpen = true;
         openedFrame = Time.frameCount;
         veil.RemoveFromClassList("hidden");
-        SetGameInput(false);
+        GameInput.SetEnabled(false);
     }
 
     public void Close()
@@ -96,7 +96,7 @@ public class PauseMenu : MonoBehaviour
         if (optionsPanel.IsOpen) optionsPanel.Close();
         IsOpen = false;
         veil.AddToClassList("hidden");
-        SetGameInput(true);
+        GameInput.SetEnabled(true);
     }
 
     // Échap referme d'abord les Options (retour au menu de la partie), sinon le menu
@@ -107,17 +107,6 @@ public class PauseMenu : MonoBehaviour
             || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
         if (optionsPanel.IsOpen) optionsPanel.Close();
         else Close();
-    }
-
-    private void SetGameInput(bool on)
-    {
-        var input = FindAnyObjectByType<PlayerInput>();
-        if (input != null)
-        {
-            if (on) input.ActivateInput();
-            else input.DeactivateInput();
-        }
-        if (CameraController.Instance != null) CameraController.Instance.IsLocked = !on;
     }
 
     private void ToMainMenu()

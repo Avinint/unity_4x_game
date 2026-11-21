@@ -9,13 +9,6 @@
   justify-content: center;
 }
 
-.menu-title {
-  font-size: 96px;
-  color: rgb(235, 220, 190);
-  -unity-font-style: bold;
-  margin-bottom: 48px;
-}
-
 .setup-info {
   font-size: 16px;
   color: rgb(180, 165, 140);
