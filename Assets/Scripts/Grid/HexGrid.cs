@@ -205,7 +205,7 @@ public class HexGrid : MonoBehaviour
     {
         lastShiftCameraX = float.NaN;   // cases toutes placées : décalages d'affichage à recalculer
         if (!LoadRiverEdges()) return;
-        if (riverView != null) riverView.Build(this, riverEdges, riverWidth);
+        if (riverView != null) LoadTimer.Measure("rivières", () => riverView.Build(this, riverEdges, riverWidth));
     }
 
     // DispatchPlayers en a besoin aussi, et peut passer avant BuildRivers (même événement, ordre non garanti).
@@ -375,7 +375,7 @@ public class HexGrid : MonoBehaviour
     private void SetHexTileTerrainTypes(MapCell[,] cells)
     {
         ClearHexTiles();
-        hexGenerationTask = Task.Run(() => GenerateHexTileData(cells));
+        hexGenerationTask = Task.Run(() => LoadTimer.Measure("cases", () => GenerateHexTileData(cells)));
 
         hexGenerationTask.ContinueWith(task =>
         {
@@ -458,21 +458,26 @@ public class HexGrid : MonoBehaviour
         int totalBatches = Mathf.CeilToInt((float)hexTiles.Count / BatchSize);
 
 
+        // Temps de travail seul, sans les images d'attente entre les lots.
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         int i = 0;
         foreach (var (axial, tile) in hexTiles)
         {
             tile.CreateTerrain(orientation, unknownPrefab);
-            
+
             // Yield every batchSize hex tiles
             if (i % BatchSize == 0 && i != 0)
             {
                 batchCount++;
                 OnTileBatchGenerated?.Invoke((float)batchCount / totalBatches);
+                watch.Stop();
                 yield return null;
+                watch.Start();
             }
 
             i++;
         }
+        LoadTimer.Add("instanciation", watch.Elapsed.TotalSeconds);
 
         OnTileInstancesGenerated?.Invoke();
     }

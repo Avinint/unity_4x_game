@@ -150,7 +150,7 @@ public class MapGenerator : MonoBehaviour
         {
             Task task =  Task.Run(() =>
             {
-                Cells = BuildCells(orientation);
+                Cells = LoadTimer.Measure("génération", () => BuildCells(orientation));
                 ColorMap = GenerateColorsFromCells(Cells);
 
             }).ContinueWith(task =>
@@ -171,7 +171,7 @@ public class MapGenerator : MonoBehaviour
         // In testing I found that threading is much slower in the editor than in a build or play mode
         else
         {
-            Cells = BuildCells(orientation);
+            Cells = LoadTimer.Measure("génération", () => BuildCells(orientation));
             ColorMap = GenerateColorsFromCells(Cells);
         }
         //We invoke separate events for each map generated so that the parts of code that interested only in one map can subscribe to that event

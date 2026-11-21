@@ -78,7 +78,8 @@ public class GameManager : Singleton<GameManager>
         HexTile.Viewer = LocalPlayer;
         HexGrid.PlayerCount = Players.Count;
 
-        HexGrid.DispatchPlayers();
+        LoadTimer.Measure("placement", HexGrid.DispatchPlayers);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
 
         if (Players.Count > HexGrid.StartTiles.Count)
         {
@@ -109,6 +110,7 @@ public class GameManager : Singleton<GameManager>
                 tile.Discover();
                 tile.SetVisibleNow(true);
             }
+        LoadTimer.Add("unités et vision", watch.Elapsed.TotalSeconds);
 
         MapReady?.Invoke();
     }

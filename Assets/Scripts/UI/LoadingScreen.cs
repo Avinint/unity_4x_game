@@ -26,6 +26,7 @@ public class LoadingScreen : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.MapReady += OnMapReady;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         startTime = Time.realtimeSinceStartup;
+        LoadTimer.Reset();
         Show(0f);
     }
 
@@ -61,6 +62,6 @@ public class LoadingScreen : MonoBehaviour
         yield return null;
         screen.style.display = DisplayStyle.None;
         GameInput.SetEnabled(true);
-        Debug.Log($"Carte prête en {Time.realtimeSinceStartup - startTime:F1} s");
+        Debug.Log(LoadTimer.Summary(Time.realtimeSinceStartup - startTime));
     }
 }
