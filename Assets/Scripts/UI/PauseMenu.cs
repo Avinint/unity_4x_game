@@ -15,8 +15,9 @@ public class PauseMenu : MonoBehaviour
 
     [SerializeField] private string mainMenuScene = "MainMenu";
 
-    private VisualElement veil;
-    private Button menuButton, resume, mainMenu, quitGame;
+    private VisualElement veil, pausePanel;
+    private Button menuButton, resume, pauseOptions, mainMenu, quitGame;
+    private OptionsPanel optionsPanel;
     private int openedFrame;
 
     private void Awake() => Instance = this;
@@ -32,13 +33,18 @@ public class PauseMenu : MonoBehaviour
         veil = root.Q<VisualElement>("pauseMenu");
         menuButton = root.Q<Button>("menuButton");
         resume = root.Q<Button>("resume");
+        pauseOptions = root.Q<Button>("pauseOptions");
         mainMenu = root.Q<Button>("mainMenu");
         quitGame = root.Q<Button>("quitGame");
+        pausePanel = root.Q<VisualElement>("pausePanel");
+        optionsPanel = new OptionsPanel(root.Q<VisualElement>("optionsPanel"));
 
         menuButton.clicked += Open;
         resume.clicked += Close;
+        pauseOptions.clicked += OpenOptions;
         mainMenu.clicked += ToMainMenu;
         quitGame.clicked += Quit;
+        optionsPanel.Closed += OnOptionsClosed;
 
         WriteTexts();
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
@@ -48,10 +54,20 @@ public class PauseMenu : MonoBehaviour
     {
         menuButton.clicked -= Open;
         resume.clicked -= Close;
+        pauseOptions.clicked -= OpenOptions;
         mainMenu.clicked -= ToMainMenu;
         quitGame.clicked -= Quit;
+        optionsPanel.Closed -= OnOptionsClosed;
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
+
+    private void OpenOptions()
+    {
+        pausePanel.style.display = DisplayStyle.None;
+        optionsPanel.Open();
+    }
+
+    private void OnOptionsClosed() => pausePanel.style.display = DisplayStyle.Flex;
 
     private void OnLocaleChanged(UnityEngine.Localization.Locale _) => WriteTexts();
 
@@ -59,8 +75,10 @@ public class PauseMenu : MonoBehaviour
     {
         menuButton.text = L10n.Get("Menu", "menu.open");
         resume.text = L10n.Get("Menu", "menu.resume");
+        pauseOptions.text = L10n.Get("Menu", "menu.options");
         mainMenu.text = L10n.Get("Menu", "menu.main_menu");
         quitGame.text = L10n.Get("Menu", "menu.quit");
+        optionsPanel.WriteTexts();
     }
 
     public void Open()
@@ -75,16 +93,20 @@ public class PauseMenu : MonoBehaviour
     public void Close()
     {
         if (!IsOpen) return;
+        if (optionsPanel.IsOpen) optionsPanel.Close();
         IsOpen = false;
         veil.AddToClassList("hidden");
         SetGameInput(true);
     }
 
-    // Échap referme le menu (pas dans l'image où il s'est ouvert : c'est la même pression).
+    // Échap referme d'abord les Options (retour au menu de la partie), sinon le menu
+    // (pas dans l'image où il s'est ouvert : c'est la même pression).
     private void Update()
     {
-        if (IsOpen && Time.frameCount != openedFrame && Keyboard.current != null
-            && Keyboard.current.escapeKey.wasPressedThisFrame) Close();
+        if (!IsOpen || Time.frameCount == openedFrame || Keyboard.current == null
+            || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
+        if (optionsPanel.IsOpen) optionsPanel.Close();
+        else Close();
     }
 
     private void SetGameInput(bool on)

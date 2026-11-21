@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,7 +5,8 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-// Menu principal (scène MainMenu, première du build) et écran des paramètres de partie (Personnaliser).
+// Menu principal (scène MainMenu, première du build), écran des paramètres de partie (Personnaliser)
+// et Options (OptionsPanel, partagé avec le menu de la partie).
 // Nouvelle partie lance directement la partie avec les paramètres enregistrés.
 [RequireComponent(typeof(UIDocument))]
 public class MainMenu : MonoBehaviour
@@ -16,15 +16,14 @@ public class MainMenu : MonoBehaviour
     // Ordre affiché des types, celui par défaut (Fractale) en premier.
     private static readonly MapType[] TypeOrder = { MapType.Fractal, MapType.Continents, MapType.Pangaea, MapType.Archipelago };
 
-    private VisualElement mainPanel, setupPanel, optionsPanel;
-    private Button newGame, customize, load, options, quit, cancel, save, optionsCancel, optionsSave;
-    private Label setupTitle, sizeInfo, optionsTitle;
-    private DropdownField sizeField, typeField, playersField, languageField;
-    private Toggle wrapField, fullscreenField, edgeScrollField, invertWheelField;
+    private VisualElement mainPanel, setupPanel;
+    private Button newGame, customize, load, options, quit, cancel, save;
+    private Label setupTitle, sizeInfo;
+    private DropdownField sizeField, typeField, playersField;
+    private Toggle wrapField;
     private TextField seedField;
+    private OptionsPanel optionsPanel;
     private GameSettings saved;
-    // Codes des langues proposées, dans l'ordre de la liste ; "" = langue du système.
-    private List<string> languageCodes = new List<string> { "" };
 
     private void OnEnable()
     {
@@ -45,14 +44,7 @@ public class MainMenu : MonoBehaviour
         playersField = root.Q<DropdownField>("playersField");
         wrapField = root.Q<Toggle>("wrapField");
         seedField = root.Q<TextField>("seedField");
-        optionsPanel = root.Q<VisualElement>("optionsPanel");
-        optionsTitle = root.Q<Label>("optionsTitle");
-        languageField = root.Q<DropdownField>("languageField");
-        fullscreenField = root.Q<Toggle>("fullscreenField");
-        edgeScrollField = root.Q<Toggle>("edgeScrollField");
-        invertWheelField = root.Q<Toggle>("invertWheelField");
-        optionsCancel = root.Q<Button>("optionsCancel");
-        optionsSave = root.Q<Button>("optionsSave");
+        optionsPanel = new OptionsPanel(root.Q<VisualElement>("optionsPanel"));
 
         saved = GameSettingsStore.Load();
 
@@ -62,8 +54,7 @@ public class MainMenu : MonoBehaviour
         quit.clicked += OnQuit;
         cancel.clicked += OnCancel;
         save.clicked += OnSave;
-        optionsCancel.clicked += OnCancel;
-        optionsSave.clicked += OnSaveOptions;
+        optionsPanel.Closed += OnCancel;
         sizeField.RegisterValueChangedCallback(OnShapeChanged);
         typeField.RegisterValueChangedCallback(OnShapeChanged);
         // Pas encore faite : sauvegarde de partie.
@@ -81,8 +72,7 @@ public class MainMenu : MonoBehaviour
         quit.clicked -= OnQuit;
         cancel.clicked -= OnCancel;
         save.clicked -= OnSave;
-        optionsCancel.clicked -= OnCancel;
-        optionsSave.clicked -= OnSaveOptions;
+        optionsPanel.Closed -= OnCancel;
         sizeField.UnregisterValueChangedCallback(OnShapeChanged);
         typeField.UnregisterValueChangedCallback(OnShapeChanged);
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
@@ -91,8 +81,9 @@ public class MainMenu : MonoBehaviour
     // Échap sur un écran (paramètres, options) : retour au menu sans enregistrer.
     private void Update()
     {
-        if (mainPanel.ClassListContains("hidden") && Keyboard.current != null
-            && Keyboard.current.escapeKey.wasPressedThisFrame) OnCancel();
+        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
+        if (optionsPanel.IsOpen) optionsPanel.Close();
+        else if (mainPanel.ClassListContains("hidden")) OnCancel();
     }
 
     private void OnLocaleChanged(UnityEngine.Localization.Locale _) => WriteTexts();
@@ -114,34 +105,12 @@ public class MainMenu : MonoBehaviour
         cancel.text = L10n.Get("Menu", "setup.cancel");
         save.text = L10n.Get("Menu", "setup.save");
 
-        // Choix traduits ; le choix en cours est gardé au changement de langue.
-        SetChoices(sizeField, new[] { "size.small", "size.medium", "size.large" }.Select(k => L10n.Get("Menu", k)));
-        SetChoices(typeField, TypeOrder.Select(t => L10n.Get("Menu", "maptype." + t.ToString().ToLower())));
-        SetChoices(playersField, Enumerable.Range(GameSettings.MinPlayers, GameSettings.MaxPlayers - GameSettings.MinPlayers + 1)
+        OptionsPanel.SetChoices(sizeField, new[] { "size.small", "size.medium", "size.large" }.Select(k => L10n.Get("Menu", k)));
+        OptionsPanel.SetChoices(typeField, TypeOrder.Select(t => L10n.Get("Menu", "maptype." + t.ToString().ToLower())));
+        OptionsPanel.SetChoices(playersField, Enumerable.Range(GameSettings.MinPlayers, GameSettings.MaxPlayers - GameSettings.MinPlayers + 1)
             .Select(n => n.ToString()));
         UpdateSizeInfo();
-
-        optionsTitle.text = L10n.Get("Menu", "options.title");
-        languageField.label = L10n.Get("Menu", "options.language");
-        fullscreenField.label = L10n.Get("Menu", "options.fullscreen");
-        edgeScrollField.label = L10n.Get("Menu", "options.edge_scroll");
-        invertWheelField.label = L10n.Get("Menu", "options.invert_wheel");
-        optionsCancel.text = L10n.Get("Menu", "setup.cancel");
-        optionsSave.text = L10n.Get("Menu", "setup.save");
-        // Chaque langue sous son propre nom (Français, English).
-        var locales = LocalizationSettings.AvailableLocales.Locales;
-        languageCodes = new List<string> { "" }.Concat(locales.Select(l => l.Identifier.Code)).ToList();
-        SetChoices(languageField, new[] { L10n.Get("Menu", "options.system_language") }
-            .Concat(locales.Select(l => Capitalize(l.Identifier.CultureInfo?.NativeName ?? l.Identifier.Code))));
-    }
-
-    private static string Capitalize(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s.Substring(1);
-
-    private static void SetChoices(DropdownField field, IEnumerable<string> choices)
-    {
-        int index = Mathf.Max(field.index, 0);
-        field.choices = choices.ToList();
-        field.index = Mathf.Min(index, field.choices.Count - 1);
+        optionsPanel.WriteTexts();
     }
 
     // Copie : la partie ne modifie pas les paramètres enregistrés.
@@ -164,25 +133,8 @@ public class MainMenu : MonoBehaviour
 
     private void OnOptions()
     {
-        UserOptions o = UserOptionsStore.Current;
-        languageField.index = Mathf.Max(0, languageCodes.IndexOf(o.Language));
-        fullscreenField.value = o.Fullscreen;
-        edgeScrollField.value = o.EdgeScroll;
-        invertWheelField.value = o.InvertWheel;
-        ShowPanel(optionsPanel);
-    }
-
-    // Enregistrer applique tout de suite ; la langue changée réécrit les textes (OnLocaleChanged).
-    private void OnSaveOptions()
-    {
-        UserOptionsStore.Save(new UserOptions
-        {
-            Language = languageCodes[Mathf.Max(0, languageField.index)],
-            Fullscreen = fullscreenField.value,
-            EdgeScroll = edgeScrollField.value,
-            InvertWheel = invertWheelField.value,
-        });
-        ShowPanel(mainPanel);
+        ShowPanel(null);
+        optionsPanel.Open();
     }
 
     private void OnCancel() => ShowPanel(mainPanel);
@@ -201,10 +153,10 @@ public class MainMenu : MonoBehaviour
         ShowPanel(mainPanel);
     }
 
-    // Un seul des trois cadres à la fois.
+    // Un seul cadre à la fois (null : aucun, pendant les Options).
     private void ShowPanel(VisualElement panel)
     {
-        foreach (var p in new[] { mainPanel, setupPanel, optionsPanel })
+        foreach (var p in new[] { mainPanel, setupPanel })
             p.EnableInClassList("hidden", p != panel);
     }
 

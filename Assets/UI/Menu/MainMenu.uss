@@ -16,42 +16,10 @@
   margin-bottom: 48px;
 }
 
-.setup-panel {
-  width: 560px;
-}
-
-.setup-title {
-  font-size: 32px;
-  color: rgb(235, 220, 190);
-  -unity-font-style: bold;
-  -unity-text-align: middle-center;
-  margin-bottom: 12px;
-}
-
-.setup-field {
-  margin: 6px 0;
-  font-size: 20px;
-}
-
-.setup-field Label {
-  color: rgb(235, 220, 190);
-  min-width: 260px;
-}
-
 .setup-info {
   font-size: 16px;
   color: rgb(180, 165, 140);
   margin: 0 0 6px 266px;
-}
-
-.setup-buttons {
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-
-.setup-button {
-  width: 48%;
 }
 
 .hidden {

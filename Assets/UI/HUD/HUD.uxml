@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Template name="OptionsPanel" src="../Menu/OptionsPanel.uxml" />
   <ui:Style src="../Menu/MenuShared.uss" />
   <ui:Style src="HUD.uss" />
   <ui:VisualElement name="hudRoot" class="hud-root" picking-mode="Ignore">
@@ -16,11 +17,13 @@
     <ui:VisualElement name="tileInfo" class="panel tile-info hidden" picking-mode="Ignore" />
     <ui:Button name="menuButton" class="menu-button hud-menu-button" text="Menu" />
     <ui:VisualElement name="pauseMenu" class="pause-veil hidden">
-      <ui:VisualElement class="menu-panel">
+      <ui:VisualElement name="pausePanel" class="menu-panel">
         <ui:Button name="resume" class="menu-button" text="Reprendre" />
+        <ui:Button name="pauseOptions" class="menu-button" text="Options" />
         <ui:Button name="mainMenu" class="menu-button" text="Menu principal" />
         <ui:Button name="quitGame" class="menu-button" text="Quitter" />
       </ui:VisualElement>
+      <ui:Instance template="OptionsPanel" name="optionsPanel" />
     </ui:VisualElement>
   </ui:VisualElement>
 </ui:UXML>

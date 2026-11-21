@@ -1,0 +1,83 @@
+/* Champs des menus (listes déroulantes, saisie, cases à cocher) aux couleurs des boutons.
+   Dans le thème : la liste ouverte est dessinée au-dessus de tout le panneau, hors de nos cadres. */
+
+/* Liste déroulante fermée */
+.unity-base-popup-field__input {
+  background-color: rgb(45, 36, 27);
+  border-color: rgb(150, 120, 70);
+}
+
+/* Survol des champs fermés : le thème par défaut passe par le champ parent
+   (`.unity-base-popup-field:hover:enabled …`), d'où un niveau de plus (`.unity-base-field`). */
+.unity-base-field.unity-base-popup-field:hover:enabled .unity-base-popup-field__input {
+  background-color: rgb(70, 56, 40);
+  border-color: rgb(150, 120, 70);
+}
+
+/* Liste ouverte ou champ qui vient d'être cliqué : états :active et :focus du thème par défaut. */
+.unity-base-field.unity-base-popup-field:active:enabled .unity-base-popup-field__input {
+  background-color: rgb(70, 56, 40);
+  border-color: rgb(150, 120, 70);
+}
+
+.unity-base-field.unity-base-popup-field:focus:enabled .unity-base-popup-field__input {
+  border-color: rgb(150, 120, 70);
+}
+
+.unity-base-field.unity-base-text-field:hover:enabled .unity-base-text-field__input {
+  border-color: rgb(150, 120, 70);
+}
+
+.unity-base-field.unity-toggle .unity-toggle__input:hover:enabled .unity-toggle__checkmark {
+  border-color: rgb(150, 120, 70);
+}
+
+.unity-base-popup-field__text {
+  color: rgb(235, 220, 190);
+}
+
+.unity-base-popup-field__arrow {
+  -unity-background-image-tint-color: rgb(235, 220, 190);
+}
+
+/* Liste ouverte */
+.unity-base-dropdown__container-inner {
+  background-color: rgb(45, 36, 27);
+  border-color: rgb(150, 120, 70);
+}
+
+/* Le thème par défaut colore la ligne survolée par `.unity-base-dropdown__item:hover:enabled`
+   (et son texte par un sélecteur plus long) ; à poids égal il l'emporte, d'où un niveau de plus ici. */
+.unity-base-dropdown .unity-base-dropdown__item:hover:enabled {
+  background-color: rgb(90, 70, 48);
+}
+
+.unity-base-dropdown .unity-base-dropdown__item:hover:enabled .unity-base-dropdown__item-content .unity-base-dropdown__label {
+  color: rgb(235, 220, 190);
+}
+
+.unity-base-dropdown .unity-base-dropdown__item:hover:enabled .unity-base-dropdown__item-content .unity-base-dropdown__checkmark {
+  -unity-background-image-tint-color: rgb(235, 220, 190);
+}
+
+.unity-base-dropdown__label {
+  color: rgb(235, 220, 190);
+}
+
+.unity-base-dropdown__checkmark {
+  -unity-background-image-tint-color: rgb(235, 220, 190);
+}
+
+/* Champ de saisie (graine) */
+.unity-base-text-field__input {
+  background-color: rgb(45, 36, 27);
+  border-color: rgb(150, 120, 70);
+  color: rgb(235, 220, 190);
+}
+
+/* Case à cocher */
+.unity-toggle__checkmark {
+  background-color: rgb(45, 36, 27);
+  border-color: rgb(150, 120, 70);
+  -unity-background-image-tint-color: rgb(235, 220, 190);
+}

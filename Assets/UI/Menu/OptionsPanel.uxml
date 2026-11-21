@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:VisualElement name="optionsFrame" class="menu-panel setup-panel">
+    <ui:Label name="optionsTitle" class="setup-title" />
+    <ui:DropdownField name="languageField" class="setup-field" />
+    <ui:Toggle name="fullscreenField" class="setup-field" />
+    <ui:Toggle name="edgeScrollField" class="setup-field" />
+    <ui:Toggle name="invertWheelField" class="setup-field" />
+    <ui:VisualElement class="setup-buttons">
+      <ui:Button name="optionsCancel" class="menu-button setup-button" />
+      <ui:Button name="optionsSave" class="menu-button setup-button" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>
