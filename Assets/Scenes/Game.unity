@@ -1415,13 +1415,14 @@ MonoBehaviour:
   Lacunarity: 2.3
   Seed: 796013
   RandomSeed: 1
-  MapType: 2
+  MapType: 0
   Offset: {x: 0, y: 0}
   AutoUpdate: 0
   GenerateMapOnStart: 1
   UseThreadedGeneration: 1
   Rules:
     WaterFraction: 0.55
+    ArchipelagoWaterFraction: 0.65
     HillFraction: 0.25
     MountainFraction: 0.08
     RidgeWeight: 0.7
@@ -1788,6 +1789,7 @@ MonoBehaviour:
   distanceMin: 40
   distanceMax: 250
   fitMapOnMaxZoom: 1
+  wrapMaxZoomFraction: 0.9
   distanceDefault: 120
   distanceZoomSpeed: 2.5
   scrollZoomStep: 0.15

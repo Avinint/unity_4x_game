@@ -17,6 +17,14 @@ public class HexGrid : MonoBehaviour
     // Rangées de banquise ajoutées à chaque pôle (0 : aucune, carte régionale ou scénario).
     [field:SerializeField, Range(0, 4)] public int PolarIceRows { get; private set; } = 2;
     public int Height => MapHeight + 2 * PolarIceRows;
+
+    // Réglages de partie (écran de création), appliqués avant la génération.
+    public void ApplySettings(int width, int mapHeight, bool wrapWorld)
+    {
+        Width = width;
+        MapHeight = mapHeight;
+        WrapWorld = wrapWorld;
+    }
     // Le monde fait le tour d'est en ouest (les pôles restent des bords) ; option de carte, décochée pour un scénario à bords fixes.
     [field:SerializeField] public bool WrapWorld { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }

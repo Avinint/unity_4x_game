@@ -89,6 +89,7 @@ public class MapGenerator : MonoBehaviour
             Debug.LogError("MapGenerator : aucun HexGrid sur l'objet, taille de carte inconnue.");
             return;
         }
+        ApplyGameSetup();
         Width = HexGrid.Width;
         Height = HexGrid.Height;
         WrapWorld = HexGrid.WrapWorld;
@@ -103,6 +104,18 @@ public class MapGenerator : MonoBehaviour
 
         ValidateSettings();
         StartCoroutine(GenerateMapCoroutine());
+    }
+
+    // Partie lancée depuis le menu : ses réglages remplacent ceux de l'Inspector.
+    private void ApplyGameSetup()
+    {
+        GameSettings s = GameSetup.Current;
+        if (s == null || !Application.isPlaying) return;
+        var (width, mapHeight) = GameSettings.Dimensions(s.Size, s.MapType);
+        HexGrid.ApplySettings(width, mapHeight, s.WrapWorld);
+        MapType = s.MapType;
+        RandomSeed = !s.Seed.HasValue;
+        if (s.Seed.HasValue) Seed = s.Seed.Value;
     }
 
     public void ClearMap()

@@ -66,6 +66,14 @@ public class GameManager : Singleton<GameManager>
 
     private void InitPlayers()
     {
+        // Partie lancée depuis le menu : seuls les PlayerCount premiers joueurs de la scène jouent.
+        GameSettings settings = GameSetup.Current;
+        if (settings != null && settings.PlayerCount < Players.Count)
+        {
+            for (int i = settings.PlayerCount; i < Players.Count; i++) Players[i].gameObject.SetActive(false);
+            Players.RemoveRange(settings.PlayerCount, Players.Count - settings.PlayerCount);
+        }
+
         HexTile.Viewer = LocalPlayer;
         HexGrid.PlayerCount = Players.Count;
 
