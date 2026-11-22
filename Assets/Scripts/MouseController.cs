@@ -6,9 +6,6 @@ using UnityEngine.InputSystem;
 
 public class MouseController : Singleton<MouseController>
 {
-    public Action<RaycastHit> OnLeftMouseClick;
-    public Action<RaycastHit> OnRightMouseClick;
-    public Action<RaycastHit> OnMiddleMouseClick;
     public Action<RaycastHit> OnMouseMoving;
     // Déclenché une fois quand la souris quitte la grille (autre objet, vide ou UI).
     public Action onMouseExit;
@@ -37,9 +34,6 @@ public class MouseController : Singleton<MouseController>
         _lastCameraPosition = cam.position;
         _lastCameraRotation = cam.rotation;
         if (mouse.delta.ReadValue() != Vector2.zero || cameraMoved) CheckMouseMove(ray);
-        if (mouse.leftButton.wasPressedThisFrame) CheckMouseClick(ray, 0);
-        if (mouse.rightButton.wasPressedThisFrame) CheckMouseClick(ray, 1);
-        if (mouse.middleButton.wasPressedThisFrame) CheckMouseClick(ray, 2);
     }
 
     void CheckMouseMove(Ray ray)
@@ -63,7 +57,7 @@ public class MouseController : Singleton<MouseController>
 
     // Case visée : si le rayon touche d'abord le modèle d'une unité visible, sa case (la caméra est inclinée :
     // le sol derrière le modèle est la case voisine) ; sinon le collider « Grid » le plus proche ;
-    // sinon (case inexplorée d'une copie décalée, hors du maillage plat de Grid) : point du rayon sur le plan du sol.
+    // sinon (case inexplorée, sans collider) : point du rayon sur le plan du sol.
     private static bool TryRaycastGrid(Ray ray, out RaycastHit gridHit)
     {
         gridHit = default;
@@ -99,20 +93,5 @@ public class MouseController : Singleton<MouseController>
         if (!ground.Raycast(ray, out float enter)) return false;
         gridHit.point = ray.GetPoint(enter);
         return true;
-    }
-
-    void CheckMouseClick(Ray ray, int mouseButton)
-    {
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-        {
-            if (mouseButton == 0)
-                OnLeftMouseClick?.Invoke(hit);
-            else if (mouseButton == 1)
-                OnRightMouseClick?.Invoke(hit);
-            else if (mouseButton == 2)
-                OnMiddleMouseClick?.Invoke(hit);
-        }
     }
 }

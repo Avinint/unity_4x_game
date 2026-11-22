@@ -17,8 +17,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
     [field:SerializeField] public Vector3Int CubeCoordinates { get; set; }
     [field:NonSerialized] public List<HexTile> Neighbours { get; set; }
 
-    private HexTileGizmo gizmo;
-
     // Centre de la case, décalage d'affichage compris (monde qui fait le tour) : unités, marqueurs, aperçu le suivent.
     public Vector3 CentrePosition { get => basePosition + Vector3.right * ShiftX; set => basePosition = value; }
     private Vector3 basePosition;
@@ -69,9 +67,7 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
     public void Reveal()
     {
-        UnityEngine.Object.Destroy(terrain.GetComponent<HexTileGizmo>());
         UnityEngine.Object.Destroy(terrain.gameObject);
-        UnityEngine.Object.Destroy(terrain);
         terrain = UnityEngine.Object.Instantiate(
             TerrainType.Prefab,
             CentrePosition, 
@@ -88,8 +84,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
 
        
 
-        AddGizmo();
-        gizmo.Unlock();
         AddPlinth();
         AddColliders();
         ApplyDim();
@@ -188,12 +182,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
         TerrainType = terrainType;
     }
 
-    private void AddGizmo()
-    {
-        gizmo = terrain.gameObject.AddComponent<HexTileGizmo>();
-        gizmo.Neighbours = Neighbours;
-    }
-
     public void CreateTerrain(HexOrientation orientation, Transform unknownPrefab)
     {
         if(TerrainType == null)
@@ -231,8 +219,6 @@ public class HexTile : IEquatable<HexTile>, IComparable<HexTile>
             orientation == HexOrientation.PointyTop ? Quaternion.Euler(0, 0, 0) : Quaternion.identity, 
             Grid.transform
         );
-
-       AddGizmo();
 
         //TODO: Adjust the size of the prefab to the size of the grid tile
         

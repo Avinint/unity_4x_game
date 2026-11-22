@@ -93,12 +93,9 @@ public class HexGrid : MonoBehaviour
         foreach (var tile in Tiles.Values) tile.RefreshDim();
     }
 
-    private bool displayGizmo = true;
-
-    private List<HexTile> path = new List<HexTile>();
-
-    [field: SerializeField]
-    public GameObject Selector { get; set; }
+    // Marqueurs créés au démarrage (comme les rivières) : anneaux de l'unité sélectionnée, cercle de destination.
+    public GameObject Selector { get; private set; }
+    public GameObject DestinationMarker { get; private set; }
     [Header("Marqueurs")]
     [SerializeField] private Color selectorColor = Color.white;   // anneaux de l'unité sélectionnée
     [field: SerializeField] public Color ReachableColor { get; private set; } = new Color(1f, 0.8f, 0.2f);       // doré
@@ -129,47 +126,40 @@ public class HexGrid : MonoBehaviour
         SetupDestinationMarker();
     }
 
-    // Cercle de destination (ancien marqueur de survol) : anneau plat, couleur selon l'état de la visée.
+    // Cercle de destination : anneau plat, couleur selon l'état de la visée.
     private void SetupDestinationMarker()
     {
-        if (HoverMarker == null) return;
-        HoverMarker.GetComponent<MeshFilter>().sharedMesh = HexMetrics.BuildRingMesh(48, (HexSize * 0.78f, HexSize * 0.07f));
-        HoverMarker.transform.localScale = Vector3.one;
-        HoverMarker.transform.rotation = Quaternion.identity;
-        var renderer = HoverMarker.GetComponent<MeshRenderer>();
-        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        destinationMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        renderer.sharedMaterial = destinationMaterial;
-        HoverMarker.SetActive(false);
+        DestinationMarker = CreateRing("DestinationMarker", Color.white, (HexSize * 0.78f, HexSize * 0.07f));
+        destinationMaterial = DestinationMarker.GetComponent<MeshRenderer>().sharedMaterial;
     }
 
     public void ShowDestination(HexTile tile, Color color)
     {
-        if (HoverMarker == null) return;
         destinationMaterial.SetColor("_BaseColor", color);
-        HoverMarker.transform.position = tile.DisplayPosition;
-        HoverMarker.SetActive(true);
+        DestinationMarker.transform.position = tile.DisplayPosition;
+        DestinationMarker.SetActive(true);
     }
 
-    public void HideDestination()
-    {
-        if (HoverMarker != null) HoverMarker.SetActive(false);
-    }
+    public void HideDestination() => DestinationMarker.SetActive(false);
 
-    // Unité sélectionnée : deux anneaux blancs à plat (comme Civ 6) au lieu de l'ancien modèle vertical.
-    private void SetupSelector()
+    // Unité sélectionnée : deux anneaux blancs à plat (comme Civ 6).
+    private void SetupSelector() =>
+        Selector = CreateRing("Selector", selectorColor, (HexSize * 0.78f, HexSize * 0.05f), (HexSize * 0.66f, HexSize * 0.025f));
+
+    // Anneau plat sous Grid, masqué au départ : maillage et matériau URP Unlit propres, sans ombre.
+    private GameObject CreateRing(string name, Color color, params (float outer, float width)[] rings)
     {
-        if (Selector == null) return;
-        Selector.GetComponent<MeshFilter>().sharedMesh = HexMetrics.BuildRingMesh(48,
-            (HexSize * 0.78f, HexSize * 0.05f), (HexSize * 0.66f, HexSize * 0.025f));
-        Selector.transform.localScale = Vector3.one;
-        Selector.transform.rotation = Quaternion.identity;
-        var renderer = Selector.GetComponent<MeshRenderer>();
+        var ring = new GameObject(name);
+        ring.transform.SetParent(transform, false);
+        ring.AddComponent<MeshFilter>().sharedMesh = HexMetrics.BuildRingMesh(48, rings);
+        var renderer = ring.AddComponent<MeshRenderer>();
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        // Matériau propre : l'ancien (SelectorForbidden) est transparent avec une texture rouge, illisible sur les anneaux.
+        renderer.receiveShadows = false;
         var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        material.SetColor("_BaseColor", selectorColor);
+        material.SetColor("_BaseColor", color);
         renderer.sharedMaterial = material;
+        ring.SetActive(false);
+        return ring;
     }
 
     private void OnEnable()
@@ -181,23 +171,9 @@ public class HexGrid : MonoBehaviour
             mapGenerator.onTerrainMapCleared += RemoveHexTiles;
         }
 
-        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
-        
-
-        if (meshRenderer != null)
-        {
-            meshRenderer.enabled = false;
-        }
-
         MouseController.Instance.OnMouseMoving += OnMouseMove;
         MouseController.Instance.onMouseExit += OnMouseLeaveGrid;
-        OnTileInstancesGenerated += ToggleGizmo;
         OnTileInstancesGenerated += BuildRivers;
-    }
-
-    private void ToggleGizmo()
-    {
-        displayGizmo = !displayGizmo;
     }
 
     // Cases instanciées : on trace les rivières calculées par MapGenerator.
@@ -234,9 +210,13 @@ public class HexGrid : MonoBehaviour
             hexGenerationTask.Dispose();
         }
 
-        MouseController.Instance.OnMouseMoving -= OnMouseMove;
-        MouseController.Instance.onMouseExit -= OnMouseLeaveGrid;
-        OnTileInstancesGenerated -= ToggleGizmo;
+        // Déchargement de la scène : le MouseController peut déjà être détruit.
+        var mouse = MouseController.Instance;
+        if (mouse != null)
+        {
+            mouse.OnMouseMoving -= OnMouseMove;
+            mouse.onMouseExit -= OnMouseLeaveGrid;
+        }
         OnTileInstancesGenerated -= BuildRivers;
     }
 
@@ -339,7 +319,6 @@ public class HexGrid : MonoBehaviour
         }
     }
     
-    [field: SerializeField] public GameObject HoverMarker { get; set; }
 
     // La souris quitte la grille : le survol s'efface.
     private void OnMouseLeaveGrid()
@@ -594,43 +573,6 @@ public class HexGrid : MonoBehaviour
         return startingArea;
 
     }
-
-
-    Color[] colors = new Color[] { Color.red, Color.blue, Color.green, Color.yellow, Color.magenta, Color.cyan };
-
-    private void OnDrawGizmos()
-    {
-        if (!displayGizmo) return;
-
-        for (int z = 0; z < Height; z++)
-        for (int x = 0; x < Width; x++)
-        {
-            Vector3 centrePosition = HexMetrics.Center(HexSize, x, z, Orientation) + transform.position;
-            Vector3[] corners = HexMetrics.Corners(HexSize, Orientation);
-            Gizmos.color = Color.white;
-            for (int s = 0; s < 6; s++)
-            {
-                Gizmos.DrawLine(
-                    centrePosition + corners[s],
-                    centrePosition + corners[(s + 1) % 6]
-                );
-                Gizmos.color = colors[s % 6];
-                Gizmos.DrawSphere(centrePosition + HexMetrics.Corners(HexSize, Orientation)[s % 6], HexSize * 0.1f);
-            }
-        }
-        
-        
-        
-        if (path != null)
-        {
-            foreach (HexTile tile in path)
-            {
-                Gizmos.DrawCube(tile.CentrePosition + new Vector3(0f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f));
-            }
-        }
-    }
-    
-    
 }
 
 public enum HexOrientation

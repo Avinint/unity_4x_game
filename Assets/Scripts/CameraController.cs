@@ -11,9 +11,6 @@ public class CameraController : Singleton<CameraController>
     private GameObject cameraTarget;
     [SerializeField]
     private Unity.Cinemachine.CinemachineCamera OverheadCamera;
-    [SerializeField]
-    private Unity.Cinemachine.CinemachineCamera focusCamera;
-   
     
     [SerializeField] private float cameraSpeed = 10f;
 
@@ -109,15 +106,8 @@ public class CameraController : Singleton<CameraController>
         ClampTarget();
     }
 
-    [SerializeField] private CameraMode defaultMode = CameraMode.Overhead;
-
-    [SerializeField] private CameraMode currentMode;
-    
-    
     private Coroutine panCoroutine;
     private Coroutine zoomCoroutine;
-
-    public event Action<Unity.Cinemachine.CinemachineCamera> onCameraChanged;
 
     public event Action onSelectAction;
     public event Action onCommandStart;     // appui sur le clic droit : début de la visée
@@ -171,7 +161,8 @@ public class CameraController : Singleton<CameraController>
 
         OverheadCamera.Lens.FieldOfView = fieldOfView;
         SetDistance(distanceDefault);
-        ChangeCamera(defaultMode);
+        OverheadCamera.Priority = DEFAULT_PRIORITY;
+        OverheadCamera.Prioritize();
         if (GameManager.Instance != null) GameManager.Instance.PlayerTurnStart += OnPlayerTurnStart;
     }
 
@@ -221,16 +212,6 @@ public class CameraController : Singleton<CameraController>
         }
     }
 
-    public void ChangeCamera(CameraMode mode)
-    {
-        currentMode = mode;
- 
-        Unity.Cinemachine.CinemachineCamera virtualCamera = GetCamera(mode);
-        onCameraChanged?.Invoke(virtualCamera);
-
-        virtualCamera.Priority = DEFAULT_PRIORITY;
-        virtualCamera.Prioritize();
-    }
 
     public void OnPanChange(InputAction.CallbackContext context)
     {
@@ -322,19 +303,6 @@ public class CameraController : Singleton<CameraController>
         }
     }
 
-    private Unity.Cinemachine.CinemachineCamera GetCamera(CameraMode mode)
-    {
-        switch (mode)
-        {
-            case CameraMode.Overhead:
-                return OverheadCamera;
-            case CameraMode.Focus:
-                return focusCamera;
-            default:
-                return null;
-        }
-    }
-
     public IEnumerator processPan(InputAction.CallbackContext context)
     {
         while (true)
@@ -398,13 +366,5 @@ public class CameraController : Singleton<CameraController>
     }
 
 }
-
-
-public enum CameraMode
-{
-    Overhead,
-    Focus
-}
-
 
 
