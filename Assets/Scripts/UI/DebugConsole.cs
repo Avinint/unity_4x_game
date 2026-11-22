@@ -39,6 +39,7 @@ public class DebugConsole : MonoBehaviour
         commands.Register("tp", "teleport the selected unit to the hovered tile (like F9)",
             _ => SelectionController.Instance.DebugTeleport());
         commands.Register("lang", "next language, or lang <code> (fr, en)", Lang);
+        commands.Register("maxzoom", "show the max zoom-out, or maxzoom <0.5-1> (wrapped world: share of the world width)", MaxZoom);
         commands.Register("seed", "show the map seed", _ =>
         {
             var generator = FindAnyObjectByType<MapGenerator>();
@@ -157,6 +158,21 @@ public class DebugConsole : MonoBehaviour
         if (selected == null) return "No unit selected.";
         selected.ResetMovementPoints();
         return "Movement restored.";
+    }
+
+    private static string MaxZoom(string[] args)
+    {
+        var cam = CameraController.Instance;
+        if (!cam.WrapsWorld) return $"Fixed edges: max zoom-out shows the whole map (distance {cam.MaxZoomDistance:0}).";
+        if (args.Length > 0)
+        {
+            // Virgule ou point décimal acceptés.
+            if (!float.TryParse(args[0].Replace(',', '.'), System.Globalization.NumberStyles.Float,
+                                System.Globalization.CultureInfo.InvariantCulture, out float value))
+                return "Usage: maxzoom <0.5-1>";
+            cam.WrapMaxZoomFraction = value;
+        }
+        return $"Max zoom-out: {cam.WrapMaxZoomFraction:0.00} of the world width (distance {cam.MaxZoomDistance:0}).";
     }
 
     private static string Lang(string[] args)

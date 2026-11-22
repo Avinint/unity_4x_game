@@ -26,6 +26,15 @@ public class CameraController : Singleton<CameraController>
     [SerializeField] private bool fitMapOnMaxZoom = true;       // le zoom maximal montre toute la carte
     // Monde qui boucle : part de la largeur du monde montrée au dézoom complet (au-delà de 1, le bord vide apparaît).
     [SerializeField, Range(0.5f, 1f)] private float wrapMaxZoomFraction = 0.9f;
+
+    // Débogage (console, maxzoom) : part de la largeur du monde montrée au dézoom complet.
+    public float WrapMaxZoomFraction
+    {
+        get => wrapMaxZoomFraction;
+        set { wrapMaxZoomFraction = Mathf.Clamp(value, 0.5f, 1f); SetDistance(distance); }   // vue réajustée aussitôt
+    }
+    public float MaxZoomDistance => MaxDistance;
+    public bool WrapsWorld => GameManager.Instance != null && GameManager.Instance.HexGrid != null && GameManager.Instance.HexGrid.Wraps;
     [SerializeField] private float distanceDefault = 120f;
     [SerializeField] private float distanceZoomSpeed = 2.5f;
     [SerializeField, Range(0.01f, 0.5f)] private float scrollZoomStep = 0.15f;   // part de la distance par cran de molette
