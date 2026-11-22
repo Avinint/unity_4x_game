@@ -115,6 +115,29 @@
   justify-content: center;
 }
 
+.debug-console {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  width: 680px;
+  height: 340px;
+}
+
+.console-log {
+  flex-grow: 1;
+  margin: 6px 0;
+}
+
+.console-line {
+  font-size: 14px;
+  color: rgb(235, 220, 190);
+  white-space: normal;
+}
+
+.console-input {
+  font-size: 16px;
+}
+
 .loading-screen {
   position: absolute;
   left: 0;

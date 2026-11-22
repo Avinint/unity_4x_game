@@ -104,12 +104,7 @@ public class GameManager : Singleton<GameManager>
 
         BuildTurnOrder();
 
-        if (RevealWholeMap)
-            foreach (var tile in HexGrid.AllTiles)
-            {
-                tile.Discover();
-                tile.SetVisibleNow(true);
-            }
+        if (RevealWholeMap) RevealMap();
         LoadTimer.Add("unités et vision", watch.Elapsed.TotalSeconds);
 
         MapReady?.Invoke();
@@ -144,11 +139,16 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    // Touche de débogage lue directement : pas d'action dans PlayerControls pour un outil provisoire.
-    private void Update()
+    // Débogage (option RevealWholeMap, commande reveal) : toute la carte découverte et visible.
+    // Affichage seulement : la connaissance FogOfWar ne change pas.
+    public void RevealMap()
     {
-        if (Debug.isDebugBuild && Keyboard.current != null && Keyboard.current.f12Key.wasPressedThisFrame)
-            L10n.NextLocale();
+        RevealWholeMap = true;   // OnVisibilityChanged ne remet plus de brume
+        foreach (var tile in HexGrid.AllTiles)
+        {
+            tile.Discover();
+            tile.SetVisibleNow(true);
+        }
     }
 
     // Entrée : fin du tour du joueur local.

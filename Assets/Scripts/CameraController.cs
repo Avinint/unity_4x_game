@@ -48,7 +48,8 @@ public class CameraController : Singleton<CameraController>
     private void Update()
     {
         if (isLocked || Mouse.current == null) return;
-        if (Mouse.current.middleButton.wasPressedThisFrame) CenterOnHovered();
+        if (Mouse.current.middleButton.wasPressedThisFrame && !UIPointer.IsOver(Mouse.current.position.ReadValue()))
+            CenterOnHovered();
         if (leftPressed) DragMap();
         else EdgeScroll();
     }
@@ -245,10 +246,20 @@ public class CameraController : Singleton<CameraController>
     }
 
 
+    private bool pressOverUI, commandOverUI;   // appui commencé sur l'interface : ni glissé, ni sélection, ni ordre
+
     public void OnTriggerCommand(InputAction.CallbackContext context)
     {
-        if (context.started) onCommandStart?.Invoke();
-        else if (context.canceled) onCommandRelease?.Invoke();
+        if (context.started)
+        {
+            commandOverUI = Mouse.current != null && UIPointer.IsOver(Mouse.current.position.ReadValue());
+            if (!commandOverUI) onCommandStart?.Invoke();
+        }
+        else if (context.canceled)
+        {
+            if (commandOverUI) { commandOverUI = false; return; }
+            onCommandRelease?.Invoke();
+        }
     }
 
     // Clic gauche : bref = sélection au relâchement ; glissé = déplacement de la carte (DragMap), sans sélection.
@@ -257,11 +268,15 @@ public class CameraController : Singleton<CameraController>
         if (context.started && Mouse.current != null)
         {
             pressScreen = Mouse.current.position.ReadValue();
+            pressOverUI = UIPointer.IsOver(pressScreen);
+            if (pressOverUI) return;
             leftPressed = TryGroundPoint(pressScreen, out grabPoint);
             dragging = false;
         }
         else if (context.canceled)
         {
+            // Relâchement d'un appui sur l'interface, ou action coupée par un écran (focus de la console) : ignoré.
+            if (pressOverUI) { pressOverUI = false; return; }
             bool wasDrag = dragging;
             leftPressed = dragging = false;
             if (!wasDrag) onSelectAction?.Invoke();

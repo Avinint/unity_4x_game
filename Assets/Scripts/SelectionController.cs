@@ -183,7 +183,6 @@ public class SelectionController : Singleton<SelectionController>
     // Le sélecteur suit l'unité, y compris pendant son déplacement.
     private void Update()
     {
-        DebugKeys();
         if (SelectedUnit != null && Grid.Selector != null)
             Grid.Selector.transform.position = SelectedUnit.transform.position;
         UpdatePreview();
@@ -213,18 +212,15 @@ public class SelectionController : Singleton<SelectionController>
         outline.Show(Grid, HexMetrics.BoundaryEdges(zone, Grid.Wrap), Grid.OutlineColor);
     }
 
-    // Touches de débogage lues directement : pas d'action dans PlayerControls pour un outil provisoire.
-    // F9 : téléporte l'unité sélectionnée sur la case survolée ; F10 : lui rend ses points de mouvement.
-    private void DebugKeys()
+    // Débogage (console : F9, tp) : téléporte l'unité sélectionnée sur la case survolée.
+    public string DebugTeleport()
     {
-        var keyboard = Keyboard.current;
-        if (!Debug.isDebugBuild || keyboard == null || SelectedUnit == null) return;
-        if (keyboard.f9Key.wasPressedThisFrame)
-        {
-            HexTile target = HoveredTile();
-            if (target != null && target.CanStop(SelectedUnit)) SelectedUnit.Teleport(target);
-        }
-        if (keyboard.f10Key.wasPressedThisFrame) SelectedUnit.ResetMovementPoints();
+        if (SelectedUnit == null) return "No unit selected.";
+        HexTile target = HoveredTile();
+        if (target == null) return "No tile under the mouse.";
+        if (!target.CanStop(SelectedUnit)) return "Tile is full.";
+        SelectedUnit.Teleport(target);
+        return $"Teleported to {target.AxialCoordinates}.";
     }
 
     // Pastilles de tours du chemin visé (position affichée, numéro du tour, couleur), lues par le HUD.
