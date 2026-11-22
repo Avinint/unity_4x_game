@@ -62,9 +62,7 @@ public class MapGenerator : MonoBehaviour
 
     public Color[] ColorMap { get; private set; }
 
-    public event Action<float[,]> OnNoiseMapGenerated;
     public event Action<MapCell[,]> OnTerrainMapGenerated;
-    public event Action onTerrainMapCleared;
     public event Action<Color[], int, int> OnColorMapGenerated;
 
     private void Awake()
@@ -116,11 +114,6 @@ public class MapGenerator : MonoBehaviour
         MapType = s.MapType;
         RandomSeed = !s.Seed.HasValue;
         if (s.Seed.HasValue) Seed = s.Seed.Value;
-    }
-
-    public void ClearMap()
-    {
-        onTerrainMapCleared?.Invoke();
     }
 
     private void ValidateSettings()
@@ -175,7 +168,6 @@ public class MapGenerator : MonoBehaviour
             ColorMap = GenerateColorsFromCells(Cells);
         }
         //We invoke separate events for each map generated so that the parts of code that interested only in one map can subscribe to that event
-        OnNoiseMapGenerated?.Invoke(ReliefMap);
         OnColorMapGenerated?.Invoke(ColorMap, Width, Height);
         OnTerrainMapGenerated?.Invoke(Cells);
 

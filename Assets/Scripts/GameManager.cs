@@ -14,8 +14,6 @@ public class GameManager : Singleton<GameManager>
 
     public Player LocalPlayer => localPlayer != null ? localPlayer : (Players.Count > 0 ? Players[0] : null);
     [field:SerializeField] public HexGrid HexGrid { get; private set; }
-    
-    public List<Vector2> DefaultVisibleTiles = new List<Vector2> { new Vector2(-1, -1) };
 
     [Range(1,6)]
     public int DefaultVisibleRadius = 2;
@@ -30,7 +28,6 @@ public class GameManager : Singleton<GameManager>
     public IReadOnlyList<Player> TurnOrder => turns.Order;
     public Player CurrentPlayer => turns.Current;
 
-    public event System.Action GameStart;
     public event System.Action MapReady;   // carte, joueurs, unités et caméra en place (fin de l'écran de chargement)
     public event System.Action TurnChange;                // nouvelle manche
     public event System.Action<Player> PlayerTurnStart;   // début du tour d'un joueur
@@ -46,7 +43,6 @@ public class GameManager : Singleton<GameManager>
 
     private void OnEnable()
     {
-        HexGrid.DefaultVisibleTiles = DefaultVisibleTiles;
         HexGrid.DefaultVisibleRadius = DefaultVisibleRadius;
         HexGrid.OnTileInstancesGenerated += InitPlayers;
         Fog.TileExplored += OnTileExplored;
@@ -186,11 +182,6 @@ public class GameManager : Singleton<GameManager>
         unit.UpdateVision(tile);
     }
 
-    private void Start()
-    {
-        GameStart?.Invoke();
-    }
-    
 
     public void AddStartingUnits(Player player)
     {

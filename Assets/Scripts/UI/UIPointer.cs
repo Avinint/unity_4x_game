@@ -7,7 +7,7 @@ public static class UIPointer
 {
     public static bool IsOver(Vector2 screen)
     {
-        foreach (var doc in Object.FindObjectsByType<UIDocument>(FindObjectsSortMode.None))
+        foreach (var doc in Object.FindObjectsByType<UIDocument>())
         {
             IPanel panel = doc.rootVisualElement?.panel;
             if (panel == null) continue;

@@ -29,7 +29,6 @@ public class HexGrid : MonoBehaviour
     [field:SerializeField] public bool WrapWorld { get; private set; }
     [field:SerializeField] public float HexSize { get; private set; }
     [field: SerializeField] public int BatchSize { get; private set; }
-    public List<Vector2> DefaultVisibleTiles { get; set; } = new List<Vector2> { new Vector2(0, 0) };
     public int DefaultVisibleRadius { get; set; } = 1;
 
 
@@ -168,7 +167,6 @@ public class HexGrid : MonoBehaviour
         if(mapGenerator != null)
         {
             mapGenerator.OnTerrainMapGenerated += SetHexTileTerrainTypes;
-            mapGenerator.onTerrainMapCleared += RemoveHexTiles;
         }
 
         MouseController.Instance.OnMouseMoving += OnMouseMove;
@@ -203,7 +201,6 @@ public class HexGrid : MonoBehaviour
         if (mapGenerator != null)
         {
             mapGenerator.OnTerrainMapGenerated -= SetHexTileTerrainTypes;
-            mapGenerator.onTerrainMapCleared -= RemoveHexTiles;
         }
         if (hexGenerationTask != null && hexGenerationTask.Status == TaskStatus.Running)
         {
@@ -459,11 +456,6 @@ public class HexGrid : MonoBehaviour
         LoadTimer.Add("instanciation", watch.Elapsed.TotalSeconds);
 
         OnTileInstancesGenerated?.Invoke();
-    }
-
-    private void RemoveHexTiles()
-    {
-        Tiles.Clear();
     }
 
     /// <summary>
